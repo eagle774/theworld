@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+  <head>
+    <meta charset="utf-8" />
+    <title>The World</title>
+	<script src="vue.js"></script>
+	<link href="css/theworld.css" rel="stylesheet"> <link rel="stylesheet" href="css/bootstrap.css"/>
+
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="app" tabindex="0">
+ <span v-for="curTab in tabs" :key=curTab.displayText v-on:click="tab=curTab.tab"><button class="btn btn-outline-danger" v-if="curTab.tab == tab">{{curTab.displayText}}</button><button class="btn btn-outline-success" v-else>{{curTab.displayText}}</button></span>
+ <span style="text-align:right">
+ </span>
+<div class="display-left">
+      <div v-for="resource in unlockedResources" :key="resource">
+        {{resTable[resource].screenName}}: {{Math.round(resTable[resource].amount*100)/100}}/{{resTable[resource].storage}} ({{resTable[resource].extraPerTick.toFixed(3)}}/tick)
+      </div>
+    </div>
+      <div v-for="line in message.split('\n')" :key=line>{{line}}</div>
+      <span v-if="tab == 'main'">
+        <div v-for="curButton in buttons" :key= curButton.displayText class="outer">
+          <button type="button" class="btn btn-outline-success" v-on:click="unSaveable.buttons[curButton.todo]()">{{curButton.displayText}}</button>
+        </div>
+        <div v-for="curBuilding in buildings" :key= curBuilding.displayText>
+          <div class="outer"><button type="button" class="btn btn-outline-success" v-on:click="buyBuilding(curBuilding.buildingName)">{{curBuilding.displayText}} ({{Math.round(resTable[curBuilding.buildingName].amount*100)/100}}) </button><span class="inner" >Cost: <br /><span v-for="(value, key) in buildingsList[curBuilding.buildingName]['cost']">{{resTable[key].screenName}}: {{value*resTable[curBuilding.buildingName]["multiplier"]}}<br /></span><br /></span></div>
+        </div>
+        <div v-for="curProcess in processes" :key= curProcess.displayText>
+          <div class="outer"><button type="button" class="btn btn-outline-success" v-on:click="buyBuilding(curProcess.buildingName)">{{curProcess.displayText}}  </button><span class="inner" >Cost: <br /><span v-for="(value, key) in buildingsList[curProcess.buildingName]['cost']">{{resTable[key].screenName}}: {{value}}<br /></span><br /></span></div>
+        </div>
+      </span>
+      <span v-if="tab == 'saving'">
+        <button class="btn btn-outline-warning"  v-on:click="saveGame()">Save game</button>
+        <button class="btn btn-outline-warning"  v-on:click="loadGame(true)">Load game</button>
+        <button class="btn btn-outline-warning"  v-on:click="clearGame()">Wipe save</button>
+      </span>
+      <span v-if="tab == 'computer'">
+        <button v-if="insertedDisk==false" v-on:click="insertDisk()" class="btn btn-outline-success">Insert your computer disk.</button>
+        <span class="computer-screen">
+          <span  v-bind:style="{'opacity':computerOpacity}">
+				      <p class='list-item computer-sidebar'>
+                <span v-for="curFile in files" :key="curFile.fileID">
+                  <button class="list-group-item list-group-item-action active small-text" v-if="fileViewed==curFile.fileID">{{curFile.screenName}}</button>
+                  <button class="list-group-item list-group-item-action small-text" v-else v-on:click="setState({curFileType:curFile.type,fileViewed:curFile.fileID,cursorX:0,cursorY:0})">{{curFile.screenName}}</button>
+                </span>
+					     <button  class="list-group-item list-group-item-action small-text" v-on:click='addFile(files.length,"untitledfile.doc ")'>Make a file</button>
+             </p>
+             <span v-if="fileContents[fileViewed] && curFileType == 'doc'" class="txt-file">
+               <span v-for="line in fileContents[fileViewed].split('\n')" :key="line" :style="{'text-align':'left'}">{{line}} <br /></span>
+             </span>
+             <span v-else-if="fileContents[fileViewed] && curFileType == 'img'">
+               <img :src="'images/'+fileContents[fileViewed]" class="img-file" />
+             </span>
+             <span v-else>
+               <div v-for="(line, index) in fileTextContents[fileViewed]">
+                 <span class="computerCode" :style='{"top":(index*2)+"vh","marginBottom":"0px"}' v-if="index != cursorY"><pre :style='{display: "inline"}'>{{line}}</pre></span>
+                 <span v-else class="computerCode" :style='{"top":index*2+"vh"}'>
+                   <pre :style='{display:"inline"}'>{{line.slice(0,cursorX)}}</pre><pre id='curLine' :style="{'backgroundColor': 'blue',display:'inline'}">{{line[cursorX]==' '?'&nbsp;':line[cursorX]}}</pre><pre :style="{display:'inline'}">{{line.slice(cursorX+1,line.length)[0]==' '?'&nbsp;'+line.slice(cursorX+2,line.length):line.slice(cursorX+1,line.length)}}</pre>
+                 </span>
+               </div>
+               <button class="btn btn-outline-warning" v-on:click='parseCode(fileTextContents[fileViewed].slice(1))'>Parse Code</button>
+             </span>
+           </span>
+			  </span>
+      </span>
+      <span v-if="tab == 'mining'">
+        <span v-if="true">
+          <span class="uncoveredResources">
+            Uncovered resources
+            <div v-for='(datum,resource) in planets["Earth"]'>
+              <span v-if='resource!="progress" && (datum>0|| unlockedResources.includes(resource))'>
+                {{resTable[resource].screenName}} - {{datum}}
+              </span>
+            </div>
+          </span>
+          <div>Progress: {{planets['Earth'].progress.toFixed(2)}}/10000</div>
+        </span>
+      </span>
+      <span v-if="tab == 'jobs'">
+        <div v-for='(newJobs,jobBase,i) in jobs'>
+          <span v-if='unlockedResources.includes(jobBase)'  :style="{'top':(i+1)*25+'vh'}">
+            <span>{{resTable[jobBase].screenName}}: {{resTable[jobBase].amount}} </span>
+            <div v-for='newJob in newJobs'>
+              <span>{{resTable[newJob.job].screenName}}: {{resTable[newJob.job].amount}} </span><br />
+              <button v-on:click='swapJobs(newJob.job,jobBase)'>Assign a {{resTable[jobBase].screenName}} to being a {{resTable[newJob.job].screenName}}</button><br />
+              <button  v-on:click='swapJobs(jobBase,newJob.job)'>Deassign a(n) {{resTable[newJob.job].screenName}}</button><br />
+            </div>
+            <br />
+            <br />
+          </span>
+        </div>
+      </span>
+      <span v-if="tab == 'robot'">
+        <button class="btn btn-success" v-on:click="newGrid()">Generate new grid.</button>
+        <div class="robot-screen" v-if="grid!=null" style="font-family:courier;">
+          <span v-for="line in grid.displayGrid().split('\n')">
+            {{line}}
+            <br />
+          </span>
+        </div>
+      </span>
+	</div>
+  <script src="code/data/buildings.js"></script>
+  <script src="code/data/tiles.js"></script>
+  <script src="code/data/mining.js"></script>
+  <script src="code/data/entities.js"></script>
+  <script src="code/util/saving.js"></script>
+  <script src="code/util/massProduction.js"></script>
+  <script src="code/randomness/randomDistribution.js"></script>
+  <script src="code/randomness/planetCreator.js"></script>
+  <script src="code/bases/keyBindings.js"></script>
+  <script src="code/bases/console.js"></script>
+  <script src="code/classes/mining.js"></script>
+  <script src="code/classes/mineDroid.js"></script>
+  <script src="code/classes/tile.js"></script>
+  <script src="code/classes/entity.js"></script>
+  <script src="code/classes/worldGrid.js"></script>
+  <script src="code/preMainLoading.js"></script>
+  <script src="code/Main.js"></script>
+  <script src="code/postMainLoading.js"></script>
+  </body>
+</html>

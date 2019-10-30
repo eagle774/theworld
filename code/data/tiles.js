@@ -1,0 +1,20 @@
+let tileData={
+  'grass':{
+    code:{
+      'onTick':[
+        {'withChance':0.0001,'toDo':'spawnEntity','type':'tree'}
+      ],
+      'onLoad':[
+        {'withChance':0.1,'toDo':'spawnEntity','type':'tree'}
+      ],
+    },
+    'display':'g',
+  },
+  'home':{
+    code:{
+      'onTick':[],
+      'onLoad':[],
+    },
+    'display':'h',
+  }
+}
