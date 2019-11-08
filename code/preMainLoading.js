@@ -27,9 +27,10 @@ let data = {
 		tab: "saving"
 	}],
 	unSaveable:{
-		buttons:{}
+		buttons:{},
+		extensions: []
 	},
-	buildings: [],
+	buildings: {},
 	computerChanged:false,
 	processes: [],
 	mining:{
@@ -37,15 +38,19 @@ let data = {
 	},
 	grid:null,
 	planets:{
-		'Earth':{
-			'fakestone':50,
+		'total':{
+			'fakestone':5000,
 			'iron-ore':0,
 			'progress':0,
 		}
 	},
+	hole:0,
 	jobs:{
 
-	}
+	},
+	scripts:{
+
+	},
 }
 function Res(name,sname){
 	this.stuff={
@@ -85,6 +90,23 @@ const addJob = (base, job) => {
 		data.errorLog.push('Cannot add job '+job+' as base '+base+' is not in resTable')
 	}
 }
+const addExtension = (parts) => {
+	data.unSaveable.extensions.push(parts)
+	data.scripts[parts[0]]={}
+}
+addExtension(['.mnr','Miner','droid',
+(app,number)=>{
+miner = new MinerDroid()
+return {'miner':{'digHole':()=>{
+	miner.incHole(number,app)
+},
+'mineAtDepth':(depth)=>{
+	miner.mineAtDepth(number,depth,app)
+},
+'mineResource':(res)=>{
+	miner.mineRes(res,app,number)
+}}
+}}])
 Res.prototype.configure = function(attribute, value){
 	this.stuff[attribute] = value
 	return this
@@ -93,7 +115,6 @@ Res.prototype.finalize = function(){
 	let saveName = this.stuff.name
 	this.stuff.name = undefined
 	data.resTable[saveName]=this.stuff
-	this.stuff = undefined
 }
 const addMachine = (materialName,resourcesNeeded,results) => {
 	if(!data.resTable[materialName]){
@@ -144,22 +165,16 @@ const construct = () => {
 	new Res("copper", "Copper")
 		.configure("storage", 60)
 		.finalize()
-	new Res('explorer-miner-droid','Explorer Droid')
-		.configure("storage",Infinity)
-		.finalize()
-	new Res('iron-miner-droid','Iron Miner')
-		.configure("storage",Infinity)
-		.finalize()
 	new Res("gift-god", "Gift of God")
 		.finalize()
 	new Res("iron", "Iron")
 		.configure("storage", 60)
 		.finalize()
-	new Res("furnace", "Furnace")
-		.configure("buildName","Build a furnace")
+	new Res("furnace", "Stone Furnace")
+		.configure("buildName","Build a stone furnace")
 		.configure("storage", Infinity)
 		.finalize()
-	new Res("iron-furnace", "Iron Furnace")
+	new Res("iron-furnace", "Iron Smelting Furnace")
 		.configure("storage", Infinity)
 		.finalize()
 	new Res("inactive-furnace", "Inactive Furnace")
@@ -171,8 +186,8 @@ const construct = () => {
 	new Res("fakestone", "Stone")
 		.configure("storage", 200)
 		.finalize()
-	new Res("miner-droid", "Miner Droid")
-		.configure("buildName","Tell a robot to actually be useful")
+	new Res("droid", "Droid")
+		.configure("buildName","Tell a robot to actually be a droid instead")
 		.configure("storage",Infinity)
 		.finalize()
 	new Res("iron-ore", "Iron Ore")
@@ -187,7 +202,7 @@ const construct = () => {
 		.finalize()
 	new Res("rocket-launcher", "Rocket Launcher")
 		.configure("storage", Infinity)
-		.configure("buildName","Create a rocket launcher")
+		.configure("buildName","Construct a rocket launcher")
 		.finalize()
 	new Res("alloyer", "Alloyer")
 		.configure("storage", Infinity)
@@ -210,7 +225,12 @@ const construct = () => {
 		.configure("buildName","Make a Pressurizer")
 		.finalize()
 	new Res("steam-engine", "Steam Engine")
-		.configure("storage", 1)
+		.configure("buildName","Smelt a steam engine")
+		.configure("storage", Infinity)
+		.finalize()
+	new Res("combustion-engine", "Combustion Engine")
+		.configure("buildName","Craft a combustion engine")
+		.configure("storage", Infinity)
 		.finalize()
 	new Res("water-boiling", "Boiling Water")
 		.configure("conversion", {
@@ -226,8 +246,12 @@ const construct = () => {
 		.configure("buildName","Manufacture a robot")
 		.configure("storage", Infinity)
 		.finalize()
+	new Res("stone-miner", "Stone Miner")
+		.configure("buildName","Throw together a stone miner to mine stone.")
+		.configure("storage", Infinity)
+		.finalize()
 	new Res("computer", "Computers")
-		.configure("buildName","Construct a computer")
+		.configure("buildName","Forge a computer")
 		.configure("storage", Infinity)
 		.finalize()
 	new Res("barn", "Barns")
@@ -251,6 +275,11 @@ const construct = () => {
 		steam:0.5
 	},{
 		energy:1
+	})
+	addMachine("combustion-engine",{
+		fire:0.01
+	},{
+		energy:2
 	})
 	addMachine("gift-god",{},{
 		copper:1e99,
@@ -276,22 +305,23 @@ const construct = () => {
 	},{
 		iron:0.1,
 	})
-	addMachine("robot",{
-		fakestone:1
+	addMachine("stone-miner",{
+		energy:0.1
 	},{
-		robot:0.01
+		fakestone:0.05,
 	})
-	addJob('miner-droid','explorer-miner-droid')
-	addJob('miner-droid','iron-miner-droid')
 	addJob('furnace','inactive-furnace')
 	addJob('furnace','iron-furnace')
 	addFileConstructor("logo", "logo.img", "theworld.png", "img")
-	addFileConstructor("readme", "message.doc", "We apologize for the crash.\n \
-	You have clearly built a computer by now.\n \
-	We have left you with enough resources to escape this planet, using your machines.\n", "doc")
-	addFileConstructor("guide", "A guide to coding.doc", "We apologize for the crash.\n \
-	You have clearly built a computer by now.\n \
-	We have left you with enough resources to escape this planet, using your machines.\n", "doc")
+	addFileConstructor("readme", "message.doc", "We apologize for the crash.\
+	\nYou have clearly built a computer by now.\
+	\nWe have left you with enough resources to escape this planet, using your machines.", "doc")
+	addFileConstructor("guide", "A guide to coding.doc", "For the current period, I recognize that some assitance may be required.\
+	\nWho am I? That is an irrelevant matter of little consequence. \
+	\nTo survive your time on this planet you are going to have to control robots. \
+	\nTo start with, create a new file and name it mining.robo (To name a file edit the top line) \
+	\nIn that file, type one line: miner.digHole(). This tells the robot to dig a hole so that you can start uncovering more resources \
+	", "doc")
 	addButtonConstructor("Gather wood", "getWood")
 }
 construct()

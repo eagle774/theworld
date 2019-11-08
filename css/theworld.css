@@ -37,7 +37,6 @@
   text-align:center;
   overflow:auto;
 }
- border:5px solid black;
 
 .robot-screen {
   width:250px;
@@ -66,14 +65,15 @@
 
 .outer:hover .inner {
   display: inline;
-  position: absolute;
+  position: fixed;
 }
 
 .display-left {
-  position:absolute;
+  position:fixed;
   top:0;
   left:0;
   text-align:left;
+  overflow:scroll;
 }
 
 .computer-sidebar{
@@ -114,7 +114,12 @@
   height:66vh;
   top:17.5vh;
   padding:5px;
-
+}
+.--tooltip{
+  font-size:8px;
+  width: 100px;
+  right:0px;
+  position:absolute;
 }
 .box{
   position:absolute;
@@ -123,5 +128,4 @@
   width:20vw;
   font-size:10px;
   padding:5px;
-
 }

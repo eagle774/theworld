@@ -14,11 +14,9 @@
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="app" tabindex="0">
  <span v-for="curTab in tabs" :key=curTab.displayText v-on:click="tab=curTab.tab"><button class="btn btn-outline-danger" v-if="curTab.tab == tab">{{curTab.displayText}}</button><button class="btn btn-outline-success" v-else>{{curTab.displayText}}</button></span>
- <span style="text-align:right">
- </span>
 <div class="display-left">
       <div v-for="resource in unlockedResources" :key="resource">
-        {{resTable[resource].screenName}}: {{Math.round(resTable[resource].amount*100)/100}}/{{resTable[resource].storage}} ({{resTable[resource].extraPerTick.toFixed(3)}}/tick)
+        {{resTable[resource].screenName}}: {{bigNumberHandler(resTable[resource].amount)}}/{{bigNumberHandler(resTable[resource].storage)}} ({{bigNumberHandler(resTable[resource].extraPerTick)}}/tick)
       </div>
     </div>
       <div v-for="line in message.split('\n')" :key=line>{{line}}</div>
@@ -26,9 +24,21 @@
         <div v-for="curButton in buttons" :key= curButton.displayText class="outer">
           <button type="button" class="btn btn-outline-success" v-on:click="unSaveable.buttons[curButton.todo]()">{{curButton.displayText}}</button>
         </div>
-        <div v-for="curBuilding in buildings" :key= curBuilding.displayText>
-          <div class="outer"><button type="button" class="btn btn-outline-success" v-on:click="buyBuilding(curBuilding.buildingName)">{{curBuilding.displayText}} ({{Math.round(resTable[curBuilding.buildingName].amount*100)/100}}) </button><span class="inner" >Cost: <br /><span v-for="(value, key) in buildingsList[curBuilding.buildingName]['cost']">{{resTable[key].screenName}}: {{value*resTable[curBuilding.buildingName]["multiplier"]}}<br /></span><br /></span></div>
-        </div>
+          <div v-for="entry in Object.entries(buildings)" :key = 'entry[0]'>
+            <div v-for="curBuilding in entry[1]" :key= 'curBuilding.displayText'>
+              <div class="outer">
+                <button type="button" class="btn btn-outline-success" v-on:click="buyBuilding(curBuilding.buildingName)">{{curBuilding.displayText}} ({{Math.round(resTable[curBuilding.buildingName].amount*100)/100}}) </button>
+                <span class="inner" >
+                  Cost: <br />
+                  <span v-for="(value, key) in buildingsList[curBuilding.buildingName]['cost']">{{resTable[key].screenName}}: {{value*resTable[curBuilding.buildingName]["multiplier"]}}<br /></span>
+                  <span class = "--tooltip" v-if="buildingsList[curBuilding.buildingName]['tooltip']">
+                    {{buildingsList[curBuilding.buildingName]['tooltip']}}
+                  </span>
+                  <br />
+                </span>
+              </div>
+            </div>
+          </div>
         <div v-for="curProcess in processes" :key= curProcess.displayText>
           <div class="outer"><button type="button" class="btn btn-outline-success" v-on:click="buyBuilding(curProcess.buildingName)">{{curProcess.displayText}}  </button><span class="inner" >Cost: <br /><span v-for="(value, key) in buildingsList[curProcess.buildingName]['cost']">{{resTable[key].screenName}}: {{value}}<br /></span><br /></span></div>
         </div>
@@ -45,12 +55,12 @@
 				      <p class='list-item computer-sidebar'>
                 <span v-for="curFile in files" :key="curFile.fileID">
                   <button class="list-group-item list-group-item-action active small-text" v-if="fileViewed==curFile.fileID">{{curFile.screenName}}</button>
-                  <button class="list-group-item list-group-item-action small-text" v-else v-on:click="setState({curFileType:curFile.type,fileViewed:curFile.fileID,cursorX:0,cursorY:0})">{{curFile.screenName}}</button>
+                  <button class="list-group-item list-group-item-action small-text" v-else v-on:click="curFileType=curFile.type;fileViewed=curFile.fileID;cursorX=0;cursorY=0">{{curFile.screenName}}</button>
                 </span>
 					     <button  class="list-group-item list-group-item-action small-text" v-on:click='addFile(files.length,"untitledfile.doc ")'>Make a file</button>
              </p>
-             <span v-if="fileContents[fileViewed] && curFileType == 'doc'" class="txt-file">
-               <span v-for="line in fileContents[fileViewed].split('\n')" :key="line" :style="{'text-align':'left'}">{{line}} <br /></span>
+             <span v-if="fileContents[fileViewed] && curFileType == 'doc'" >
+               <pre v-for="(line, index) in fileContents[fileViewed].split('\n')" :key="line" class="computerCode" :style='{"top":(index*2)+"vh","marginBottom":"0px"}' :style="{'text-align':'left','display': 'inline'}">{{line}} <br /></pre>
              </span>
              <span v-else-if="fileContents[fileViewed] && curFileType == 'img'">
                <img :src="'images/'+fileContents[fileViewed]" class="img-file" />
@@ -62,7 +72,6 @@
                    <pre :style='{display:"inline"}'>{{line.slice(0,cursorX)}}</pre><pre id='curLine' :style="{'backgroundColor': 'blue',display:'inline'}">{{line[cursorX]==' '?'&nbsp;':line[cursorX]}}</pre><pre :style="{display:'inline'}">{{line.slice(cursorX+1,line.length)[0]==' '?'&nbsp;'+line.slice(cursorX+2,line.length):line.slice(cursorX+1,line.length)}}</pre>
                  </span>
                </div>
-               <button class="btn btn-outline-warning" v-on:click='parseCode(fileTextContents[fileViewed].slice(1))'>Parse Code</button>
              </span>
            </span>
 			  </span>
@@ -71,13 +80,13 @@
         <span v-if="true">
           <span class="uncoveredResources">
             Uncovered resources
-            <div v-for='(datum,resource) in planets["Earth"]'>
+            <div v-for='(datum,resource) in planets["total"]'>
               <span v-if='resource!="progress" && (datum>0|| unlockedResources.includes(resource))'>
-                {{resTable[resource].screenName}} - {{datum}}
+                {{resTable[resource].screenName}} - {{bigNumberHandler(datum)}}
               </span>
             </div>
           </span>
-          <div>Progress: {{planets['Earth'].progress.toFixed(2)}}/10000</div>
+          <div>Progress: {{mining['Earth'].progress.toFixed(2)}}/1000</div>
         </span>
       </span>
       <span v-if="tab == 'jobs'">
@@ -93,6 +102,23 @@
             <br />
           </span>
         </div>
+      </span>
+      <span v-if="tab == 'scripts'">
+        <div v-for="extension in unSaveable.extensions" :key = 'extension[0]' v-if='Object.entries(scripts[extension[0]]).length>0'>
+          {{extension[1]}}
+          <div v-for="(script,key) in scripts[extension[0]]">
+            {{script.screenName}}: {{script.percent}}
+            <button v-on:click='assignScript(extension[0],script.screenName,1)'>+1%</button>
+            <button v-on:click='assignScript(extension[0],script.screenName,5)'>+5%</button>
+            <button v-on:click='assignScript(extension[0],script.screenName,100)'>+all</button>
+            <button v-on:click='assignScript(extension[0],script.screenName,-1)'>-1%</button>
+            <button v-on:click='assignScript(extension[0],script.screenName,-5)'>-5%</button>
+            <button v-on:click='assignScript(extension[0],script.screenName,-100)'>-all</button>
+          </div>
+        </div>
+      </span>
+      <span v-if="tab == 'adaptations'">
+
       </span>
       <span v-if="tab == 'robot'">
         <button class="btn btn-success" v-on:click="newGrid()">Generate new grid.</button>
@@ -110,6 +136,7 @@
   <script src="code/data/entities.js"></script>
   <script src="code/util/saving.js"></script>
   <script src="code/util/massProduction.js"></script>
+  <script src="code/util/largeNumbers.js"></script>
   <script src="code/randomness/randomDistribution.js"></script>
   <script src="code/randomness/planetCreator.js"></script>
   <script src="code/bases/keyBindings.js"></script>

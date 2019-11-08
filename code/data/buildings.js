@@ -7,13 +7,35 @@ let buildingsData = {
     },
     "effects": [
       {"funcName":"configureResource","args":['fire','gettable','true']}
-    ]
+    ],
+		"tooltip":"Don't touch it.",
+    'category':'Utility'
+  },
+  "steam-engine": {
+    "type":"building",
+    "cost": {
+      "iron": 10,
+      "copper": 5
+    },
+		"tooltip":"No need for small electric poles",
+    'category':'Energy'
+  },
+  "combustion-engine": {
+    "type":"building",
+    "cost": {
+      "iron": 20,
+      "copper": 20
+    },
+		"tooltip":"Burn fire in a fire burning machine",
+    'category':'Energy'
   },
   "bucket": {
     "type":"building",
     "cost": {
       "wood": 5
-    }
+    },
+		"tooltip":"Full of holes.",
+    'category':'Utility'
   },
   "barn": {
     "type":"building",
@@ -25,7 +47,9 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['iron','storage',20]},
       {"funcName":"incrementResourceSpecial","args":['copper','storage',20]},
       {"funcName":"incrementResourceSpecial","args":['fakestone','storage',100]},
-    ]
+    ],
+		"tooltip":"Big enough to store resources",
+    'category':'Storage'
   },
   "robot": {
     "type":"building",
@@ -35,7 +59,9 @@ let buildingsData = {
     },
     "effects":[
       {'funcName':'addTab','args':['Robot','robot',true]}
-    ]
+    ],
+		"tooltip":"Dormant",
+    'category':'Technical'
   },
   "bucket-water": {
     "type":"building",
@@ -44,7 +70,9 @@ let buildingsData = {
     },
     "effects": [
       {"funcName":"configureResource","args":['bucket-water','gettable','true']}
-    ]
+    ],
+		"tooltip":"Why doesn't this leak?",
+    'category':'Utility'
   },
   "spit": {
     "type":"building",
@@ -54,7 +82,9 @@ let buildingsData = {
     },
     "effects": [
       {"funcName":"configureResource","args":['spit','gettable','true']}
-    ]
+    ],
+		"tooltip":"What's the bucket for?",
+    'category':'Utility'
   },
   "hangbucket": {
     "type":"process",
@@ -84,16 +114,30 @@ let buildingsData = {
     },
     "effects":[
       {'funcName':'addTab','args':['Computer','computer',true]}
-    ]
+    ],
+		"tooltip":"This takes a suprisingly small amount of resources",
+    'category':'Technical'
   },
-  "miner-droid": {
+  "droid": {
     "type":"building",
     "cost": {
       "robot": 1
     },
     "effects":[
-      {'funcName':'addTab','args':['Mining','mining',true]}
-    ]
+      {'funcName':'addTab','args':['Mining','mining',true]},
+      {'funcName':'addTab','args':['Scripts','scripts',true]}
+    ],
+    'category':'Technical'
+  },
+  "stone-miner": {
+    "type":"building",
+    "cost": {
+      "fakestone": 10,
+      'iron':2,
+      'copper':2
+    },
+		"tooltip":"Mine stone to make a stone miner to mine stone",
+    'category':'Technical'
   },
   "furnace": {
     "type":"building",
@@ -102,7 +146,9 @@ let buildingsData = {
     },
     "effects":[
       {'funcName':'addTab','args':['Jobs','jobs',true]}
-    ]
+    ],
+		"tooltip":"Watch out for that inserter",
+    'category':'Metal Machine'
   },
   "adaptation-chamber": {
     "type":"building",
@@ -114,7 +160,8 @@ let buildingsData = {
     },
     "effects":[
       {'funcName':'addTab','args':['Adaptations','adaptation',true]}
-    ]
+    ],
+    'category':'Special'
   },
   "pressurizer": {
     "type":"building",
@@ -123,7 +170,8 @@ let buildingsData = {
       "iron":1000,
       "copper":200,
       "computer":10
-    }
+    },
+    'category':'Metal Machine'
   },
   "rocket-launcher": {
     "type":"building",
@@ -135,7 +183,8 @@ let buildingsData = {
     },
     "effects":[
       {'funcName':'addTab','args':['Adaptations','adaptation',true]}
-    ]
+    ],
+    'category':'Special'
   },
   "alloyer": {
     "type":"building",
@@ -144,7 +193,8 @@ let buildingsData = {
       "iron":200,
       "copper":200,
       "computer":10
-    }
+    },
+    'category':'Metal Machine'
   },
   "cooler": {
     "type":"building",
@@ -153,7 +203,8 @@ let buildingsData = {
       "iron":200,
       "copper":200,
       "computer":10
-    }
+    },
+    'category':'Metal Machine'
   },
   "melter": {
     "type":"building",
@@ -165,7 +216,8 @@ let buildingsData = {
     },
     "effects":[
       {'funcName':'addTab','args':['Adaptations','adaptation',true]}
-    ]
+    ],
+    'category':'Metal Machine'
   },
   "gemstone-slicer": {
     "type":"building",
@@ -174,6 +226,7 @@ let buildingsData = {
       "iron":200,
       "copper":200,
       "computer":10
-    }
+    },
+    'category':'Gem Machine'
   },
 }

@@ -2,12 +2,6 @@ let App = new Vue({
 	el: '#app',
 	data: data,
 	methods: {
-    //util-deprecated
-		setState: function(newstate) {
-			for (const [key, value] of Object.entries(newstate)) {
-				this[key] = value
-			}
-		},
 		//addstuff
 		configureResource: function(resource, attribute, value) {
 			if(this.resTable[resource]){
@@ -17,32 +11,31 @@ let App = new Vue({
 			}
 		},
 		addButton: function(displayText, todo) {
-			let buttons = this.buttons
-			buttons.push({
+			this.buttons.push({
 				displayText,
 				todo
-			})
-			this.setState({
-				buttons
 			})
 		},
 		addBuilding: function(displayText, buildingName) {
 			let buildings = this.buildings
 			let exists=false
-			for(let i=0;i<buildings.length;i++){
-				if(buildings[i].displayText==displayText){
-					exists=true
+			for(const [key,value] of Object.entries(buildings)){
+				for(let i=0;i<value.length;i++){
+					if(value[i].displayText==displayText){
+						exists=true
+					}
 				}
 			}
 			if(!exists){
-				buildings.push({
+				if(!buildings[this.buildingsList[buildingName].category]){
+					this.$set(this.buildings,this.buildingsList[buildingName].category,[])
+				}
+				buildings[this.buildingsList[buildingName].category].push({
 					displayText,
 					buildingName
 				})
 			}
-			this.setState({
-				buildings
-			})
+			this.buildings=buildings
 		},
 		addTab: function(displayText, tab,common=false) {
 			for (let i = 0; i < this.tabs.length; i++) {
@@ -58,9 +51,7 @@ let App = new Vue({
 				displayText,
 				tab
 			})
-			this.setState({
-				tabs
-			})
+			this.tabs = tabs
 		},
 		addProcess: function(displayText, buildingName) {
 			let buildings = this.processes
@@ -76,9 +67,7 @@ let App = new Vue({
 					buildingName
 				})
 			}
-			this.setState({
-				processes: buildings
-			})
+			this.processes=buildings
 		},
 		addVisibleResource: function(resource,everyTick=false) {
 			if (!this.unlockedResources.includes(resource)) {
@@ -100,10 +89,8 @@ let App = new Vue({
 				fileID: name
 			})
 			fileTextContents[name] = [sname]
-			this.setState({
-				files,
-				fileTextContents
-			})
+			this.files=files
+			this.fileTextContents =	fileTextContents
 		},
 		addStringToFileAtCursor: function(string) {
 			if (this.fileTextContents[this.fileViewed] === undefined || this.tab!='computer') return false;
@@ -120,12 +107,11 @@ let App = new Vue({
 			let start = this.getPointsUpToString(0, x, saveLine)
 			let end = this.getPointsUpToString(x, saveLine.length, saveLine)
 			filecs[this.fileViewed][y] = start + string + end
-			this.setState({
-				fileTextContents: filecs
-			})
+			this.fileTextContents=filecs
 			this.moveCursor(1, 0)
       if(y==0){
         this.files[this.fileViewed].screenName=file[y]
+				this.updateScripts()
       }
 			this.computerChanged=2
 			return true;
@@ -159,14 +145,10 @@ let App = new Vue({
 				newX = x + mx
 			}
 			if (my !== 0) {
-				this.setState({
-					cursorX: newX,
-					cursorY: newY
-				})
+				this.cursorX=newX
+				this.cursorY=newY
 			} else {
-				this.setState({
-					cursorX: newX
-				})
+				this.cursorX=newX
 			}
 
 		  this.computerChanged=2
@@ -180,11 +162,9 @@ let App = new Vue({
 			let y = this.cursorY
 			file.splice(y + 1, 0, " ")
 			filecs[this.fileViewed] = file
-			this.setState({
-				fileTextContents: filecs,
-				cursorX: 0,
-				cursorY: y + 1
-			})
+			this.fileTextContents=filecs
+			this.cursorX=0
+			this.cursorY=y + 1
 			this.computerChanged=2
 			return true
 		},
@@ -195,6 +175,9 @@ let App = new Vue({
         let x = this.cursorX
         let y = this.cursorY
         let saveLine = file[y]
+				if(y==0){
+					this.updateScripts()
+				}
 				if(x+pos>saveLine.length-2)return false
         if (saveLine === " " && y!=0) {
           this.moveCursor(pos,0)
@@ -230,6 +213,78 @@ let App = new Vue({
 				this.computerChanged=2
     },
 		parseCode:parseCode,
+		//scripts
+		getScripts: function(extension){
+			files=[]
+			if(extension[0]!='.'){
+				return 'Invalid extension'
+			}
+			for(let i=0;i<this.files.length;i++){
+				file = this.files[i]
+				if(file.screenName.slice(file.screenName.length-extension.length-1,file.screenName.length-1)==extension){
+					files.push(this.files[i])
+				}
+			}
+			return files
+		},
+		updateScripts: function(){
+			for(extension of this.unSaveable.extensions){
+				scripts = this.getScripts(extension[0])
+				for(const [key,script] of Object.entries(this.scripts[extension[0]])){
+					if(key!=script.screenName){
+						delete this.scripts[extension[0]][key]
+					}
+				}
+				for(file of scripts){
+					if(!this.scripts[extension[0]]){
+						this.$set(this.scripts,extension[0],{})
+					}
+					this.scripts[extension[0]][file.screenName]=file
+					part = this.scripts[extension[0]][file.screenName]
+					if(!part.percent){
+						part.percent=0
+					}
+				}
+			}
+		},
+		allocateItems: function(amount,percentDict){
+			percents = []
+			results = []
+			totPercent = sum = 0
+			best = 0
+			bestNum = -1
+			for(const [key,value] of Object.entries(percentDict)){
+				percents.push(value.percent)
+				results.push(0)
+				if(value.percent>bestNum){
+					bestNum = value.percent
+					best = results.length-1
+				}
+			}
+			for(let i=0;i<percents.length;i++){
+				totPercent += percents[i]
+			}
+			for(let i=0;i<percents.length;i++){
+				results[i] = Math.floor(amount*(percents[i]/100))
+				sum+=Math.floor(amount*(percents[i]/100))
+			}
+			left = Math.floor((amount*totPercent/100-sum))
+			if(left ==1){
+				results[best]+=1
+			}
+			return results
+		},
+		assignScript: function(type,scriptName,amount){
+			percentLeft = 100
+			for(const [key,script] of Object.entries(this.scripts[type])){
+				percentLeft -= script.percent
+			}
+			if(amount>0){
+				this.scripts[type][scriptName].percent+=Math.min(percentLeft,amount)
+			}else{
+				this.scripts[type][scriptName].percent=Math.max(0,this.scripts[type][scriptName].percent+amount)
+			}
+		},
 		//saving
 		saveGame: function(){
 			let save={}
@@ -279,11 +334,7 @@ let App = new Vue({
 		},
 		//utility
 		configureButton: function(index, thing, value) {
-			let buttons = this.buttons
-			buttons[index][thing] = value
-			this.setState({
-				buttons
-			})
+			this.buttons[index][thing] = value
 		},
 		getPointsUpToString: function(start, end, array) {
 			let returnVal = ""
@@ -292,6 +343,7 @@ let App = new Vue({
 			}
 			return returnVal
 		},
+		bigNumberHandler: bigNumberHandler,
 		getBuildingCostText: function(building) {
 			let string = "Cost:"
 			for (const [key, value] of Object.entries(buildings[building]["cost"])) {
@@ -311,16 +363,12 @@ let App = new Vue({
 			if (!this.unlockedResources.includes("fs")) {
 				this.addVisibleResource("fs")
 				this.incrementResource("fs", 1)
-				this.setState({
-					message: "While searching for a place to store your wood you stumble across some flint and steel."
-				})
+				this.message="While searching for a place to store your wood you stumble across some flint and steel."
 				this.addBuilding("Light a fire", "fire")
 				this.configureButton(1, "displayText", "Explore (Locked)")
 			} else if (!this.unlockedResources.includes("bucket") && this.resTable["fire"].gettable) {
 				this.addBuilding("Make a bucket", "bucket")
-				this.setState({
-					message: "You find a river. You could catch fish there with the right equipment."
-				})
+				this.message="You find a river. You could catch fish there with the right equipment."
 				this.addVisibleResource("bucket")
 				this.configureButton(1, "displayText", "Explore (Locked)")
 			} else if (!this.unlockedResources.includes("steam-engine") && this.resTable["steam-engine"].gettable) {
@@ -330,9 +378,7 @@ let App = new Vue({
 				this.addVisibleResource("computer")
 				this.incrementResource("computer-disk", 1)
 				this.configureButton(1, "displayText", "Explore (Locked)")
-				this.setState({
-					message: "In the cave you find an assortment of stone,\na rusted steam engine, blueprints for a computer\nand a computer disk."
-				})
+				this.message="In the cave you find an assortment of stone,\na rusted steam engine, blueprints for a computer\nand a computer disk."
 				this.addButton("Mine stone", 'mineStone')
 			}
 		},
@@ -352,10 +398,8 @@ let App = new Vue({
 			this.addVisibleResource(res,true)
 		},
 		insertDisk: function() {
-			this.setState({
-				insertedDisk: true,
-				computerOpaque: true
-			})
+			this.insertedDisk=true
+			this.computerOpaque=true
 			this.incrementResource("computer-disk", -1)
 		},
 		buyBuilding: function(buildingName) {
@@ -382,9 +426,7 @@ let App = new Vue({
 						table[buildingName].amount += 1
 						if (buildingName === "fire") {
 							if (table[buildingName].gettable === false) {
-								this.setState({
-									message: "Have to keep the fire warm. It offers hope"
-								})
+								this.message="Have to keep the fire warm. It offers hope"
 								this.configureButton(1, "displayText", "Explore for food")
 							}
 						}
@@ -412,9 +454,7 @@ let App = new Vue({
 					}
 				}
 			}
-			this.setState({
-				resTable: table
-			})
+			this.resTable  = table
 		},
 		//gametick
 		incrementResource: function(res, amount) {
@@ -533,17 +573,33 @@ let App = new Vue({
 					this.addProcess(this.buildingsList[key].buildName,key)
 				}
       }
-			for(const [key,value] of Object.entries(this.planets)){
-				value['progress']+=this.resTable['explorer-miner-droid'].amount/Object.keys(this.planets).length
-				if(value['progress']>10000){
-					value['progress']-=10000
-					resources=this.mining[key].mineAtDepth(200)
-					this.planets['Earth'][resources[1]]+=resources[0]
-				}
-			}
 			if(this.errorLog.length>0){
 				console.log(this.errorLog)
 				this.errorLog=[]
+			}
+			for(extension of this.unSaveable.extensions){
+				scripts = this.scripts[extension[0]]
+				allocated = this.allocateItems(this.resTable[extension[2]].amount,scripts)
+				entries = Object.entries(scripts)
+				for(let i=0;i<entries.length;i++){
+					funcs = extension[3](this,allocated[i])
+					try{
+						parseCode(this.fileTextContents[entries[i][1].fileID].slice(1),{},funcs)
+					}
+					catch(err){
+						
+					}
+				}
+			}
+		},
+		mine: function(amount,depth) {
+			for(const [key,value] of Object.entries(this.mining)){
+				value['progress']+=amount/Object.keys(this.mining).length
+				while(value['progress']>1000){
+					value['progress']-=1000
+					resources=value.mineAtDepth(depth)
+					this.planets['total'][resources[1]]+=resources[0]
+				}
 			}
 		},
 		//jobs

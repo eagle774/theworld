@@ -4,6 +4,7 @@ class Mine extends Saveable{
     if(this.isNotFake()){
       this.resources={}
       this.planetRadius=planetRadius
+      this.progress = 0
       this.modifiers=modifiers
       for(let key of resources){
         this.resources[key]={
@@ -52,7 +53,6 @@ class Mine extends Saveable{
     }
     return 1
   }
-
 }
 
 registerClass('miner',Mine)

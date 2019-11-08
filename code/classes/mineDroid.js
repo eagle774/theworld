@@ -1,25 +1,28 @@
 class MinerDroid extends Saveable{
   constructor(){
     super(2)
-    if(this.isNotFake()){
-      this.hole=0
-      this.energy=20
-    }
+    this.acted = false
   }
-  mineAtDepth(depth,mine){
-    if(this.hole>=depth && this.energy>10){
-      this.energy-=10
-      return mine.mineAtDepth(depth)
+  mineAtDepth(number,depth,app){
+    if(app.hole>=depth && !this.acted){
+      this.acted=true
+      return app.mine(number,depth)
     }
     return ['fakestone',0]
   }
-  mineResource(res,App,mine){
-    if(App.planets[mine].amount>=1){
-      App.planets[mine].amount-=1
-      App.resTable[resource].amount+=1
+  mineResource(res,app,amount){
+    if(app.planets['total'].amount>=amount && !this.acted){
+      app.planets['total'].amount-=amount
+      app.resTable[resource].amount+=amount
+      this.acted = true
     }
+  }
+  incHole(num,app){
+    app.hole+=num
+  }
+  reset(){
+    this.acted=false
   }
 }
 
 registerClass('minerdroid',MinerDroid)
-mine = new Mine(1, ['iron-ore','fakestone'], {'iron-ore':{},'fakestone':{}})
