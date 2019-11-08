@@ -127,7 +127,8 @@ let buildingsData = {
       {'funcName':'addTab','args':['Mining','mining',true]},
       {'funcName':'addTab','args':['Scripts','scripts',true]}
     ],
-    'category':'Technical'
+    'category':'Technical',
+		"tooltip":"Definetely a different thing",
   },
   "stone-miner": {
     "type":"building",

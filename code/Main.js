@@ -587,7 +587,7 @@ let App = new Vue({
 						parseCode(this.fileTextContents[entries[i][1].fileID].slice(1),{},funcs)
 					}
 					catch(err){
-						
+
 					}
 				}
 			}
