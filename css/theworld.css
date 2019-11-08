@@ -74,6 +74,7 @@
   left:0;
   text-align:left;
   overflow:scroll;
+  height:100vh;
 }
 
 .computer-sidebar{
