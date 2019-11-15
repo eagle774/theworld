@@ -12,16 +12,22 @@ addKeyBinding((event) => {
   return false;
 },"moveCursor")
 addKeyBinding((event) => {
-  if (event.key === "Enter") return App.newLine()
+  if (event.key === "Enter") {
+  //  event.preventDefault()
+    return App.newLine()
+  }
   return false
 },"newLine")
 addKeyBinding((event) => {
   if (event.key === "Delete") return App.deletion(0)
   if (event.key === "Backspace") return App.deletion(-1)
 },"deletion")
+addKeyBinding((event) => {
+  if (event.key === "Control") return control = true
+},"ctrl")
 App.unSaveable.buttons.explore=App.explore
 App.unSaveable.buttons.getWood=()=>{App.incrementResourceByHand('wood',1)}
-App.unSaveable.buttons.mineStone=()=>{App.incrementResourceByHand('fakestone',1)}
+App.unSaveable.buttons.mineStone=()=>{App.incrementResourceByHand('stone',1)}
 window.setInterval(App.tick, 100);
 App.loadGame(false)
 App.buildingsList=buildingsData

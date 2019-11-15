@@ -8,17 +8,20 @@ class MinerDroid extends Saveable{
       this.acted=true
       return app.mine(number,depth)
     }
-    return ['fakestone',0]
+    return ['stone',0]
   }
-  mineResource(res,app,amount){
-    if(app.planets['total'].amount>=amount && !this.acted){
-      app.planets['total'].amount-=amount
-      app.resTable[resource].amount+=amount
+  mineRes(res,app,amount){
+    if(!this.acted && app.planets['total'][res]){
+      let reVal = app.incrementResource(res,Math.min(amount,app.planets['total'][res]))
+      app.planets['total'][res]-=reVal
+      if(reVal){
+        app.addVisibleResource(res,true)
+      }
       this.acted = true
     }
   }
   incHole(num,app){
-    app.hole+=num
+    app.hole+=num/10
   }
   reset(){
     this.acted=false

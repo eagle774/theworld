@@ -16,3 +16,10 @@ let encompassingDistribution=(func,holder,args,times,precision=100,method='copyO
     return results
   }
 }
+let summed = (array)=>{
+  summedUp = 0
+  for(const number in array){
+    summedUp+=array[number]
+  }
+  return summedUp==summedUp?summedUp:0
+}

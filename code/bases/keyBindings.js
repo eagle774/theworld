@@ -13,3 +13,5 @@ const addKeyBinding = (toDo,name) => {
 	shortcuts[name]=toDo
 }
 document.addEventListener('keydown', handleKeyDown);
+control = false
+document.addEventListener('keyup', (event)=>{if(event.key == 'Control'){control = false}});

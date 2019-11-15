@@ -1,6 +1,11 @@
 const bigNumberHandler = (number)=>{
   prefixes=['','K','M','B','T','Qa','Qi','Sx','Sp','O','N','De']
   pos=0
+  negative = ''
+  if(number<0){
+    number*=-1
+    negative = '-'
+  }
   if(number == Infinity){
     return number
   }
@@ -8,12 +13,12 @@ const bigNumberHandler = (number)=>{
     number = number/1000
     pos+=1
   }if(pos==0){
-    return (Math.round(number*100000)/100000+'').length>number.toFixed(2).length?number.toFixed(2):(Math.round(number*100000)/100000+'')
+    return negative+(Math.round(number*100000)/100000+'').length>number.toFixed(2).length?number.toFixed(2):(Math.round(number*100000)/100000+'')
   }
-  if(Math.round(number)<10){
-    return number.toFixed('2')+prefixes[pos]
-  }else if(Math.round(number)<100){
-    return number.toFixed('1')+prefixes[pos]
+  if(number.toFixed('2')<10){
+    return negative+number.toFixed('2')+prefixes[pos]
+  }else if(number.toFixed('1')<100){
+    return negative+number.toFixed('1')+prefixes[pos]
   }
-  return Math.round(number)+prefixes[pos]
+  return negative+Math.round(number)+prefixes[pos]
 }

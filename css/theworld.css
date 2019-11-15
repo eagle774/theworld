@@ -32,18 +32,8 @@
   width:60vw;
   height:60vh;
   position:absolute;
-  top:21vh;
+  top:24vh;
   left:20vw;
-  text-align:center;
-  overflow:auto;
-}
-
-.robot-screen {
-  width:250px;
-  height:250px;
-  position:absolute;
-  top:21vh;
-  left: calc(-125px + 50vw);
   text-align:center;
   overflow:auto;
 }
@@ -104,7 +94,7 @@
 .computerCode{
   display:inline;
   position:absolute;
-  left:10vw;
+  left:150px;
   text-align:left;
 }
 

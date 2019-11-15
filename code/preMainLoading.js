@@ -39,8 +39,13 @@ let data = {
 	grid:null,
 	planets:{
 		'total':{
-			'fakestone':5000,
+			'stone':5000,
+			'tungsten-ore':0,
+			'copper-ore':0,
 			'iron-ore':0,
+			'coal':0,
+			'titanium-ore':0,
+			'gold-ore':0,
 			'progress':0,
 		}
 	},
@@ -48,9 +53,14 @@ let data = {
 	jobs:{
 
 	},
+	adaptations:{
+
+	},
 	scripts:{
 
 	},
+	version:'0.0.1',
+	categories:{'Interaction':true,'Processes':true}
 }
 function Res(name,sname){
 	this.stuff={
@@ -118,7 +128,7 @@ Res.prototype.finalize = function(){
 }
 const addMachine = (materialName,resourcesNeeded,results) => {
 	if(!data.resTable[materialName]){
-		new Res(materialName,materialName)
+		new Res(materialName,materialName).finalize()
 		data.warningLog.push('Machine '+materialName+' was added to resTable as it was not previously in there. If that was intentional, ignore this message.')
 	}
 	data.machineStates[materialName] = {
@@ -126,7 +136,8 @@ const addMachine = (materialName,resourcesNeeded,results) => {
   	resourcesRecieved:{
 
   	},
-  	results:results
+  	results:results,
+		multiplier:1
 	}
 	data.machinePriority.push(materialName)
 
@@ -183,7 +194,7 @@ const construct = () => {
 	new Res("coal", "Coal")
 		.configure("storage", 400)
 		.finalize()
-	new Res("fakestone", "Stone")
+	new Res("stone", "Stone")
 		.configure("storage", 200)
 		.finalize()
 	new Res("droid", "Droid")
@@ -191,6 +202,19 @@ const construct = () => {
 		.configure("storage",Infinity)
 		.finalize()
 	new Res("iron-ore", "Iron Ore")
+		.configure("storage", 500)
+		.finalize()
+	new Res("tungsten-ore", "Tungsten Ore")
+		.configure("storage", 50)
+		.finalize()
+	new Res("titanium-ore", "Titanium Ore")
+		.configure("storage", 100)
+		.finalize()
+	new Res("copper-ore", "Copper Ore")
+		.configure("storage", 500)
+		.finalize()
+	new Res("gold-ore", "Gold Ore")
+		.configure("storage", 5)
 		.finalize()
 	new Res("spit", "Spit")
 		.configure("buildName","Create a spit")
@@ -233,9 +257,6 @@ const construct = () => {
 		.configure("storage", Infinity)
 		.finalize()
 	new Res("water-boiling", "Boiling Water")
-		.configure("conversion", {
-			"steam": 1
-		})
 		.configure("storage", Infinity)
 		.finalize()
 	new Res("bucket", "Bucket")
@@ -257,12 +278,23 @@ const construct = () => {
 	new Res("barn", "Barns")
 		.configure("buildName","Complete a barn")
 		.configure("storage", Infinity)
+		.configure("locked", true)
+		.finalize()
+	new Res("incendinary-pile", "Incendinary Pile")
+		.configure("buildName","Dump a bunch of wood in a pile to burn.")
+		.configure("storage", Infinity)
+		.configure("locked", true)
+		.finalize()
+	new Res("solar-panel", "Solar Panel")
+		.configure("buildName","Discover the joys of blue metal plates.")
+		.configure("storage", Infinity)
 		.finalize()
 	new Res("computer-disk", "Computer disk")
 		.configure("storage", Infinity)
 		.finalize()
 	new Res("bucket-water", "Bucket of Water")
 		.configure("buildName","Fill a bucket with water")
+		.configure('storage', Infinity)
 		.finalize()
 	/*
 	data.resTable["steam"].amount=199
@@ -276,14 +308,27 @@ const construct = () => {
 	},{
 		energy:1
 	})
+	addMachine("solar-panel",{},{
+		energy:0.2
+	})
+	addMachine("incendinary-pile",{
+		'incendinary-pile':0.08
+	},{
+		fire:1
+	})
 	addMachine("combustion-engine",{
 		fire:0.01
 	},{
-		energy:2
+		energy:1
+	})
+	addMachine("fire",{
+		'water-boiling':0.1
+	},{
+		'steam':0.1
 	})
 	addMachine("gift-god",{},{
 		copper:1e99,
-		fakestone:1e99,
+		stone:1e99,
 		iron:1e99,
 		coal:1e99,
 		energy:1e99,
@@ -294,7 +339,7 @@ const construct = () => {
 	},{})
 	addMachine("furnace",{
 		fire:0.01,
-		fakestone:0.1
+	  stone:0.1
 	},{
 		iron:0.01,
 		copper:0.01,
@@ -308,7 +353,7 @@ const construct = () => {
 	addMachine("stone-miner",{
 		energy:0.1
 	},{
-		fakestone:0.05,
+		stone:0.05,
 	})
 	addJob('furnace','inactive-furnace')
 	addJob('furnace','iron-furnace')

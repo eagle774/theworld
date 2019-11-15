@@ -46,7 +46,7 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['wood','storage',50]},
       {"funcName":"incrementResourceSpecial","args":['iron','storage',20]},
       {"funcName":"incrementResourceSpecial","args":['copper','storage',20]},
-      {"funcName":"incrementResourceSpecial","args":['fakestone','storage',100]},
+      {"funcName":"incrementResourceSpecial","args":['stone','storage',100]},
     ],
 		"tooltip":"Big enough to store resources",
     'category':'Storage'
@@ -133,7 +133,7 @@ let buildingsData = {
   "stone-miner": {
     "type":"building",
     "cost": {
-      "fakestone": 10,
+      "stone": 10,
       'iron':2,
       'copper':2
     },
@@ -143,7 +143,7 @@ let buildingsData = {
   "furnace": {
     "type":"building",
     "cost": {
-      "fakestone": 20
+      "stone": 20
     },
     "effects":[
       {'funcName':'addTab','args':['Jobs','jobs',true]}
@@ -154,7 +154,7 @@ let buildingsData = {
   "adaptation-chamber": {
     "type":"building",
     "cost": {
-      "fakestone": 1000,
+      "stone": 1000,
       "iron":200,
       "copper":200,
       "computer":10
@@ -167,7 +167,7 @@ let buildingsData = {
   "pressurizer": {
     "type":"building",
     "cost": {
-      "fakestone": 1000,
+      "stone": 1000,
       "iron":1000,
       "copper":200,
       "computer":10
@@ -177,7 +177,7 @@ let buildingsData = {
   "rocket-launcher": {
     "type":"building",
     "cost": {
-      "fakestone": 1000,
+      "stone": 1000,
       "iron":200,
       "copper":200,
       "computer":10
@@ -187,10 +187,18 @@ let buildingsData = {
     ],
     'category':'Special'
   },
+  "incendinary-pile": {
+    "type":"building",
+    "cost": {
+      "wood": 50
+    },
+    'category':'Utility',
+    'tooltip':'Perform pagan rituals to get them on fire'
+  },
   "alloyer": {
     "type":"building",
     "cost": {
-      "fakestone": 1000,
+      "stone": 1000,
       "iron":200,
       "copper":200,
       "computer":10
@@ -200,7 +208,7 @@ let buildingsData = {
   "cooler": {
     "type":"building",
     "cost": {
-      "fakestone": 1000,
+      "stone": 1000,
       "iron":200,
       "copper":200,
       "computer":10
@@ -210,7 +218,7 @@ let buildingsData = {
   "melter": {
     "type":"building",
     "cost": {
-      "fakestone": 1000,
+      "stone": 1000,
       "iron":200,
       "copper":200,
       "computer":10
@@ -220,14 +228,13 @@ let buildingsData = {
     ],
     'category':'Metal Machine'
   },
-  "gemstone-slicer": {
+  "solar-panel": {
     "type":"building",
     "cost": {
-      "fakestone": 1000,
-      "iron":200,
-      "copper":200,
-      "computer":10
+      "iron":40,
+      "copper":40
     },
-    'category':'Gem Machine'
+    'tooltip':'Hopefully I can find a use for them.',
+    'category':'Energy'
   },
 }

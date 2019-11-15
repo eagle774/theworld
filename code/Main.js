@@ -34,6 +34,9 @@ let App = new Vue({
 					displayText,
 					buildingName
 				})
+				if(!Object.keys(this.categories).includes(this.buildingsList[buildingName].category)){
+					this.categories[this.buildingsList[buildingName].category]=true
+				}
 			}
 			this.buildings=buildings
 		},
@@ -117,7 +120,7 @@ let App = new Vue({
 			return true;
 		},
 		moveCursor: function(mx, my) {
-			if (this.fileTextContents[this.fileViewed] === undefined) return false;
+			if (this.fileTextContents[this.fileViewed] === undefined || this.tab!='computer') return false;
 			let filecs = this.fileTextContents
 			let file = filecs[this.fileViewed]
 			let x = this.cursorX
@@ -155,7 +158,7 @@ let App = new Vue({
 			return true
 		},
 		newLine: function() {
-			if (this.fileTextContents[this.fileViewed] === undefined) return false;
+			if (this.fileTextContents[this.fileViewed] === undefined || this.tab!='computer') return false;
 			let filecs = this.fileTextContents
 			let file = filecs[this.fileViewed]
 			let x = this.cursorX
@@ -169,7 +172,7 @@ let App = new Vue({
 			return true
 		},
     deletion: function(pos) {
-        if (this.fileTextContents[this.fileViewed] === undefined) return false;
+        if (this.fileTextContents[this.fileViewed] === undefined || this.tab!='computer') return false;
         let filecs = this.fileTextContents
         let file = filecs[this.fileViewed]
         let x = this.cursorX
@@ -247,33 +250,6 @@ let App = new Vue({
 				}
 			}
 		},
-		allocateItems: function(amount,percentDict){
-			percents = []
-			results = []
-			totPercent = sum = 0
-			best = 0
-			bestNum = -1
-			for(const [key,value] of Object.entries(percentDict)){
-				percents.push(value.percent)
-				results.push(0)
-				if(value.percent>bestNum){
-					bestNum = value.percent
-					best = results.length-1
-				}
-			}
-			for(let i=0;i<percents.length;i++){
-				totPercent += percents[i]
-			}
-			for(let i=0;i<percents.length;i++){
-				results[i] = Math.floor(amount*(percents[i]/100))
-				sum+=Math.floor(amount*(percents[i]/100))
-			}
-			left = Math.floor((amount*totPercent/100-sum))
-			if(left ==1){
-				results[best]+=1
-			}
-			return results
-		},
 		assignScript: function(type,scriptName,amount){
 			percentLeft = 100
 			for(const [key,script] of Object.entries(this.scripts[type])){
@@ -303,12 +279,20 @@ let App = new Vue({
 		},
 		loadGame: function(playerMade){
 			if(localStorage['gameSave']){
+				newVersion = this.version ||'0.0.1'
 				save=JSON.parse(localStorage['gameSave'])
 				for(const [key,value] of Object.entries(save.resTable)){
 					if(value.storage==-1){
 						value.storage=Infinity
 					}
 				}
+				for(const [key,value] of Object.entries(this.resTable)){
+					if(!save.resTable[key]){
+						save.resTable[key]=value
+					}
+				}
+				save.machineStates = this.machineStates
+				save.machinePriority = this.machinePriority
 				for(const [key,value] of Object.entries(save.mining)){
 					mineSave = new Mine()
 					mineSave.setData(value)
@@ -320,7 +304,7 @@ let App = new Vue({
 					save.grid = grid
 				}
 				for(const [key,value] of Object.entries(save)){
-					this[key]=value
+					this.$set(this,key,value)
 				}
 			}else if(playerMade){
 				alert('No game to load.')
@@ -344,19 +328,77 @@ let App = new Vue({
 			return returnVal
 		},
 		bigNumberHandler: bigNumberHandler,
-		getBuildingCostText: function(building) {
-			let string = "Cost:"
-			for (const [key, value] of Object.entries(buildings[building]["cost"])) {
-				string = string.concat(this.resTable[key].screenName + ": " + value * this.resTable[building]["multiplier"]);
+		allDictKeysAreInArray: function(dict,array){
+			for(key of Object.keys(dict)){
+				if(!array.includes(key)){
+					return false
+				}
 			}
-			return string;
+			return true
 		},
-		getProcessCostText: function(building) {
-			let string = "Cost:"
-			for (const [key, value] of Object.entries(buildings[building]["cost"])) {
-				string = string.concat(this.resTable[key].screenName + ": " + value);
+		allocateItemsPercent: function(amount,percentDict){
+			percents = []
+			results = []
+			totPercent = sum = 0
+			best = 0
+			bestNum = -1
+			bestNums = [[Infinity,0]]
+			for(const [key,value] of Object.entries(percentDict)){
+				percents.push(value.percent)
+				results.push(0)
+				index=0
+				while(value>bestNums[index][0]){
+					index++
+				}
+				bestNums.splice(index,0,[value,results.length-1])
 			}
-			return string;
+			for(let i=0;i<percents.length;i++){
+				totPercent += percents[i]
+			}
+			for(let i=0;i<percents.length;i++){
+				results[i] = Math.floor(amount*(percents[i]/100))
+				sum+=Math.floor(amount*(percents[i]/100))
+			}
+			left = Math.floor((amount*totPercent/100-sum))
+			index=bestNums.length-2
+			while(left >= 1){
+				results[bestNums[index][1]]++
+				left--
+				index--
+			}
+			return results
+		},
+		allocateItemsRatio: function(amount,ratioArray){
+			percents = []
+			results = []
+			totPercent = sum = 0
+			bestNums = [[Infinity,0]]
+			for(let i=0;i<ratioArray.length;i++){
+				results.push(0)
+				index=0
+				while(ratioArray[i]>bestNums[index][0]){
+					index++
+				}
+				bestNums.splice(index,0,[ratioArray[i],i])
+			}
+			for(let i=0;i<ratioArray.length;i++){
+				totPercent += ratioArray[i]
+			}
+			for(let i=0;i<ratioArray.length;i++){
+				results[i] = Math.floor(amount*(ratioArray[i]/summed(ratioArray)))
+				sum+=Math.floor(amount*(ratioArray[i]/summed(ratioArray)))
+			}
+			left = Math.floor((amount*totPercent/summed(ratioArray)-sum))
+			index=bestNums.length-2
+			while(left >= 1){
+				results[bestNums[index][1]]++
+				left--
+				index--
+			}
+			return results
+		},
+		allTrue: function(array){
+			return false
 		},
 		//player interaction
 		explore: function() {
@@ -377,6 +419,8 @@ let App = new Vue({
 				this.addVisibleResource("computer-disk")
 				this.addVisibleResource("computer")
 				this.incrementResource("computer-disk", 1)
+				this.configureResource('barn', 'locked', false)
+				this.configureResource('incendinary-pile', 'locked', false)
 				this.configureButton(1, "displayText", "Explore (Locked)")
 				this.message="In the cave you find an assortment of stone,\na rusted steam engine, blueprints for a computer\nand a computer disk."
 				this.addButton("Mine stone", 'mineStone')
@@ -401,6 +445,15 @@ let App = new Vue({
 			this.insertedDisk=true
 			this.computerOpaque=true
 			this.incrementResource("computer-disk", -1)
+		},
+		handleBuyBuilding: function(buildingName){
+			if(control){
+				for(let i=0;i<10;i++){
+					this.buyBuilding(buildingName)
+				}
+			}else{
+				this.buyBuilding(buildingName)
+			}
 		},
 		buyBuilding: function(buildingName) {
 			let building = this.buildingsList[buildingName]
@@ -461,16 +514,18 @@ let App = new Vue({
 			let table = this.resTable;
 			if (table[res].storage < amount + table[res].amount) {
 				this.incrementResourceSpecial(res, "extraPerTick", (table[res].storage - table[res].amount))
+				toReturn = table[res].storage - table[res].amount
 				this.configureResource(res, "amount", table[res].storage)
-				return false
+				return toReturn
 			} else if (0 > amount + table[res].amount) {
         this.incrementResourceSpecial(res, "extraPerTick", -1*table[res].amount)
+				toReturn = -1*table[res].amount
 				this.configureResource(res, "amount", 0)
-				return false
+				return toReturn
 			} else {
 				this.incrementResourceSpecial(res, "extraPerTick", amount)
 				this.configureResource(res, "amount", table[res].amount + amount)
-				return true
+				return amount
 			}
 			this.resTable=table
 		},
@@ -489,7 +544,7 @@ let App = new Vue({
 				App.saveGame()
 			}
 			if(this.grid && this.tickCount%1==0){
-				this.grid.tick()
+				this.grid.tick(this)
 			}
 			if (this.insertedDisk && this.computerOpacity < 1) {
 				this.computerOpacity += 1 / 600
@@ -507,22 +562,8 @@ let App = new Vue({
 									this.incrementResourceSpecial(key, "extraPerTick", -1 * value.amount)
 									this.configureResource(key, "amount", 0)
 								} else {
-									if (this.resTable["fire"].amount > 0 || key !== "water-boiling") {
-										this.incrementResource(key2, value2)
-										this.incrementResource(key, -1 * value2)
-										if (!this.unlockedResources.includes(key2)) {
-											this.addVisibleResource(key2,true)
-										}
-									}
-								}
-							} else {
-								if (this.resTable[key].amount - this.resTable[value2.res].amount * value2.multiplier < 0) {
-									this.incrementResource(key2, value.amount)
-									this.incrementResourceSpecial(key, "extraPerTick", -1 * value.amount)
-									this.configureResource(key, "amount", 0)
-								} else {
-									this.incrementResource(key2, this.resTable[value2.res].amount * value2.multiplier)
-									this.incrementResource(key, -1 * this.resTable[value2.res].amount * value2.multiplier)
+									this.incrementResource(key2, value2)
+									this.incrementResource(key, -1 * value2)
 									if (!this.unlockedResources.includes(key2)) {
 										this.addVisibleResource(key2,true)
 									}
@@ -532,32 +573,34 @@ let App = new Vue({
 					}
 				}
 			}
-			if (this.resTable["steam"].amount === 200 && !this.resTable["steam-engine"].gettable) {
+			if (this.resTable["steam"].amount >= 200 && !this.resTable["steam-engine"].gettable) {
 				this.configureResource("steam-engine", "gettable", true)
 				this.configureButton(1, "displayText", "Explore a nearby cave for something to consume this steam.")
 			}
       for(let i=0;i<this.machinePriority.length;i++){
         let machine=this.machineStates[this.machinePriority[i]]
-        machine.disabled=false
+				machine.multiplier = 1
         for(const [key,value] of Object.entries(machine["resourcesNeeded"])){
           if(this.resTable[key].amount<=value*this.resTable[this.machinePriority[i]].amount){
             machine["resourcesRecieved"][key]=0
-            machine.disabled=true
+						machine.multiplier = Math.min(machine.multiplier,this.resTable[key].amount/
+							(value*
+								(this.resTable[this.machinePriority[i]].amount==0?
+									-Infinity:
+									this.resTable[this.machinePriority[i]].amount)))
+            this.incrementResource(key,this.resTable[key].amount*-1)
           }else{
             machine["resourcesRecieved"][key]=value*this.resTable[this.machinePriority[i]].amount
             this.incrementResource(key,-value*this.resTable[this.machinePriority[i]].amount)
           }
         }
-        this.machineStates[this.machinePriority[i]]=machine
-      }
-      for(let i=0;i<this.machinePriority.length;i++){
-        let machine=this.machineStates[this.machinePriority[i]]
-        if(!machine.disabled &&this.resTable[this.machinePriority[i]].amount>0){
+        if(this.resTable[this.machinePriority[i]].amount>0&&machine.multiplier>0){
           for(const [key,value] of Object.entries(machine["results"])){
-            this.incrementResource(key,value*this.resTable[this.machinePriority[i]].amount)
+            this.incrementResource(key,value*this.resTable[this.machinePriority[i]].amount*machine.multiplier)
             this.addVisibleResource(key,true)
           }
         }
+        this.machineStates[this.machinePriority[i]]=machine
       }
 			for (const [key, building] of Object.entries(this.buildingsList)) {
 				let available=true
@@ -579,7 +622,7 @@ let App = new Vue({
 			}
 			for(extension of this.unSaveable.extensions){
 				scripts = this.scripts[extension[0]]
-				allocated = this.allocateItems(this.resTable[extension[2]].amount,scripts)
+				allocated = this.allocateItemsPercent(this.resTable[extension[2]].amount,scripts)
 				entries = Object.entries(scripts)
 				for(let i=0;i<entries.length;i++){
 					funcs = extension[3](this,allocated[i])

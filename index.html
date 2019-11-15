@@ -13,35 +13,46 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="app" tabindex="0">
- <span v-for="curTab in tabs" :key=curTab.displayText v-on:click="tab=curTab.tab"><button class="btn btn-outline-danger" v-if="curTab.tab == tab">{{curTab.displayText}}</button><button class="btn btn-outline-success" v-else>{{curTab.displayText}}</button></span>
-<div class="display-left">
+      <span v-for="curTab in tabs" :key=curTab.displayText v-on:click="tab=curTab.tab"><button class="btn btn-outline-danger" v-if="curTab.tab == tab">{{curTab.displayText}}</button><button class="btn btn-outline-success" v-else>{{curTab.displayText}}</button></span>
+      <div class="display-left">
       <div v-for="resource in unlockedResources" :key="resource">
         {{resTable[resource].screenName}}: {{bigNumberHandler(resTable[resource].amount)}}/{{bigNumberHandler(resTable[resource].storage)}} ({{bigNumberHandler(resTable[resource].extraPerTick)}}/tick)
       </div>
     </div>
       <div v-for="line in message.split('\n')" :key=line>{{line}}</div>
       <span v-if="tab == 'main'">
-        <div v-for="curButton in buttons" :key= curButton.displayText class="outer">
-          <button type="button" class="btn btn-outline-success" v-on:click="unSaveable.buttons[curButton.todo]()">{{curButton.displayText}}</button>
-        </div>
-          <div v-for="entry in Object.entries(buildings)" :key = 'entry[0]'>
-            <div v-for="curBuilding in entry[1]" :key= 'curBuilding.displayText'>
-              <div class="outer">
-                <button type="button" class="btn btn-outline-success" v-on:click="buyBuilding(curBuilding.buildingName)">{{curBuilding.displayText}} ({{Math.round(resTable[curBuilding.buildingName].amount*100)/100}}) </button>
-                <span class="inner" >
-                  Cost: <br />
-                  <span v-for="(value, key) in buildingsList[curBuilding.buildingName]['cost']">{{resTable[key].screenName}}: {{value*resTable[curBuilding.buildingName]["multiplier"]}}<br /></span>
-                  <span class = "--tooltip" v-if="buildingsList[curBuilding.buildingName]['tooltip']">
-                    {{buildingsList[curBuilding.buildingName]['tooltip']}}
-                  </span>
-                  <br />
+        <span v-for = "category in Object.entries(categories)" :key = category[0]>
+          <button v-if='categories[category[0]]' class = "btn btn-outline-success" v-on:click = "categories[category[0]]=!categories[category[0]]">
+            {{category[0]}}
+          </button><button class = "btn btn-outline-danger" v-else v-on:click = "categories[category[0]]=!categories[category[0]]">
+            {{category[0]}}
+          </button>
+        </span>
+        <span v-if='categories["Interaction"]'>
+          <div v-for="curButton in buttons" :key= curButton.displayText class="outer">
+            <button type="button" class="btn btn-outline-success" v-on:click="unSaveable.buttons[curButton.todo]()">{{curButton.displayText}}</button>
+          </div>
+        </span>
+        <span v-if='categories["Processes"]'>
+          <div v-for="curProcess in processes" :key= curProcess.displayText>
+            <div class="outer"><button type="button" class="btn btn-outline-success" v-on:click="handleBuyBuilding(curProcess.buildingName)">{{curProcess.displayText}}  </button><span class="inner" >Cost: <br /><span v-for="(value, key) in buildingsList[curProcess.buildingName]['cost']">{{resTable[key].screenName}}: {{value}}<br /></span><br /></span></div>
+          </div>
+        </span>
+        <div v-for="entry in Object.entries(buildings)"  v-if='categories[entry[0]]':key = 'entry[0]+"aah"'>
+          <div v-for="curBuilding in entry[1]" :key= 'curBuilding.displayText'>
+            <div class="outer">
+              <button type="button" class="btn btn-outline-success" v-on:click="handleBuyBuilding(curBuilding.buildingName)">{{curBuilding.displayText}} ({{Math.round(resTable[curBuilding.buildingName].amount*100)/100}}) </button>
+              <span class="inner" >
+                Cost: <br />
+                <span v-for="(value, key) in buildingsList[curBuilding.buildingName]['cost']">{{resTable[key].screenName}}: {{value*resTable[curBuilding.buildingName]["multiplier"]}}<br /></span>
+                <span class = "--tooltip" v-if="buildingsList[curBuilding.buildingName]['tooltip']">
+                  {{buildingsList[curBuilding.buildingName]['tooltip']}}
                 </span>
-              </div>
+                <br />
+              </span>
             </div>
           </div>
-        <div v-for="curProcess in processes" :key= curProcess.displayText>
-          <div class="outer"><button type="button" class="btn btn-outline-success" v-on:click="buyBuilding(curProcess.buildingName)">{{curProcess.displayText}}  </button><span class="inner" >Cost: <br /><span v-for="(value, key) in buildingsList[curProcess.buildingName]['cost']">{{resTable[key].screenName}}: {{value}}<br /></span><br /></span></div>
-        </div>
+          </div>
       </span>
       <span v-if="tab == 'saving'">
         <button class="btn btn-outline-warning"  v-on:click="saveGame()">Save game</button>
@@ -50,7 +61,7 @@
       </span>
       <span v-if="tab == 'computer'">
         <button v-if="insertedDisk==false" v-on:click="insertDisk()" class="btn btn-outline-success">Insert your computer disk.</button>
-        <span class="computer-screen">
+        <div class="computer-screen">
           <span  v-bind:style="{'opacity':computerOpacity}">
 				      <p class='list-item computer-sidebar'>
                 <span v-for="curFile in files" :key="curFile.fileID">
@@ -74,7 +85,7 @@
                </div>
              </span>
            </span>
-			  </span>
+			  </div>
       </span>
       <span v-if="tab == 'mining'">
         <span v-if="true">
@@ -93,7 +104,7 @@
         <div v-for='(newJobs,jobBase,i) in jobs'>
           <span v-if='unlockedResources.includes(jobBase)'  :style="{'top':(i+1)*25+'vh'}">
             <span>{{resTable[jobBase].screenName}}: {{resTable[jobBase].amount}} </span>
-            <div v-for='newJob in newJobs'>
+            <div v-for='newJob in newJobs' v-if='!machineStates[newJob.job] || allDictKeysAreInArray(machineStates[newJob.job].resourcesNeeded,unlockedResources)'>
               <span>{{resTable[newJob.job].screenName}}: {{resTable[newJob.job].amount}} </span><br />
               <button v-on:click='swapJobs(newJob.job,jobBase)'>Assign a {{resTable[jobBase].screenName}} to being a {{resTable[newJob.job].screenName}}</button><br />
               <button  v-on:click='swapJobs(jobBase,newJob.job)'>Deassign a(n) {{resTable[newJob.job].screenName}}</button><br />
@@ -118,15 +129,16 @@
         </div>
       </span>
       <span v-if="tab == 'adaptations'">
+        <div v-for="adaptaion in adaptaions" v-if="!adaptaion.completed && allTrue(adaptation.prerequisites)">
 
+        </div>
       </span>
       <span v-if="tab == 'robot'">
         <button class="btn btn-success" v-on:click="newGrid()">Generate new grid.</button>
-        <div class="robot-screen" v-if="grid!=null" style="font-family:courier;">
-          <span v-for="line in grid.displayGrid().split('\n')">
+        <div v-if="grid!=null" style="font-family:courier;">
+          <div v-for="line in grid.displayGrid().split('\n')">
             {{line}}
-            <br />
-          </span>
+          </div>
         </div>
       </span>
 	</div>
@@ -143,6 +155,8 @@
   <script src="code/bases/console.js"></script>
   <script src="code/classes/mining.js"></script>
   <script src="code/classes/mineDroid.js"></script>
+  <script src="code/classes/readOnly.js"></script>
+  <script src="code/classes/robot.js"></script>
   <script src="code/classes/tile.js"></script>
   <script src="code/classes/entity.js"></script>
   <script src="code/classes/worldGrid.js"></script>

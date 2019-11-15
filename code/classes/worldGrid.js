@@ -10,35 +10,32 @@ class WorldGrid extends Saveable{
         for(let j=0;j<size;j++){
           this.entityGrid[i].push(null)
           if(i==size/2 &&j==size/2){
-            this.terrainGrid[i].push(new Tile('home',i,j))
+            this.terrainGrid[i].push(new Tile('home', i, j))
           }else{
-            this.terrainGrid[i].push(new Tile('grass',i,j))
+            this.terrainGrid[i].push(new Tile('grass', i, j))
           }
         }
       }
       this.size=size
-      this.spawnEntity('robot',0,0)
+      this.spawnEntity('robot', 0, 0)
       for(let i=0;i<this.size;i++){
         for(let j=0;j<this.size;j++){
-          this.handleCodeParser(this.terrainGrid[i][j].data.code.onLoad,this.terrainGrid[i][j])
+          this.handleCodeParser(this.terrainGrid[i][j].data.code.onLoad, this.terrainGrid[i][j])
         }
       }
     }
-    if(false){
-
-    }
   }
   registerInnerClasses(){
-    this.registerInnerClass(this.entityGrid,'2darray','entity')
-    this.registerInnerClass(this.terrainGrid,'2darray','tile')
+    this.registerInnerClass(this.entityGrid, '2darray', 'entity')
+    this.registerInnerClass(this.terrainGrid, '2darray', 'tile')
   }
-  handleCodeParser(itemCode,item){
+  handleCodeParser(itemCode, item){
     let prevSuceeded=false
     for(let code of itemCode){
       if((code.withChance=='withPrev'&&prevSuceeded)||(Math.random()<code.withChance)){
         prevSuceeded=true
         if(code.toDo=='spawnEntity'){
-          this.spawnEntity(code.type,item.x,item.y)
+          this.spawnEntity(code.type, item.x, item.y)
           break
         }
       }else{
@@ -46,21 +43,47 @@ class WorldGrid extends Saveable{
       }
     }
   }
-  spawnEntity(type,x,y){
+  spawnEntity(type, x, y){
     if(!this.entityGrid[x][y]){
-      this.entityGrid[x][y]=new Entity(type,x,y)
+      this.entityGrid[x][y]=new Entity(type, x, y)
     }
   }
-  tick(){
-    for(let i=0;i<this.size;i++){
-      for(let j=0;j<this.size;j++){
-        this.handleCodeParser(this.terrainGrid[i][j].data.code.onTick,this.terrainGrid[i][j])
-      }
+  moveEntity(startX, startY, mx, my,caller = {'x':0,'y':0}){
+    if(startX+mx>=this.size)return false
+    if(startY+my>=this.size)return false
+    if(startX+mx<0)return false
+    if(startY+my<0)return false
+    if(this.entityGrid[startX+mx][startY+my]){
+      return new ReadOnly(()=>{
+        return new WorldGrid().loadVal(JSON.stringify(this.entityGrid[startX+mx][startY+my].data))
+      })
     }
+    if(!this.entityGrid[startX][startY]){
+      return false
+    }
+    this.entityGrid[startX][startY].x += mx
+    this.entityGrid[startX][startY].y += my
+    caller.x+=mx
+    caller.y+=my
+    this.entityGrid[startX+mx][startY+my] = this.entityGrid[startX][startY]
+    this.entityGrid[startX][startY] = null
+    return true
+  }
+  moveTile(startX, startY, mx, my){
+    return 'Please stop'
+  }
+  tick(app){
     for(let i=0;i<this.size;i++){
       for(let j=0;j<this.size;j++){
         if(this.entityGrid[i][j]){
-          this.handleCodeParser(this.entityGrid[i][j].data.code.onTick,this.entityGrid[i][j])
+          this.handleCodeParser(this.entityGrid[i][j].data.code.onTick, this.entityGrid[i][j])
+        }
+        this.handleCodeParser(this.terrainGrid[i][j].data.code.onTick, this.terrainGrid[i][j])
+        if(this.terrainGrid[i][j].type=='home'&&this.entityGrid[i][j]!==null&&this.entityGrid[i][j].type=='robot'){
+          for(const [key, value] of Object.entries(this.entityGrid[i][j].data.resources)){
+            app.incrementResource(key, value)
+            this.entityGrid[i][j].data.resources[key]=0
+          }
         }
       }
     }
@@ -79,6 +102,15 @@ class WorldGrid extends Saveable{
       string+='\n'
     }
     return string
+  }
+  getData(type){
+    for(let i=0;i<this.size;i++){
+      for(let j=0;j<this.size;j++){
+        if(this.entityGrid[i][j]!=null&&this.entityGrid[i][j].type==type){
+          return this.entityGrid[i][j]
+        }
+      }
+    }
   }
 }
 

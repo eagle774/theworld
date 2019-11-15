@@ -56,4 +56,4 @@ class Mine extends Saveable{
 }
 
 registerClass('miner',Mine)
-mine = new Mine(1, ['iron-ore','fakestone'], {'iron-ore':{},'fakestone':{}})
+mine = new Mine(1, ['iron-ore','stone','coal','copper-ore','tungsten-ore','titanium-ore','gold-ore'], {'iron-ore':{},'copper-ore':{},'coal':{},'gold-ore':{},'titanium-ore':{},'tungsten-ore':{},'stone':{}})
