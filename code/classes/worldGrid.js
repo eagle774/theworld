@@ -9,11 +9,7 @@ class WorldGrid extends Saveable{
         this.entityGrid.push([])
         for(let j=0;j<size;j++){
           this.entityGrid[i].push(null)
-          if(i==size/2 &&j==size/2){
-            this.terrainGrid[i].push(new Tile('home', i, j))
-          }else{
-            this.terrainGrid[i].push(new Tile('grass', i, j))
-          }
+          this.terrainGrid[i].push(new Tile('grass', i, j))
         }
       }
       this.size=size
@@ -28,6 +24,9 @@ class WorldGrid extends Saveable{
   registerInnerClasses(){
     this.registerInnerClass(this.entityGrid, '2darray', 'entity')
     this.registerInnerClass(this.terrainGrid, '2darray', 'tile')
+  }
+  destroyEntity(x,y){
+    this.entityGrid[x][y]=null
   }
   handleCodeParser(itemCode, item){
     let prevSuceeded=false
@@ -49,17 +48,17 @@ class WorldGrid extends Saveable{
     }
   }
   moveEntity(startX, startY, mx, my,caller = {'x':0,'y':0}){
-    if(startX+mx>=this.size)return false
-    if(startY+my>=this.size)return false
-    if(startX+mx<0)return false
-    if(startY+my<0)return false
+    if(startX+mx>=this.size)return [false]
+    if(startY+my>=this.size)return [false]
+    if(startX+mx<0)return [false]
+    if(startY+my<0)return [false]
     if(this.entityGrid[startX+mx][startY+my]){
-      return new ReadOnly(()=>{
-        return new WorldGrid().loadVal(JSON.stringify(this.entityGrid[startX+mx][startY+my].data))
-      })
+      return [false,new ReadOnly(()=>{
+        return [startX+mx,startY+my]
+      })]
     }
     if(!this.entityGrid[startX][startY]){
-      return false
+      return [false]
     }
     this.entityGrid[startX][startY].x += mx
     this.entityGrid[startX][startY].y += my
@@ -67,7 +66,7 @@ class WorldGrid extends Saveable{
     caller.y+=my
     this.entityGrid[startX+mx][startY+my] = this.entityGrid[startX][startY]
     this.entityGrid[startX][startY] = null
-    return true
+    return [true]
   }
   moveTile(startX, startY, mx, my){
     return 'Please stop'
@@ -79,10 +78,9 @@ class WorldGrid extends Saveable{
           this.handleCodeParser(this.entityGrid[i][j].data.code.onTick, this.entityGrid[i][j])
         }
         this.handleCodeParser(this.terrainGrid[i][j].data.code.onTick, this.terrainGrid[i][j])
-        if(this.terrainGrid[i][j].type=='home'&&this.entityGrid[i][j]!==null&&this.entityGrid[i][j].type=='robot'){
+        if(this.entityGrid[i][j]!==null&&this.entityGrid[i][j].type=='robot'){
           for(const [key, value] of Object.entries(this.entityGrid[i][j].data.resources)){
-            app.incrementResource(key, value)
-            this.entityGrid[i][j].data.resources[key]=0
+            this.entityGrid[i][j].data.resources[key]-=app.incrementResource(key, value)
           }
         }
       }

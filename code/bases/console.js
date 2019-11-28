@@ -321,9 +321,9 @@ let parseCode=(code,passedInFuncs={},vars={},functions = {})=>{
       }
       i=found[0]-1
     }else if(code[i].match(/for\(.*\){/g)){
-      matches=code[i].match(/for\([^)]*\){/g)
-      count=1
-      found=[]
+      let matches=code[i].match(/for\([^)]*\){/g)
+      let count=1
+      let found=[]
       for(let j=i;j<code.length;j++){
         for(let k=j==i?matches[0].length+1:0;k<code[j].length;k++){
           if(code[j][k]=='{'){
@@ -343,10 +343,10 @@ let parseCode=(code,passedInFuncs={},vars={},functions = {})=>{
       parseCode([parts[0]],passedInFuncs,vars,functions)
       let lines=[]
       if(found){
-        for(let j=i;j<found[0];j++){
-          if(j==found[0]-1 && j==i){
+        for(let j=i;j<found[0]+1;j++){
+          if(j==found[0] && j==i){
             lines.push(code[j].slice(matches[0].length,found[1])+' ')
-          }else if(j==found[0]-1){
+          }else if(j==found[0]){
             lines.push(code[j].slice(0,found[1])+' ')
           }else if(j==i){
             lines.push(code[j].slice(matches[0].length))

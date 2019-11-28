@@ -12,8 +12,12 @@ const bigNumberHandler = (number)=>{
   while(number>=1000){
     number = number/1000
     pos+=1
-  }if(pos==0){
-    return negative+(Math.round(number*100000)/100000+'').length>number.toFixed(2).length?number.toFixed(2):(Math.round(number*100000)/100000+'')
+  }
+  if(pos==0){
+    return (Math.round(number*100000)/100000+'').length>
+    number.toFixed(2).length?
+    negative+number.toFixed(2):
+    negative+(Math.round(number*100000)/100000+'')
   }
   if(number.toFixed('2')<10){
     return negative+number.toFixed('2')+prefixes[pos]

@@ -18,7 +18,10 @@ let buildingsData = {
       "copper": 5
     },
 		"tooltip":"No need for small electric poles",
-    'category':'Energy'
+    'category':'Energy',
+    'effects':[
+      {"funcName":"incrementResourceSpecial","args":['energy','storage',50]},
+    ]
   },
   "combustion-engine": {
     "type":"building",
@@ -27,7 +30,10 @@ let buildingsData = {
       "copper": 20
     },
 		"tooltip":"Burn fire in a fire burning machine",
-    'category':'Energy'
+    'category':'Energy',
+    'effects':[
+      {"funcName":"incrementResourceSpecial","args":['energy','storage',100]},
+    ]
   },
   "bucket": {
     "type":"building",
@@ -45,8 +51,14 @@ let buildingsData = {
     "effects": [
       {"funcName":"incrementResourceSpecial","args":['wood','storage',50]},
       {"funcName":"incrementResourceSpecial","args":['iron','storage',20]},
+      {"funcName":"incrementResourceSpecial","args":['gold','storage',0.1]},
+      {"funcName":"incrementResourceSpecial","args":['tungsten','storage',1]},
+      {"funcName":"incrementResourceSpecial","args":['titanium','storage',5]},
+      {"funcName":"incrementResourceSpecial","args":['compressed-iron','storage',1]},
       {"funcName":"incrementResourceSpecial","args":['copper','storage',20]},
       {"funcName":"incrementResourceSpecial","args":['stone','storage',100]},
+      {"funcName":"incrementResourceSpecial","args":['steel','storage',5]},
+      {"funcName":"incrementResourceSpecial","args":['coal','storage',200]},
     ],
 		"tooltip":"Big enough to store resources",
     'category':'Storage'
@@ -58,7 +70,9 @@ let buildingsData = {
       "copper": 20
     },
     "effects":[
-      {'funcName':'addTab','args':['Robot','robot',true]}
+      {'funcName':'addTab','args':['Robot','robot',true]},
+      {'funcName':'addTab','args':['Scripts','scripts',true]},
+      {'funcName':'addTab','args':['Mining','mining',true]}
     ],
 		"tooltip":"Dormant",
     'category':'Technical'
@@ -96,39 +110,18 @@ let buildingsData = {
       "water-boiling": 200
     }
   },
-  "stokefire": {
-    "type":"process",
-    "cost": {
-      "fire": 0.1,
-      "wood":4
-    },
-    "results": {
-      "fire": 1.1
-    },
-    "buildName":"Stoke the fire"
-  },
   "computer": {
     "type":"building",
     "cost": {
       "iron": 20
     },
     "effects":[
-      {'funcName':'addTab','args':['Computer','computer',true]}
+      {'funcName':'addTab','args':['Computer','computer',true]},
+      {'funcName':'configureResource','args':['robot','locked',false]},
+      {'funcName':'configureResource','args':['combustion-engine','locked',false]}
     ],
 		"tooltip":"This takes a suprisingly small amount of resources",
     'category':'Technical'
-  },
-  "droid": {
-    "type":"building",
-    "cost": {
-      "robot": 1
-    },
-    "effects":[
-      {'funcName':'addTab','args':['Mining','mining',true]},
-      {'funcName':'addTab','args':['Scripts','scripts',true]}
-    ],
-    'category':'Technical',
-		"tooltip":"Definetely a different thing",
   },
   "stone-miner": {
     "type":"building",
@@ -154,23 +147,32 @@ let buildingsData = {
   "adaptation-chamber": {
     "type":"building",
     "cost": {
-      "stone": 1000,
-      "iron":200,
-      "copper":200,
-      "computer":10
+      "stone": 100,
+      "iron":100,
+      "copper":100
     },
     "effects":[
       {'funcName':'addTab','args':['Adaptations','adaptation',true]}
     ],
     'category':'Special'
   },
+  "compressor": {
+    "type":"building",
+    "cost": {
+      "stone": 200,
+      "iron":200,
+      "copper":250
+    },
+    'tooltip':'Compressed unhelpfulness',
+    'category':'Metal Machine'
+  },
   "pressurizer": {
     "type":"building",
     "cost": {
-      "stone": 1000,
-      "iron":1000,
+      "stone": 500,
+      "compressed-iron":100,
       "copper":200,
-      "computer":10
+      "titanium":50,
     },
     'category':'Metal Machine'
   },
@@ -180,12 +182,15 @@ let buildingsData = {
       "stone": 1000,
       "iron":200,
       "copper":200,
-      "computer":10
+      "computer":20,
+      "steel":1000,
+      "tungsten":1000,
     },
     "effects":[
-      {'funcName':'addTab','args':['Adaptations','adaptation',true]}
+      {'funcName':'addTab','args':['Rocket Launching','rocket-silo',true]}
     ],
-    'category':'Special'
+    'category':'Special',
+    'tooltip':'Shoot big explosive things. What could be better than that?'
   },
   "incendinary-pile": {
     "type":"building",
@@ -201,8 +206,12 @@ let buildingsData = {
       "stone": 1000,
       "iron":200,
       "copper":200,
-      "computer":10
+      "tungsten":100
     },
+    "effects":[
+      {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
+      {'funcName':'updateFluids','args':[]},
+    ],
     'category':'Metal Machine'
   },
   "cooler": {
@@ -211,8 +220,12 @@ let buildingsData = {
       "stone": 1000,
       "iron":200,
       "copper":200,
-      "computer":10
+      "tungsten":1000
     },
+    "effects":[
+      {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
+      {'funcName':'updateFluids','args':[]},
+    ],
     'category':'Metal Machine'
   },
   "melter": {
@@ -221,10 +234,13 @@ let buildingsData = {
       "stone": 1000,
       "iron":200,
       "copper":200,
-      "computer":10
+      "titanium":5000,
+      "tungsten":5000
     },
     "effects":[
-      {'funcName':'addTab','args':['Adaptations','adaptation',true]}
+      {'funcName':'addTab','args':['Fluids','fluid',true]},
+      {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
+      {'funcName':'updateFluids','args':[]},
     ],
     'category':'Metal Machine'
   },
@@ -235,6 +251,23 @@ let buildingsData = {
       "copper":40
     },
     'tooltip':'Hopefully I can find a use for them.',
-    'category':'Energy'
+    'category':'Energy',
+    'effects':[
+      {"funcName":"incrementResourceSpecial","args":['energy','storage',20]},
+    ]
+  },
+  "wooden-rocket": {
+    "type":"rocket",
+    "cost": {
+      "wood":1
+    },
+    'category':'Hey, how are you seeing this?'
+  },
+  "coal-rocket": {
+    "type":"rocket",
+    "cost": {
+      "coal":10
+    },
+    'category':'Hey, how are you seeing this?'
   },
 }

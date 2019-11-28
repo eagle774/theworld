@@ -35,7 +35,7 @@ let App = new Vue({
 					buildingName
 				})
 				if(!Object.keys(this.categories).includes(this.buildingsList[buildingName].category)){
-					this.categories[this.buildingsList[buildingName].category]=true
+					this.$set(this.categories,this.buildingsList[buildingName].category,true)
 				}
 			}
 			this.buildings=buildings
@@ -73,9 +73,13 @@ let App = new Vue({
 			this.processes=buildings
 		},
 		addVisibleResource: function(resource,everyTick=false) {
-			if (!this.unlockedResources.includes(resource)) {
+			if (!this.unlockedResources.includes(resource)&&!this.unlockedFluids.includes(resource)) {
 				if(this.resTable[resource]){
-					this.unlockedResources.push(resource)
+					if(!this.resTable[resource].isFluid){
+						this.unlockedResources.push(resource)
+					}else{
+						this.unlockedFluids.push(resource)
+					}
 				}else{
 					this.errorLog.push('Could not add resource '+resource+' as it not in resTable')
 				}
@@ -250,6 +254,26 @@ let App = new Vue({
 				}
 			}
 		},
+		mine: function(amount,depth) {
+			if(amount/1000>100){
+				for(const [key,value] of Object.entries(this.mining)){
+					value['progress']+=amount/Object.keys(this.mining).length
+					for(const [amount,resource] of value.massMine(depth,value['progress']/1000)){
+						this.planets['total'][resource]+=amount
+					}
+					value['progress']=value['progress']%1000
+				}
+			}else{
+				for(const [key,value] of Object.entries(this.mining)){
+					value['progress']+=amount/Object.keys(this.mining).length
+					while(value['progress']>1000){
+						value['progress']-=1000
+						resources=value.mineAtDepth(depth)
+						this.planets['total'][resources[1]]+=resources[0]
+					}
+				}
+			}
+		},
 		assignScript: function(type,scriptName,amount){
 			percentLeft = 100
 			for(const [key,script] of Object.entries(this.scripts[type])){
@@ -265,7 +289,7 @@ let App = new Vue({
 		saveGame: function(){
 			let save={}
 			for(const [key,value] of Object.entries(data)){
-				if(key!=='unSaveable'){
+				if(key!=='unSaveable' && key!=='jobs'){
 					save[key]=value
 				}
 			}
@@ -286,6 +310,7 @@ let App = new Vue({
 						value.storage=Infinity
 					}
 				}
+
 				for(const [key,value] of Object.entries(this.resTable)){
 					if(!save.resTable[key]){
 						save.resTable[key]=value
@@ -328,6 +353,37 @@ let App = new Vue({
 			return returnVal
 		},
 		bigNumberHandler: bigNumberHandler,
+		editTab: function(tab,newText){
+			tab = this.getTab(tab)
+		  if(tab){
+					tab.displayText = newText
+					return true
+			}
+			return false
+		},
+		setTab: function(tab){
+			this.tab = tab
+			if(tab=='adaptation'){
+				this.editTab('adaptation','Adaptations')
+			}
+		},
+		resTableFilterBy:function(condition){
+			let returnable = []
+			for (const [key, value] of Object.entries(this.resTable)) {
+				if(condition(value)){
+					returnable.push([key,value])
+				}
+			}
+			return returnable
+		},
+		getTab: function(tab){
+			for(let i=0;i<this.tabs.length;i++){
+				if(this.tabs[i].tab==tab){
+					return this.tabs[i]
+				}
+			}
+			return false
+		},
 		allDictKeysAreInArray: function(dict,array){
 			for(key of Object.keys(dict)){
 				if(!array.includes(key)){
@@ -368,37 +424,25 @@ let App = new Vue({
 			}
 			return results
 		},
-		allocateItemsRatio: function(amount,ratioArray){
-			percents = []
-			results = []
-			totPercent = sum = 0
-			bestNums = [[Infinity,0]]
-			for(let i=0;i<ratioArray.length;i++){
-				results.push(0)
-				index=0
-				while(ratioArray[i]>bestNums[index][0]){
-					index++
-				}
-				bestNums.splice(index,0,[ratioArray[i],i])
-			}
-			for(let i=0;i<ratioArray.length;i++){
-				totPercent += ratioArray[i]
-			}
-			for(let i=0;i<ratioArray.length;i++){
-				results[i] = Math.floor(amount*(ratioArray[i]/summed(ratioArray)))
-				sum+=Math.floor(amount*(ratioArray[i]/summed(ratioArray)))
-			}
-			left = Math.floor((amount*totPercent/summed(ratioArray)-sum))
-			index=bestNums.length-2
-			while(left >= 1){
-				results[bestNums[index][1]]++
-				left--
-				index--
-			}
-			return results
-		},
 		allTrue: function(array){
-			return false
+			for(condition of array){
+				if(!condition(this)){
+					return false
+				}
+			}
+			return true
+		},
+		//fluids
+		updateFluids: function(){
+			let fluidStore = this.resTable['fluid-storage'].storage
+			let fluids = this.resTableFilterBy((res)=>{return res.isFluid})
+			for(const [key,value] of fluids){
+				fluidStore-=value.amount*value.fluidStuff.density
+			}
+			for(const [key,value] of fluids){
+				this.resTable[key].storage = fluidStore/value.fluidStuff.density+value.amount
+			}
+			this.fluidLeft=fluidStore
 		},
 		//player interaction
 		explore: function() {
@@ -447,46 +491,44 @@ let App = new Vue({
 			this.incrementResource("computer-disk", -1)
 		},
 		handleBuyBuilding: function(buildingName){
-			if(control){
-				for(let i=0;i<10;i++){
-					this.buyBuilding(buildingName)
-				}
+			if(this.toBuy=='max'){
+				this.buyBuilding(buildingName,Infinity)
 			}else{
-				this.buyBuilding(buildingName)
+				this.buyBuilding(buildingName,this.toBuy)
 			}
 		},
-		buyBuilding: function(buildingName) {
+		buyBuilding: function(buildingName,number) {
 			let building = this.buildingsList[buildingName]
 			let buyable = true
 			let table = this.resTable
-			for (const [key, value] of Object.entries(building["cost"])) {
-				if (building["results"] === undefined) {
-					if (table[key].amount < value * table[buildingName]["multiplier"]) {
-						buyable = false
-					}
-				} else {
-					if (table[key].amount < value) {
-						buyable = false
-					}
+			for (const [key, value] of Object.entries(building.cost)) {
+				if (table[key].amount < value) {
+					buyable = false
+				}else{
+					number = Math.floor(Math.min(number, table[key].amount / value))
 				}
 			}
 			if (buyable) {
-				if (building["results"] === undefined) {
-					if (table[buildingName].amount !== table[buildingName].storage) {
-						for (const [key, value] of Object.entries(building["cost"])) {
-							table[key].amount -= value * this.resTable[buildingName]["multiplier"]
+				if (building.results === undefined) {
+					number = Math.min(number,this.resTable[buildingName].storage-this.resTable[buildingName].amount)
+					if (table[buildingName].amount < table[buildingName].storage) {
+						if(building.type=='rocket'&&!this.rocketsBought.includes(buildingName)){
+							this.rocketsBought.push(buildingName)
 						}
-						table[buildingName].amount += 1
+						for (const [key, value] of Object.entries(building.cost)) {
+							table[key].amount -= number * value * this.resTable[buildingName]["multiplier"]
+						}
+						table[buildingName].amount += number
 						if (buildingName === "fire") {
 							if (table[buildingName].gettable === false) {
 								this.message="Have to keep the fire warm. It offers hope"
-								this.configureButton(1, "displayText", "Explore for food")
+								this.configureButton(1, "displayText", "Explore for something to cook on the fire")
 							}
 						}
 						effects=this.buildingsList[buildingName].effects
 						if(effects){
 							for(let i=0;i<effects.length;i++){
-								this[effects[i].funcName].apply(this,effects[i].args)
+								this[effects[i].funcName].apply(this,effects[i].args.concat(number))
 							}
 						}
 						if (buildingName === "spit" || buildingName==='bucket-water') {
@@ -499,42 +541,69 @@ let App = new Vue({
 					}
 				} else {
 					for (const [key, value] of Object.entries(building["cost"])) {
-						table[key].amount -= value
+						table[key].amount -= value * number
 					}
 					for (const [key, value] of Object.entries(building["results"])) {
-						table[key].amount += value
+						table[key].amount += value * number
 						this.addVisibleResource(key,true)
 					}
 				}
 			}
 			this.resTable  = table
 		},
-		//gametick
-		incrementResource: function(res, amount) {
+		buyAdaptation: function(adaptation){
+			let buyable = true
+			let table = this.resTable
+			for (const [key, value] of Object.entries(adaptation.cost)) {
+				if (table[key].amount < value) {
+					buyable = false
+				}
+			}
+			if (buyable) {
+				for (const [key, value] of Object.entries(adaptation.cost)) {
+					table[key].amount -= value
+				}
+				adaptation.effects(this)
+				this.completedAdaptations.push(adaptation.name)
+			}
+		},
+		//resources
+		incrementResource: function(res, amount, multiplier = 1) {
+			amount = amount * multiplier
 			let table = this.resTable;
 			if (table[res].storage < amount + table[res].amount) {
 				this.incrementResourceSpecial(res, "extraPerTick", (table[res].storage - table[res].amount))
 				toReturn = table[res].storage - table[res].amount
 				this.configureResource(res, "amount", table[res].storage)
+				if(this.resTable[res].isFluid){
+					this.updateFluids()
+				}
 				return toReturn
 			} else if (0 > amount + table[res].amount) {
         this.incrementResourceSpecial(res, "extraPerTick", -1*table[res].amount)
 				toReturn = -1*table[res].amount
 				this.configureResource(res, "amount", 0)
+				if(this.resTable[res].isFluid){
+					this.updateFluids()
+				}
 				return toReturn
 			} else {
 				this.incrementResourceSpecial(res, "extraPerTick", amount)
 				this.configureResource(res, "amount", table[res].amount + amount)
+				if(this.resTable[res].isFluid){
+					this.updateFluids()
+				}
 				return amount
 			}
-			this.resTable=table
 		},
+		incrementResourceSpecial: function(res, thing, amount, multiplier = 1) {
+			this.configureResource(res, thing,this.resTable[res][thing] + amount*multiplier)
+		},
+		//grid
 		newGrid: function(){
 			this.grid = new WorldGrid(10)
 		},
-		incrementResourceSpecial: function(res, thing, amount) {
-			this.configureResource(res, thing,this.resTable[res][thing] + amount)
-		},
+		//gametick
 		tick: function() {
 			if(this.computerChanged){
 				this.computerChanged-=1
@@ -581,24 +650,32 @@ let App = new Vue({
         let machine=this.machineStates[this.machinePriority[i]]
 				machine.multiplier = 1
         for(const [key,value] of Object.entries(machine["resourcesNeeded"])){
-          if(this.resTable[key].amount<=value*this.resTable[this.machinePriority[i]].amount){
-            machine["resourcesRecieved"][key]=0
-						machine.multiplier = Math.min(machine.multiplier,this.resTable[key].amount/
-							(value*
-								(this.resTable[this.machinePriority[i]].amount==0?
-									-Infinity:
-									this.resTable[this.machinePriority[i]].amount)))
-            this.incrementResource(key,this.resTable[key].amount*-1)
-          }else{
-            machine["resourcesRecieved"][key]=value*this.resTable[this.machinePriority[i]].amount
-            this.incrementResource(key,-value*this.resTable[this.machinePriority[i]].amount)
-          }
+					machine.multiplier = Math.min(machine.multiplier,this.resTable[key].amount/
+						value/(this.resTable[this.machinePriority[i]].amount==0?
+							Infinity:
+								this.resTable[this.machinePriority[i]].amount))
         }
+				let listed = []
+        for(const [key,value] of Object.entries(machine["results"])){
+					listed.push((this.resTable[key].storage-
+						this.resTable[key].amount)
+						/value/(this.resTable[this.machinePriority[i]].amount)
+						/
+						machine.multiplier)
+        }
+				if(listed.length==0){
+					listed.push(1)
+				}
+				let maxim = Math.max.apply(null,listed)
+				machine.multiplier = Math.min(maxim==maxim?maxim:Infinity,machine.multiplier)
         if(this.resTable[this.machinePriority[i]].amount>0&&machine.multiplier>0){
-          for(const [key,value] of Object.entries(machine["results"])){
-            this.incrementResource(key,value*this.resTable[this.machinePriority[i]].amount*machine.multiplier)
+	        for(const [key,value] of Object.entries(machine["results"])){
+						this.incrementResource(key,value*this.resTable[this.machinePriority[i]].amount*machine.multiplier)
             this.addVisibleResource(key,true)
-          }
+					}
+		      for(const [key,value] of Object.entries(machine["resourcesNeeded"])){
+						this.incrementResource(key,-value*this.resTable[this.machinePriority[i]].amount*machine.multiplier)
+					}
         }
         this.machineStates[this.machinePriority[i]]=machine
       }
@@ -620,40 +697,144 @@ let App = new Vue({
 				console.log(this.errorLog)
 				this.errorLog=[]
 			}
-			for(extension of this.unSaveable.extensions){
-				scripts = this.scripts[extension[0]]
-				allocated = this.allocateItemsPercent(this.resTable[extension[2]].amount,scripts)
-				entries = Object.entries(scripts)
-				for(let i=0;i<entries.length;i++){
-					funcs = extension[3](this,allocated[i])
-					try{
-						parseCode(this.fileTextContents[entries[i][1].fileID].slice(1),{},funcs)
-					}
-					catch(err){
+			for(const extension of this.unSaveable.extensions){
+				if(this.resTable[extension[2]].amount>0){
+					scripts = this.scripts[extension[0]]
+					allocated = this.allocateItemsPercent(this.resTable[extension[2]].amount*this.multipliers[extension[0]],scripts)
+					entries = Object.entries(scripts)
+					for(let i=0;i<entries.length;i++){
+						funcs = extension[3](this,allocated[i])
+						if(allocated[i]>0){
+							try{
+								parseCode(this.fileTextContents[entries[i][1].fileID].slice(1),{},funcs)
+							}
+							catch(err){
 
+							}
+						}
 					}
 				}
 			}
-		},
-		mine: function(amount,depth) {
-			for(const [key,value] of Object.entries(this.mining)){
-				value['progress']+=amount/Object.keys(this.mining).length
-				while(value['progress']>1000){
-					value['progress']-=1000
-					resources=value.mineAtDepth(depth)
-					this.planets['total'][resources[1]]+=resources[0]
+			let count = 0
+			let adaptable = false
+			for(let i=0;i<this.tabs.length;i++){
+				if(this.tabs[i].tab=='adaptation'){
+					adaptable = true
 				}
+			}
+			if(adaptable){
+				for(const [name,adaptation] of Object.entries(this.unSaveable.adaptations)){
+					if(!this.completedAdaptations.includes(name)&&
+					this.allTrue(adaptation.requirements)&&
+					!this.availableAdaptations.includes(name)){
+						this.availableAdaptations.push(name)
+						count++
+					}
+				}
+			}
+			if(count!==0){
+				tabToEdit = this.getTab('adaptation')
+				if(tabToEdit.displayText!='Adaptations'){
+					count -= '-'+tabToEdit.displayText.slice(13,tabToEdit.displayText.length-1)
+				}
+				this.editTab('adaptation', 'Adaptations ('+count+')')
 			}
 		},
 		//jobs
-		swapJobs: function(newJob,oldJob){
-			if(this.resTable[oldJob].amount>=1&&this.resTable){
-				if(this.incrementResource(newJob,1)){
-					this.incrementResource(oldJob,-1)
-					this.addVisibleResource(newJob,true)
+		swapJobs: function(newJob,oldJob,number){
+			number = Math.round(number)
+			number = Math.min(number,this.resTable[oldJob].amount)
+			if(this.incrementResource(newJob,number)){
+				this.incrementResource(oldJob,-number)
+				this.addVisibleResource(newJob,true)
+			}
+		},
+		//rocketry
+		handleLaunchRocket: function(rocket){
+			if(control){
+				this.launchRocket(rocket,10)
+			}else{
+				this.launchRocket(rocket,1)
+			}
+		},
+		launchRocket: function(rocket,number){
+			let buyable = true
+			number = Math.min(number,this.resTable[rocket.name].amount)
+			for (const [key, value] of Object.entries(rocket["launch-cost"])) {
+				if (this.resTable[key].amount < value) {
+					buyable = false
+					break
+				}else{
+					number = Math.floor(Math.min(number, this.resTable[key].amount / value))
 				}
 			}
-		}
+			if(buyable&&number>=1){
+				this.resTable[rocket.name].amount-=number
+				for (const [key, value] of Object.entries(rocket["launch-cost"])) {
+					this.incrementResource(key,-value*number)
+				}
+				this.message = rocket['launch-message']
+				if(!this.launchedRockets.includes(rocket.name)){
+					this.launchedRockets.push(rocket.name)
+				}
+			}
+		},
+		launchAllRockets: function(){
+			let buyable = true
+			let toLaunch = this.resTableFilterBy((res)=>{return res.isRocket})
+			let cost = {}
+			let launched = 0
+			for (const [key, value] of toLaunch) {
+				for(const [resource,amount] of Object.entries(this.rocketsData[key]['launch-cost'])){
+					if(!cost[resource]){
+						cost[resource]=amount*value.amount
+					}else{
+						cost[resource]+=amount*value.amount
+					}
+				}
+			}
+			for (const [key, value] of Object.entries(cost)) {
+				if (this.resTable[key].amount < value) {
+					buyable = false
+					break
+				}
+			}
+			if(buyable){
+				for (const [key, value] of Object.entries(cost)) {
+					this.resTable[key].amount -= value
+				}
+				for (const [key, value] of toLaunch) {
+					launched+=value.amount
+					value.amount=0
+					if(!this.launchedRockets.includes(key)){
+						this.launchedRockets.push(key)
+					}
+				}
+				switch(true){
+					case launched==42:
+						this.message = 'Launched an unanswerable quantity of rockets that\'s an answer.'
+						break
+					case launched<100:
+						this.message = 'Launched less than a hundred rockets'
+						break
+					case launched<144:
+						this.message = 'Launched less than a dozen dozen rockets'
+						break
+					case launched==1248:
+						this.message = 'Launched exactly an exponent pattern\n concatenated with an equal number of digits\n as terms in the sequence, and at least 4.'
+						break
+					case launched<9009:
+						this.message = 'Launched less than a four digit palindromic number divisible by 9\n containing no sets of digits with no zeros whose sum is equal to nine,\n not divisible by 1111 rockets.'
+						break
+					case launched%3210==1:
+						this.message = 'Launched a number of rockets which when divided by a concatenation of a\nstrictly decreasing by 1 sequence divisible by 10 which\n when concatenated is bigger than 2101 the remainder is 1'
+						break
+					default:
+						this.message= 'Launched less than Infinity rockets'
+						break
+				}
+			}
+		},
 	},
 	updated: function () {
 		if(this.computerChanged){

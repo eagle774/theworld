@@ -3,6 +3,9 @@ let entityData={
     'code':{
       'onTick':[]
     },
+    'resources':{
+      'wood':6
+    },
     'display':'t',
   },
   'robot':{
@@ -10,7 +13,7 @@ let entityData={
       'onTick':[]
     },
     'resources':{
-      'wood':6,
+      'wood':0,
     },
     'display':'r'
   }

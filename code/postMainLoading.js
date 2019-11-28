@@ -29,5 +29,7 @@ App.unSaveable.buttons.explore=App.explore
 App.unSaveable.buttons.getWood=()=>{App.incrementResourceByHand('wood',1)}
 App.unSaveable.buttons.mineStone=()=>{App.incrementResourceByHand('stone',1)}
 window.setInterval(App.tick, 100);
+App.newGrid()
 App.loadGame(false)
 App.buildingsList=buildingsData
+App.rocketsData=rocketsData

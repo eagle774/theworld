@@ -53,6 +53,25 @@ class Mine extends Saveable{
     }
     return 1
   }
+  massMine(depth,times){
+    let totalWeights = []
+    let resources = []
+    for(const [key,value] of Object.entries(this.resources)){
+      if(depth>=this.getVal(key,'depthMin')&&depth<=this.getVal(key,'depthMax')&&this.resources[key].total>0){
+        totalWeights.push(this.getVal(key,'weight'))
+        resources.push(key)
+      }
+    }
+    let totalWeight = summed(totalWeights)
+    let allocated = allocateItemsRatio(times,totalWeights)
+    let results = []
+    for(let i=0;i<allocated.length;i++){
+      let result = Math.min(this.resources[resources[i]].total,(this.getVal(resources[i],'sizeMin')+this.getVal(resources[i],'sizeMax'))/2*randomDistribution()*allocated[i])
+      this.resources[resources[i]].total-=Math.floor(result)
+      results.push([result,resources[i]])
+    }
+    return results
+  }
 }
 
 registerClass('miner',Mine)
