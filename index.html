@@ -15,25 +15,27 @@
     <div id="app" tabindex="0">
       <span v-for="curTab in tabs" :key=curTab.displayText v-on:click="setTab(curTab.tab)"><button class="btn btn-outline-danger" v-if="curTab.tab == tab">{{curTab.displayText}}</button><button class="btn btn-outline-success" v-else>{{curTab.displayText}}</button></span>
       <div class="display-left">
-        <div v-for="resource in unlockedResources" :key="resource">
-          {{resTable[resource].screenName}}: {{bigNumberHandler(resTable[resource].amount)}}/{{bigNumberHandler(resTable[resource].storage)}} ({{bigNumberHandler(resTable[resource].extraPerTick)}}/tick)
+        <div v-for="resource in unlockedResources" :key="resource" v-bind:style="resTable[resource].specialCSS">
+          {{resTable[resource].screenName}}: {{bigNumberHandler(jobCount(resource),resTable[resource].isBuildable)}}/{{bigNumberHandler(resTable[resource].storage,true)}} ({{bigNumberHandler(resTable[resource].extraPerTick,resTable[resource].isBuildable)}}/tick)
         </div>
       </div>
       <div v-for="line in message.split('\n')" :key=line>{{line}}</div>
-      <span class="list-item top-part">
-        <span v-for='amountToBuy in buyList'>
-          <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class="list-group-item list-group-item-action small-text">Buy {{amountToBuy}}</button>
-          <button v-else class="list-group-item active list-group-item-action small-text">Buy {{amountToBuy}}</button>
-        </span>
-      </span>
       <span v-if="tab == 'main'">
-        <span v-for = "category in Object.entries(categories)" v-if="processes.length>0 || category[0]!='Processes'" :key = category[0]>
-          <button v-if='categories[category[0]]' class = "btn btn-outline-success" v-on:click = "categories[category[0]]=!categories[category[0]]">
-            {{category[0]}}
-          </button><button class = "btn btn-outline-danger" v-else v-on:click = "categories[category[0]]=!categories[category[0]]">
-            {{category[0]}}
-          </button>
+        <span class="list-item top-part">
+          <span v-for='amountToBuy in buyList'>
+            <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class="list-group-item list-group-item-action small-text">Buy {{amountToBuy}}</button>
+            <button v-else class="list-group-item active list-group-item-action small-text">Buy {{amountToBuy}}</button>
+          </span>
         </span>
+        <div class="close-to-the-whole-screen">
+          <span v-for = "category in Object.entries(categories)" v-if="processes.length>0 || category[0]!='Processes'" :key = category[0]>
+            <button v-if='categories[category[0]]' class = "btn btn-outline-success" v-on:click = "categories[category[0]]=!categories[category[0]]">
+              {{category[0]}}
+            </button><button class = "btn btn-outline-danger" v-else v-on:click = "categories[category[0]]=!categories[category[0]]">
+              {{category[0]}}
+            </button>
+          </span>
+        </div>
         <br />
         <br />
         <span v-if='categories["Interaction"]'>
@@ -51,10 +53,10 @@
         <div v-for="entry in Object.entries(buildings)"  v-if='categories[entry[0]]':key = 'entry[0]+"aah"'>
           <div v-for="curBuilding in entry[1]" :key= 'curBuilding.displayText'>
             <div class="outer">
-              <button type="button" class="btn btn-outline-success" v-on:click="handleBuyBuilding(curBuilding.buildingName)">{{curBuilding.displayText}} ({{bigNumberHandler(resTable[curBuilding.buildingName].amount)}}) </button>
+              <button type="button" class="btn btn-outline-success" v-on:click="handleBuyBuilding(curBuilding.buildingName)">{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
               <span class="inner" >
                 Cost: <br />
-                <span v-for="(value, key) in buildingsList[curBuilding.buildingName]['cost']">{{resTable[key].screenName}}: {{value*resTable[curBuilding.buildingName]["multiplier"]}}<br /></span>
+                <span v-for="(value, key) in buildingsList[curBuilding.buildingName]['cost']">{{resTable[key].screenName}}: {{bigNumberHandler(value*resTable[curBuilding.buildingName]["multiplier"],true)}}<br /></span>
                 <span class = "--tooltip" v-if="buildingsList[curBuilding.buildingName]['tooltip']">
                   {{buildingsList[curBuilding.buildingName]['tooltip']}}
                 </span>
@@ -107,7 +109,7 @@
             Uncovered resources
             <div v-for='(datum,resource) in planets["total"]'>
               <span v-if='resource!="progress" && (datum>0|| unlockedResources.includes(resource))'>
-                {{resTable[resource].screenName}} - {{bigNumberHandler(datum)}}
+                {{resTable[resource].screenName}} - {{bigNumberHandler(datum,true)}}
               </span>
             </div>
           </span>
@@ -116,9 +118,9 @@
       <span v-else-if="tab == 'jobs'">
         <div v-for='(newJobs,jobBase,i) in jobs'>
           <span v-if='unlockedResources.includes(jobBase)'  :style="{'top':(i+1)*25+'vh'}">
-            <span>{{resTable[jobBase].screenName}}: {{bigNumberHandler(resTable[jobBase].amount)}} </span>
-            <div v-for='newJob in newJobs' v-if='!machineStates[newJob.job] || allDictKeysAreInArray(machineStates[newJob.job].resourcesNeeded,unlockedResources) || allDictKeysAreInArray(machineStates[newJob.job].resourcesNeeded,unlockedFluids)'>
-              <span>{{resTable[newJob.job].screenName}}: {{bigNumberHandler(resTable[newJob.job].amount)}} </span><br />
+            <span>{{resTable[jobBase].screenName}}: {{bigNumberHandler(resTable[jobBase].amount,true)}} </span>
+            <div v-for='newJob in newJobs' v-if='!machineStates[newJob.job] || allDictKeysAreInArray(machineStates[newJob.job].resourcesNeeded,unlockedResources.concat(unlockedFluids))'>
+              <span>{{resTable[newJob.job].screenName}}: {{bigNumberHandler(resTable[newJob.job].amount,true)}} </span><br />
               <span>Make a {{resTable[jobBase].screenName}} a(n) {{resTable[newJob.job].screenName}}
                 <button v-on:click='swapJobs(newJob.job,jobBase,1)'>+1</button>
                 <button v-on:click='swapJobs(newJob.job,jobBase,10)'>+10</button>
@@ -146,12 +148,12 @@
           {{extension[1]}}
           <div v-for="(script,key) in scripts[extension[0]]">
             {{script.screenName}}: {{script.percent}}%
-            <button v-on:click='assignScript(extension[0],script.screenName,1)'>+1%</button>
-            <button v-on:click='assignScript(extension[0],script.screenName,5)'>+5%</button>
-            <button v-on:click='assignScript(extension[0],script.screenName,100)'>+all</button>
-            <button v-on:click='assignScript(extension[0],script.screenName,-1)'>-1%</button>
-            <button v-on:click='assignScript(extension[0],script.screenName,-5)'>-5%</button>
-            <button v-on:click='assignScript(extension[0],script.screenName,-100)'>-all</button>
+            <button v-on:click='assignScript(extension[0],script.fileID,1)'>+1%</button>
+            <button v-on:click='assignScript(extension[0],script.fileID,5)'>+5%</button>
+            <button v-on:click='assignScript(extension[0],script.fileID,100)'>+all</button>
+            <button v-on:click='assignScript(extension[0],script.fileID,-1)'>-1%</button>
+            <button v-on:click='assignScript(extension[0],script.fileID,-5)'>-5%</button>
+            <button v-on:click='assignScript(extension[0],script.fileID,-100)'>-all</button>
           </div>
           <br />
         </div>
@@ -161,7 +163,7 @@
           <div class="outer">
             <button type="button" class="btn btn-outline-success" v-on:click="buyAdaptation(unSaveable.adaptations[adaptation])">{{adaptation}}</button>
             <span class="inner" >Cost: <br />
-              <span v-for="(value, key) in unSaveable.adaptations[adaptation].cost">{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span><br />
+              <span v-for="(value, key) in unSaveable.adaptations[adaptation].cost">{{resTable[key].screenName}}: {{bigNumberHandler(value,true)}}<br /></span><br />
               <span class = "--tooltip" v-if="unSaveable.adaptations[adaptation].description">
                 {{unSaveable.adaptations[adaptation].description}}
               </span>
@@ -178,12 +180,12 @@
       </span>
       <span v-else-if="tab == 'fluid'">
         <div>
-          Fluid storage space left: {{bigNumberHandler(fluidLeft)}} mB
+          Fluid storage space left: {{fluidLeft>=0?bigNumberHandler(fluidLeft):0}} mB
         </div>
         <div>
           Total fluid storage space: {{bigNumberHandler(resTable['fluid-storage'].storage)}} mB
         </div>
-        <span class = 'right-side-box'>
+        <span class = 'right-side-box' v-if='unlockedFluids.length>0'>
           <div v-for='fluid in unlockedFluids'>
             {{resTable[fluid].screenName}} - {{bigNumberHandler(resTable[fluid].amount)}} mB
           </div>
@@ -220,7 +222,7 @@
       <span v-else>
         <div>H oow aRe youu s eEi ng<br><b>tH</b>is. No]{}<i>tI?</i>fy? a??? de654V[]el=-op/\`<br>er.</div>
       </span>
-	</div>
+	  </div>
   <script src="code/data/buildings.js"></script>
   <script src="code/data/tiles.js"></script>
   <script src="code/data/rockets.js"></script>

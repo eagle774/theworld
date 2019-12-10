@@ -58,7 +58,11 @@ class Mine extends Saveable{
     let resources = []
     for(const [key,value] of Object.entries(this.resources)){
       if(depth>=this.getVal(key,'depthMin')&&depth<=this.getVal(key,'depthMax')&&this.resources[key].total>0){
-        totalWeights.push(this.getVal(key,'weight'))
+        if(this.getVal(key,'weight')<10){
+          totalWeights.push(this.getVal(key,'weight')*11*Math.random())
+        }else{
+          totalWeights.push(this.getVal(key,'weight'))
+        }
         resources.push(key)
       }
     }

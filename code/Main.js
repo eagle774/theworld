@@ -75,10 +75,12 @@ let App = new Vue({
 		addVisibleResource: function(resource,everyTick=false) {
 			if (!this.unlockedResources.includes(resource)&&!this.unlockedFluids.includes(resource)) {
 				if(this.resTable[resource]){
-					if(!this.resTable[resource].isFluid){
-						this.unlockedResources.push(resource)
-					}else{
-						this.unlockedFluids.push(resource)
+					if(!this.resTable[resource].isJob){
+						if(!this.resTable[resource].isFluid){
+							this.unlockedResources.push(resource)
+						}else{
+							this.unlockedFluids.push(resource)
+						}
 					}
 				}else{
 					this.errorLog.push('Could not add resource '+resource+' as it not in resTable')
@@ -182,9 +184,6 @@ let App = new Vue({
         let x = this.cursorX
         let y = this.cursorY
         let saveLine = file[y]
-				if(y==0){
-					this.updateScripts()
-				}
 				if(x+pos>saveLine.length-2)return false
         if (saveLine === " " && y!=0) {
           this.moveCursor(pos,0)
@@ -197,6 +196,7 @@ let App = new Vue({
 		            this.moveCursor(-1,0)
 		            x-=1
 		          }
+							this.computerChanged=2
           return true
         }
         if(y!=0 || saveLine.length>1){
@@ -213,13 +213,24 @@ let App = new Vue({
           if(y==0){
             this.files[this.fileViewed].screenName=file[y]
           }
+					if(y==0){
+						this.updateScripts()
+					}
+					this.computerChanged=2
           return true;
         }else{
           return false
         }
-				this.computerChanged=2
     },
 		parseCode:parseCode,
+		filesIncludesID: function(ID){
+			for(file of this.files){
+				if(file.fileID==ID){
+					return true
+				}
+			}
+			return false
+		},
 		//scripts
 		getScripts: function(extension){
 			files=[]
@@ -228,7 +239,7 @@ let App = new Vue({
 			}
 			for(let i=0;i<this.files.length;i++){
 				file = this.files[i]
-				if(file.screenName.slice(file.screenName.length-extension.length-1,file.screenName.length-1)==extension){
+				if(file.screenName.slice(file.screenName.length-extension.length-1,file.screenName.length-1)==extension&&file.screenName!=''){
 					files.push(this.files[i])
 				}
 			}
@@ -236,20 +247,30 @@ let App = new Vue({
 		},
 		updateScripts: function(){
 			for(extension of this.unSaveable.extensions){
-				scripts = this.getScripts(extension[0])
+				let scripts = this.getScripts(extension[0])
 				for(const [key,script] of Object.entries(this.scripts[extension[0]])){
-					if(key!=script.screenName){
+					if(key!=script.fileID){
 						delete this.scripts[extension[0]][key]
 					}
 				}
+				let added=[]
 				for(file of scripts){
 					if(!this.scripts[extension[0]]){
 						this.$set(this.scripts,extension[0],{})
 					}
-					this.scripts[extension[0]][file.screenName]=file
-					part = this.scripts[extension[0]][file.screenName]
-					if(!part.percent){
+					added.push(file.fileID)
+					let savePercent = this.scripts[extension[0]][file.fileID]
+					this.scripts[extension[0]][file.fileID]=JSON.parse(JSON.stringify(file))
+					let part = this.scripts[extension[0]][file.fileID]
+					if(!savePercent){
 						part.percent=0
+					}else{
+						part.percent = savePercent.percent
+					}
+				}
+				for(const [key,value] of Object.entries(this.scripts[extension[0]])){
+					if(!added.includes(Number(key))){
+						delete this.scripts[extension[0]][Number(key)]
 					}
 				}
 			}
@@ -361,12 +382,6 @@ let App = new Vue({
 			}
 			return false
 		},
-		setTab: function(tab){
-			this.tab = tab
-			if(tab=='adaptation'){
-				this.editTab('adaptation','Adaptations')
-			}
-		},
 		resTableFilterBy:function(condition){
 			let returnable = []
 			for (const [key, value] of Object.entries(this.resTable)) {
@@ -393,20 +408,20 @@ let App = new Vue({
 			return true
 		},
 		allocateItemsPercent: function(amount,percentDict){
-			percents = []
-			results = []
-			totPercent = sum = 0
-			best = 0
-			bestNum = -1
-			bestNums = [[Infinity,0]]
+			let percents = []
+			let results = []
+			let totPercent = sum = 0
+			let best = 0
+			let bestNum = -1
+			let bestNums = [[Infinity,0]]
 			for(const [key,value] of Object.entries(percentDict)){
 				percents.push(value.percent)
 				results.push(0)
-				index=0
-				while(value>bestNums[index][0]){
+				let index=0
+				while(value.percent>bestNums[index][0]){
 					index++
 				}
-				bestNums.splice(index,0,[value,results.length-1])
+				bestNums.splice(index,0,[value.percent,results.length-1])
 			}
 			for(let i=0;i<percents.length;i++){
 				totPercent += percents[i]
@@ -415,12 +430,12 @@ let App = new Vue({
 				results[i] = Math.floor(amount*(percents[i]/100))
 				sum+=Math.floor(amount*(percents[i]/100))
 			}
-			left = Math.floor((amount*totPercent/100-sum))
+			let left = Math.floor((amount*totPercent/100-sum))
 			index=bestNums.length-2
 			while(left >= 1){
 				results[bestNums[index][1]]++
 				left--
-				index--
+				index++
 			}
 			return results
 		},
@@ -431,6 +446,27 @@ let App = new Vue({
 				}
 			}
 			return true
+		},
+		//setters
+		setMessage: function(newMessage){
+			this.message=newMessage
+		},
+		setTab: function(tab){
+			this.tab = tab
+			if(tab=='adaptation'){
+				this.editTab('adaptation','Adaptations')
+			}
+			if(tab=='computer'){
+				this.editTab('computer','Computer')
+			}
+		},
+		setCheck: function(check,value){
+			this.checks[check]=value
+		},
+		setMessageIfCheck: function(newMessage,check){
+			if(this.checks[check]){
+				this.message=newMessage
+			}
 		},
 		//fluids
 		updateFluids: function(){
@@ -452,12 +488,12 @@ let App = new Vue({
 				this.message="While searching for a place to store your wood you stumble across some flint and steel."
 				this.addBuilding("Light a fire", "fire")
 				this.configureButton(1, "displayText", "Explore (Locked)")
-			} else if (!this.unlockedResources.includes("bucket") && this.resTable["fire"].gettable) {
+			} else if (!this.unlockedResources.includes("bucket") && this.checks['fireMade']) {
 				this.addBuilding("Make a bucket", "bucket")
-				this.message="You find a river. You could catch fish there with the right equipment."
+				this.message="Is my fate to become like the rest of The Dreamers?"
 				this.addVisibleResource("bucket")
 				this.configureButton(1, "displayText", "Explore (Locked)")
-			} else if (!this.unlockedResources.includes("steam-engine") && this.resTable["steam-engine"].gettable) {
+			} else if (!this.unlockedResources.includes("steam-engine") && this.checks['steamExplore']) {
 				this.addVisibleResource("steam-engine")
 				this.incrementResource("steam-engine", 1)
 				this.addVisibleResource("computer-disk")
@@ -466,24 +502,28 @@ let App = new Vue({
 				this.configureResource('barn', 'locked', false)
 				this.configureResource('incendinary-pile', 'locked', false)
 				this.configureButton(1, "displayText", "Explore (Locked)")
-				this.message="In the cave you find an assortment of stone,\na rusted steam engine, blueprints for a computer\nand a computer disk."
+				this.message="In the cave you find a rusted steam engine,\nblueprints for a computer and a computer disk."
 				this.addButton("Mine stone", 'mineStone')
 			}
 		},
 		incrementResourceByHand: function(res, amount) {
 			let table = this.resTable;
-			if (table[res].storage < amount + table[res].amount) {
-				this.configureResource(res, "amount", table[res].storage)
-			} else if (0 > amount + table[res].amount) {
-				this.configureResource(res, "amount", 0)
-			} else {
-				this.configureResource(res, "amount", table[res].amount + amount)
-			}
-			if (res === "wood" && table[res].gettable === false && table[res].amount > 10) {
-				this.configureResource("wood", "gettable", true)
+			if (res === "wood" && !this.checks['flintUnlocked'] && table[res].amount >= 9) {
+				this.setCheck("flintUnlocked",true)
 				this.addButton("Explore for a place to store your wood.",'explore')
 			}
 			this.addVisibleResource(res,true)
+			if (table[res].storage < amount + table[res].amount) {
+				const toReturn = table[res].storage - table[res].amount
+				this.configureResource(res, "amount", table[res].storage)
+			} else if (0 > amount + table[res].amount) {
+				const toReturn = -1*table[res].amount
+				this.configureResource(res, "amount", 0)
+				return toReturn
+			} else {
+				this.configureResource(res, "amount", table[res].amount + amount)
+				return amount
+			}
 		},
 		insertDisk: function() {
 			this.insertedDisk=true
@@ -520,7 +560,7 @@ let App = new Vue({
 						}
 						table[buildingName].amount += number
 						if (buildingName === "fire") {
-							if (table[buildingName].gettable === false) {
+							if (!this.checks['fireMade']) {
 								this.message="Have to keep the fire warm. It offers hope"
 								this.configureButton(1, "displayText", "Explore for something to cook on the fire")
 							}
@@ -532,9 +572,9 @@ let App = new Vue({
 							}
 						}
 						if (buildingName === "spit" || buildingName==='bucket-water') {
-							if (table["spit"].gettable && table["bucket-water"].gettable && !table["water-boiling"].gettable) {
+							if (this.checks['spitMade'] && this.checks["bucket-waterMade"] && !this.checks['hang-bucketUnlocked']) {
 								this.addProcess("Hang a bucket on the spit", "hangbucket")
-								this.configureResource("water-boiling", "gettable", true)
+								this.setCheck("hang-bucketUnlocked", true)
 							}
 						}
 						this.addVisibleResource(buildingName,true)
@@ -642,8 +682,8 @@ let App = new Vue({
 					}
 				}
 			}
-			if (this.resTable["steam"].amount >= 200 && !this.resTable["steam-engine"].gettable) {
-				this.configureResource("steam-engine", "gettable", true)
+			if (this.resTable["steam"].amount >= 200 && !this.checks['steamExplore']) {
+				this.setCheck('steamExplore',true)
 				this.configureButton(1, "displayText", "Explore a nearby cave for something to consume this steam.")
 			}
       for(let i=0;i<this.machinePriority.length;i++){
@@ -678,6 +718,44 @@ let App = new Vue({
 					}
         }
         this.machineStates[this.machinePriority[i]]=machine
+      }
+			for(let i=0;i<this.mineMachinePriority.length;i++){
+        let machine=this.mineMachineStates[this.mineMachinePriority[i]]
+				machine.multiplier = 1
+        for(const [key,value] of Object.entries(machine["resourcesNeeded"])){
+					machine.multiplier = Math.min(machine.multiplier,this.resTable[key].amount/
+						value/(this.resTable[this.mineMachinePriority[i]].amount==0?
+							Infinity:
+								this.resTable[this.mineMachinePriority[i]].amount))
+        }
+				let listed = []
+        for(const [key,value] of Object.entries(machine["results"])){
+					listed.push((this.resTable[key].storage-
+						this.resTable[key].amount)
+						/value/(this.resTable[this.mineMachinePriority[i]].amount)
+						/
+						machine.multiplier)
+        }
+				if(listed.length==0){
+					listed.push(1)
+				}
+				let maxim = Math.max.apply(null,listed)
+				machine.multiplier = Math.min(maxim==maxim?maxim:Infinity,machine.multiplier)
+        if(this.resTable[this.mineMachinePriority[i]].amount>0&&machine.multiplier>0){
+	        for(const [key,value] of Object.entries(machine["results"])){
+						if(this.mining['Earth']['resources'][key]){
+							this.incrementResource(key,Math.min(value*this.resTable[this.mineMachinePriority[i]].amount*machine.multiplier,this.mining['Earth']['resources'][key].total))
+							this.mining['Earth']['resources'][key].total-=Math.min(value*this.resTable[this.mineMachinePriority[i]].amount*machine.multiplier,this.mining['Earth']['resources'][key].total)
+						}else{
+							this.incrementResource(key,value*this.resTable[this.mineMachinePriority[i]].amount*machine.multiplier)
+						}
+            this.addVisibleResource(key,true)
+					}
+		      for(const [key,value] of Object.entries(machine["resourcesNeeded"])){
+						this.incrementResource(key,-value*this.resTable[this.mineMachinePriority[i]].amount*machine.multiplier)
+					}
+        }
+        this.mineMachineStates[this.mineMachinePriority[i]]=machine
       }
 			for (const [key, building] of Object.entries(this.buildingsList)) {
 				let available=true
@@ -739,15 +817,49 @@ let App = new Vue({
 				}
 				this.editTab('adaptation', 'Adaptations ('+count+')')
 			}
+			if(this.hole>=100&&!this.filesIncludesID('minereadme')){
+				this.editTab('computer','Computer (1)')
+				addFileConstructor("minereadme", "mining.doc", "Here is a helpful guide to the depths you find resources at certain depths.\
+\nThe Galactic Council has not told you this, because they don't want you to succeed.\
+\nNothing is found below 1,000,000,000m.\
+\nCoal is found at 10m-10,000,000m\
+\nStone is found at all depths.\
+\nCopper is found at 100m-100,000m\
+\nIron is found at 100m-100,000m\
+\nTitanium is found at 100,000m-100,000,000m\
+\nTungsten is found at 1,000,000m-1,000,000,000m\
+-Anonymous", "doc")
+			}
+			if(this.resTable['alloyer'].amount>0&&!this.filesIncludesID('alloyreadme')){
+				this.editTab('computer','Computer (2)')
+				addFileConstructor("alloyreadme", "alloyer.doc", "What materials can you make in an alloyer?\
+\nI can't tell you all of them, but by melting as many resources as you can, you can find recipies.\
+\nA friendly reminder - You must stay away from Frostium technology.\
+\n-The Galactic Council", "doc")
+				addFileConstructor("frostiumNecessary", "urgent.doc", "The Galactic Council believes you should stay away from Frostium\
+\nThis is foolishness and superstition, but even with my influence, they did not change their mind.\
+\nIf you wish to leave this planet, you will need frostium technology.\
+\nDO NOT LISTEN TO THEIR WARNING. THEY ONLY AIM TO GAIN FOR THEMSELVES.\
+\n-Anonymous", "doc")
+			}
+
 		},
 		//jobs
 		swapJobs: function(newJob,oldJob,number){
 			number = Math.round(number)
 			number = Math.min(number,this.resTable[oldJob].amount)
-			if(this.incrementResource(newJob,number)){
-				this.incrementResource(oldJob,-number)
+			if(this.incrementResourceByHand(newJob,number)){
+				this.incrementResourceByHand(oldJob,-number)
 				this.addVisibleResource(newJob,true)
 			}
+		},
+		jobCount: function(job){
+			let totalCount = this.resTable[job].amount
+			let jobList = this.jobs[job]||[]
+			for(let i=0;i<jobList.length;i++){
+				totalCount+=this.resTable[jobList[i].job].amount
+			}
+			return totalCount
 		},
 		//rocketry
 		handleLaunchRocket: function(rocket){

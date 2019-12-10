@@ -1,4 +1,4 @@
-const bigNumberHandler = (number)=>{
+const bigNumberHandler = (number,isBuilding)=>{
   prefixes=['','K','M','B','T','Qa','Qi','Sx','Sp','O','N','De']
   pos=0
   negative = ''
@@ -12,6 +12,9 @@ const bigNumberHandler = (number)=>{
   while(number>=1000){
     number = number/1000
     pos+=1
+  }
+  if(!isBuilding&&pos==0){
+    return negative+number.toFixed(2)+prefixes[pos]
   }
   if(pos==0){
     return (Math.round(number*100000)/100000+'').length>

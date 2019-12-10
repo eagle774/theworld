@@ -6,7 +6,7 @@ let buildingsData = {
       "fs": 0.01
     },
     "effects": [
-      {"funcName":"configureResource","args":['fire','gettable','true']}
+      {"funcName":"setCheck","args":['fireMade',true]}
     ],
 		"tooltip":"Don't touch it.",
     'category':'Utility'
@@ -59,8 +59,13 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['stone','storage',100]},
       {"funcName":"incrementResourceSpecial","args":['steel','storage',5]},
       {"funcName":"incrementResourceSpecial","args":['coal','storage',200]},
+      {"funcName":"incrementResourceSpecial","args":['iron-ore','storage',100]},
+      {"funcName":"incrementResourceSpecial","args":['gold-ore','storage',1]},
+      {"funcName":"incrementResourceSpecial","args":['tungsten-ore','storage',5]},
+      {"funcName":"incrementResourceSpecial","args":['titanium-ore','storage',25]},
+      {"funcName":"incrementResourceSpecial","args":['copper-ore','storage',100]},
     ],
-		"tooltip":"Big enough to store resources",
+    "tooltip":"Big enough to store resources",
     'category':'Storage'
   },
   "robot": {
@@ -83,10 +88,27 @@ let buildingsData = {
       "bucket": 1
     },
     "effects": [
-      {"funcName":"configureResource","args":['bucket-water','gettable','true']}
+      {"funcName":"setCheck","args":['bucket-waterMade',true]}
     ],
 		"tooltip":"Why doesn't this leak?",
     'category':'Utility'
+  },
+  "planet-grinder": {
+    "type":"building",
+    "cost": {
+      "frostium-core": 5,
+      "frostium":1000,
+      "steel":1000000,
+      "tungsten":1000000,
+      "frostium-battery":2,
+    },
+		"tooltip":"The one remaining reminder of the war",
+    'category':'Advanced Metal Working',
+    "effects": [
+      {"funcName":"setMessageIfCheck","args":['Broken planets. Dying races. Chaos.','notPlanetGrinderMade']},
+      {"funcName":"setCheck","args":['notPlanetGrinderMade',false]},
+      {'funcName':'configureResource','args':['frostium-furnace','locked',false]},
+    ],
   },
   "spit": {
     "type":"building",
@@ -95,7 +117,7 @@ let buildingsData = {
       "wood": 2
     },
     "effects": [
-      {"funcName":"configureResource","args":['spit','gettable','true']}
+      {"funcName":"setCheck","args":['spitMade',true]}
     ],
 		"tooltip":"What's the bucket for?",
     'category':'Utility'
@@ -131,6 +153,17 @@ let buildingsData = {
       'copper':2
     },
 		"tooltip":"Mine stone to make a stone miner to mine stone",
+    'category':'Technical'
+  },
+  "fire-starter": {
+    "type":"building",
+    "cost": {
+      "wood": 20,
+      'iron':50,
+      'copper':50,
+      "coal":5
+    },
+		"tooltip":"What could possibly go wrong?",
     'category':'Technical'
   },
   "furnace": {
@@ -172,22 +205,25 @@ let buildingsData = {
       "stone": 500,
       "compressed-iron":100,
       "copper":200,
-      "titanium":50,
+      "titanium":2000,
     },
     'category':'Metal Machine'
   },
   "rocket-launcher": {
     "type":"building",
     "cost": {
-      "stone": 1000,
-      "iron":200,
-      "copper":200,
-      "computer":20,
-      "steel":1000,
-      "tungsten":1000,
+      "stone": 100000000,
+      "iron":500000000,
+      "copper":500000000,
+      "steel":10000000,
+      "tungsten":5000000,
+      "duranium":100000,
+      "frostium-core":100
     },
     "effects":[
-      {'funcName':'addTab','args':['Rocket Launching','rocket-silo',true]}
+      {'funcName':'addTab','args':['Rocket Launching','rocket-silo',true]},
+      {"funcName":"setMessageIfCheck","args":['The commanders, leading their rocket ships into a masascre.','notRocketLauncherMade']},
+      {"funcName":"setCheck","args":['notRocketLauncherMade',false]},
     ],
     'category':'Special',
     'tooltip':'Shoot big explosive things. What could be better than that?'
@@ -200,49 +236,64 @@ let buildingsData = {
     'category':'Utility',
     'tooltip':'Perform pagan rituals to get them on fire'
   },
+  "coal-incendinary-pile": {
+    "type":"building",
+    "cost": {
+      "coal": 100
+    },
+    'category':'Utility',
+    'tooltip':'Now to wait for a lightning strike.'
+  },
   "alloyer": {
     "type":"building",
     "cost": {
       "stone": 1000,
-      "iron":200,
-      "copper":200,
-      "tungsten":100
+      "iron":20000,
+      "copper":20000,
+      "titanium":5000,
+      "tungsten":5000,
+      "steel":5000
     },
     "effects":[
       {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
       {'funcName':'updateFluids','args':[]},
     ],
-    'category':'Metal Machine'
+    'category':'Fluid Handling',
   },
   "cooler": {
     "type":"building",
     "cost": {
       "stone": 1000,
-      "iron":200,
-      "copper":200,
-      "tungsten":1000
+      "iron":20000,
+      "copper":20000,
+      "titanium":5000,
+      "tungsten":5000,
+      "steel":5000
     },
     "effects":[
       {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
       {'funcName':'updateFluids','args':[]},
     ],
-    'category':'Metal Machine'
+    'category':'Fluid Handling',
   },
   "melter": {
     "type":"building",
     "cost": {
       "stone": 1000,
-      "iron":200,
-      "copper":200,
+      "iron":20000,
+      "copper":20000,
       "titanium":5000,
-      "tungsten":5000
+      "tungsten":5000,
+      "steel":5000
     },
     "effects":[
       {'funcName':'addTab','args':['Fluids','fluid',true]},
       {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
+      {'funcName':'configureResource','args':['alloyer','locked',false]},
+      {'funcName':'configureResource','args':['cooler','locked',false]},
       {'funcName':'updateFluids','args':[]},
     ],
-    'category':'Metal Machine'
+    'category':'Fluid Handling',
   },
   "solar-panel": {
     "type":"building",
@@ -255,6 +306,72 @@ let buildingsData = {
     'effects':[
       {"funcName":"incrementResourceSpecial","args":['energy','storage',20]},
     ]
+  },
+  "pump": {
+    "type":"building",
+    "cost": {
+      "tungsten":10000,
+      "duranium":400
+    },
+    'tooltip':'Watertight? Why does that matter?',
+    'category':'Fluid Handling'
+  },
+  "frostium-core":{
+    "type":"building",
+    "cost": {
+      "frostium":1000
+    },
+    'tooltip':'It glows with an ethereal light',
+    'category':'Advanced Metal Working',
+    "effects": [
+      {"funcName":"setMessageIfCheck","args":['So small to have caused such destruction','notFrostiumCoreMade']},
+      {"funcName":"setCheck","args":['notFrostiumCoreMade',false]},
+    ],
+  },
+  "frostium-battery":{
+    "type":"building",
+    "cost": {
+      "frostium-core":1,
+      'steel':100
+    },
+    'tooltip':'Focusing frostium energy',
+    'category':'Advanced Metal Working',
+    "effects": [
+      {"funcName":"setMessageIfCheck","args":['This brings back such memories','notFrostiumBatteryMade']},
+      {"funcName":"setCheck","args":['notFrostiumBatteryMade',false]},
+      {"funcName":"incrementResourceSpecial","args":["frostium-energy","storage",100]}
+    ],
+  },
+  "frostium-furnace":{
+    "type":"building",
+    "cost": {
+      "frostium-core":10,
+      "frostium-battery":2,
+      "tungsten":1000000,
+      "frostium":1000,
+    },
+    'tooltip':'The chill radiating from it doesn\'t seem to affect the inside.',
+    'category':'Advanced Metal Working',
+    "effects": [
+      {"funcName":"setMessageIfCheck","args":['The manufacturies, glowing with blue light,\n until they were blown up.','notFrostiumFurnaceMade']},
+      {"funcName":"setCheck","args":['notFrostiumFurnaceMade',false]},
+    ],
+  },
+  "industrial-warehouse": {
+    "type":"building",
+    "cost": {
+      "duranium":100
+    },
+    'tooltip':'Stores more valuable materials',
+    'category':'Storage',
+    "effects": [
+      {"funcName":"incrementResourceSpecial","args":['tungsten','storage',10]},
+      {"funcName":"incrementResourceSpecial","args":['titanium','storage',50]},
+      {"funcName":"incrementResourceSpecial","args":['compressed-iron','storage',10]},
+      {"funcName":"incrementResourceSpecial","args":['steel','storage',50]},
+      {"funcName":"incrementResourceSpecial","args":['duranium','storage',4]},
+      {"funcName":"incrementResourceSpecial","args":['frostium','storage',1]},
+    ],
   },
   "wooden-rocket": {
     "type":"rocket",

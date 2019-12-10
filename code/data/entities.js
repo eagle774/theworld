@@ -4,7 +4,7 @@ let entityData={
       'onTick':[]
     },
     'resources':{
-      'wood':6
+      'wood':1
     },
     'display':'t',
   },
