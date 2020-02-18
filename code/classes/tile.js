@@ -13,5 +13,4 @@ class Tile extends Saveable{
   }
 }
 
-
 registerClass('tile',Tile)

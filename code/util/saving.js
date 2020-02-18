@@ -35,16 +35,32 @@ class Saveable {
           }
         }
       }
+      if(classy.type=='single'){
+        let otherSave=classy.pointer[classy.nextStep]
+        let newClass=new classes[classy.classType]()
+        newClass.setData(otherSave)
+        classy.pointer[classy.nextStep]=newClass
+      }
+      if(classy.type=='array'){
+        for(let i=0;i<classy.pointer.length;i++){
+          if(classy.pointer[i]!=null){
+            let otherSave=classy.pointer[i]
+            let newClass=new classes[classy.classType]()
+            newClass.setData(otherSave)
+            classy.pointer[i]=newClass
+          }
+        }
+      }
     }
   }
-  registerInnerClass(toSave,type,classType){
-    let acceptable=['2darray']
+  registerInnerClass(toSave,type,classType,nextStep=undefined){
+    let acceptable=['2darray','array','single']
     if(acceptable.includes(type)){
-      this.innerClassList.push({pointer:toSave,type,classType})
+      this.innerClassList.push({pointer:toSave,type,classType,nextStep})
     }
   }
 }
 
-let registerClass=(name,classType)=>{
-  classes[name]=classType
+const registerClass = function(representer,actual){
+  classes[representer]=actual
 }

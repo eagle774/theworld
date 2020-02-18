@@ -1,249 +1,527 @@
 <!DOCTYPE html>
-<html lang="en">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<html lang='en'>
+<meta http-equiv='Cache-Control' content='no-cache, no-store, must-revalidate'>
+<meta http-equiv='Pragma' content='no-cache'>
+<meta http-equiv='Expires' content='0'>
   <head>
-    <meta charset="utf-8" />
+    <meta charset='utf-8' />
     <title>The World</title>
-	<script src="vue.js"></script>
-	<link href="css/theworld.css" rel="stylesheet"> <link rel="stylesheet" href="css/bootstrap.css"/>
-
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<link href='css/theworld.css' rel='stylesheet'> <link rel='stylesheet' href='css/bootstrap.css'/>
+<script src=//unpkg.com/vuetrend></script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="app" tabindex="0">
-      <span v-for="curTab in tabs" :key=curTab.displayText v-on:click="setTab(curTab.tab)"><button class="btn btn-outline-danger" v-if="curTab.tab == tab">{{curTab.displayText}}</button><button class="btn btn-outline-success" v-else>{{curTab.displayText}}</button></span>
-      <div class="display-left">
-        <div v-for="resource in unlockedResources" :key="resource" v-bind:style="resTable[resource].specialCSS">
-          {{resTable[resource].screenName}}: {{bigNumberHandler(jobCount(resource),resTable[resource].isBuildable)}}/{{bigNumberHandler(resTable[resource].storage,true)}} ({{bigNumberHandler(resTable[resource].extraPerTick,resTable[resource].isBuildable)}}/tick)
-        </div>
-      </div>
-      <div v-for="line in message.split('\n')" :key=line>{{line}}</div>
-      <span v-if="tab == 'main'">
-        <span class="list-item top-part">
-          <span v-for='amountToBuy in buyList'>
-            <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class="list-group-item list-group-item-action small-text">Buy {{amountToBuy}}</button>
-            <button v-else class="list-group-item active list-group-item-action small-text">Buy {{amountToBuy}}</button>
-          </span>
-        </span>
-        <div class="close-to-the-whole-screen">
-          <span v-for = "category in Object.entries(categories)" v-if="processes.length>0 || category[0]!='Processes'" :key = category[0]>
-            <button v-if='categories[category[0]]' class = "btn btn-outline-success" v-on:click = "categories[category[0]]=!categories[category[0]]">
-              {{category[0]}}
-            </button><button class = "btn btn-outline-danger" v-else v-on:click = "categories[category[0]]=!categories[category[0]]">
-              {{category[0]}}
-            </button>
-          </span>
-        </div>
-        <br />
-        <br />
-        <span v-if='categories["Interaction"]'>
-          <div v-for="curButton in buttons" :key= curButton.displayText class="outer">
-            <button type="button" class="btn btn-outline-success" v-on:click="unSaveable.buttons[curButton.todo]()">{{curButton.displayText}}</button>
+    <div id='app' tabindex='0'>
+      <span v-if="!naughty">
+        <button class='btn btn-outline-success' v-if='tabPos>0' v-on:click='tabPos-=1'>(--</button>
+        <button class='btn btn-outline-danger' v-else-if='tabs.length>10'>(--</button>
+        <span v-for='curTab in tabs.slice(tabPos*10,tabPos*10+10)' :key=curTab.tab v-on:click='setTab(curTab.tab)'><button class='btn btn-outline-danger' v-if='curTab.tab == tab'>{{curTab.displayText}}</button><button class='btn btn-outline-success' v-else>{{curTab.displayText}}</button></span>
+        <button class='btn btn-outline-success' v-if='tabPos+1<tabs.length/10' v-on:click='tabPos+=1'>--)</button>
+        <button class='btn btn-outline-danger' v-else-if='tabs.length>10'>--)</button>
+        <div class='display-left' v-if='tab.includes("space")'>
+          <div v-for='resource in unlockedSpaceResources' :key='resource' v-bind:style='resTable[resource].specialCSS'>
+            {{resTable[resource].screenName}}: {{bigNumberHandler(spaceJobCount(resource),resTable[resource].isBuildable)}}
           </div>
-        </span>
-        <br />
-        <span v-if='categories["Processes"]'>
-          <div v-for="curProcess in processes" :key= curProcess.displayText>
-            <div class="outer"><button type="button" class="btn btn-outline-success" v-on:click="handleBuyBuilding(curProcess.buildingName)">{{curProcess.displayText}}  </button><span class="inner" >Cost: <br /><span v-for="(value, key) in buildingsList[curProcess.buildingName]['cost']">{{resTable[key].screenName}}: {{value}}<br /></span><br /></span></div>
+        </div>
+        <div class='display-left' v-else-if='tab.includes("market")'>
+          <div>
+            {{resTable['galactic-credit'].screenName}}: {{bigNumberHandler(resTable['galactic-credit'].amount,false)}}
           </div>
-        </span>
-        <br />
-        <div v-for="entry in Object.entries(buildings)"  v-if='categories[entry[0]]':key = 'entry[0]+"aah"'>
-          <div v-for="curBuilding in entry[1]" :key= 'curBuilding.displayText'>
-            <div class="outer">
-              <button type="button" class="btn btn-outline-success" v-on:click="handleBuyBuilding(curBuilding.buildingName)">{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
-              <span class="inner" >
-                Cost: <br />
-                <span v-for="(value, key) in buildingsList[curBuilding.buildingName]['cost']">{{resTable[key].screenName}}: {{bigNumberHandler(value*resTable[curBuilding.buildingName]["multiplier"],true)}}<br /></span>
-                <span class = "--tooltip" v-if="buildingsList[curBuilding.buildingName]['tooltip']">
-                  {{buildingsList[curBuilding.buildingName]['tooltip']}}
-                </span>
+          <div>
+            Net Worth: {{bigNumberHandler(getNetWorth(),false)}}
+          </div>
+          <div v-for='resource in market.stocks' :key='resource.name'>
+            {{resource.name}} Stocks: {{bigNumberHandler(stocks[resource.name],true)}}
+          </div>
+        </div>
+        <div class='display-left' v-else><!--<div class='display-left' v-bind:style='{"width":(tickCount%1000)/2+1+"vh"}' v-else>-->
+          <div v-for='(info,resource) in resTable' :key='resource' v-bind:style='resTable[resource].specialCSS' v-if='unlockedResources.includes(resource)'>
+            {{info.screenName}}: {{speakethSpeaketh?bigNumberHandler(sigmoid(jobCount(resource)),false):bigNumberHandler(jobCount(resource),info.isBuildable)}}/{{speakethSpeaketh?bigNumberHandler(sigmoid(info.storage),false):bigNumberHandler(info.storage,true)}}
+            <br>({{speakethSpeaketh?bigNumberHandler(sigmoid(info.extraPerTick,info.isBuildable),false):bigNumberHandler(info.extraPerTick,info.isBuildable)}}/tick)
+          </div>
+        </div>
+        <div v-for='line in message.split("\n")' :key='line'>{{line}}</div>
+        <div style="overflow:auto; height:88vh">
+          <span v-if='tab == "main"'>
+            <span class='list-item top-part'>
+              <span v-for='amountToBuy in buyList'>
+                <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
+                <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
+              </span>
+            </span>
+            <div class='close-to-the-whole-screen'>
+              <span v-for = 'category in Object.entries(categories)' v-if='processes.length>0 || category[0]!="Processes"' :key = 'category[0]'>
+                <button v-if='categories[category[0]]' class = 'btn btn-outline-success' v-on:click = 'categories[category[0]]=!categories[category[0]]'>
+                  {{category[0]}}
+                </button><button class = 'btn btn-outline-danger' v-else v-on:click = 'categories[category[0]]=!categories[category[0]]'>
+                  {{category[0]}}
+                </button>
+              </span>
+            </div>
+            <br />
+            <br />
+            <span v-if="categories['Interaction']">
+              <div v-for='curButton in buttons' :key= curButton.displayText class='outer'>
+                <button type='button' v-if='!curButton.ready' class='btn btn-outline-success' v-on:click='unSaveable.buttons[curButton.todo]()'>{{curButton.displayText}}</button>
+                <button type='button' v-else class='btn btn-success' v-on:click='unSaveable.buttons[curButton.todo]()'>{{curButton.displayText}}</button>
+              </div>
+            </span>
+            <br />
+            <span v-if="categories['Processes']">
+              <div v-for='curProcess in processes' :key= 'curProcess.displayText'>
+                <div class='outer'><button v-if='isBuildingBuyable(curProcess.buildingName)' type='button' class='btn btn-success' v-on:click='handleBuyBuilding(curProcess.buildingName)'>{{curProcess.displayText}}  </button>
+                  <button type='button' v-else class='btn btn-outline-success' v-on:click='handleBuyBuilding(curProcess.buildingName)'>{{curProcess.displayText}}  </button><span class='inner' >Cost: <br /><span v-for='(value, key) in buildingsList[curProcess.buildingName]["cost"]'>{{resTable[key].screenName}}: {{value}}<br /></span><br /></span></div>
+              </div>
+            </span>
+            <br />
+            <div v-for='entry in Object.entries(buildings)'  v-if='categories[entry[0]]':key = 'entry[0]+"aah"'>
+              <div v-for='curBuilding in entry[1]' :key= 'curBuilding.displayText'>
+                <div class='outer'>
+                  <button type='button' v-if='resTable[curBuilding.buildingName].amount==resTable[curBuilding.buildingName].storage' class='btn btn-dark' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
+                  <button type='button' v-else-if='isBuildingBuyable(curBuilding.buildingName)' class='btn btn-success' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) +{{bigNumberHandler(howManyPlease(curBuilding.buildingName,false),true)}} </button>
+                  <button type='button' v-else class='btn btn-outline-success' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
+                  <span class='inner' >
+                    Cost: <br />
+                    <span v-for='(value, key) in buildingsList[curBuilding.buildingName]["cost"]'>{{resTable[key].screenName}}: {{bigNumberHandler(value*resTable[curBuilding.buildingName]['multiplier'],true)}}<br /></span>
+                    <span class = '--tooltip' v-if='buildingsList[curBuilding.buildingName]["tooltip"]'>
+                      {{buildingsList[curBuilding.buildingName]['tooltip']}}
+                    </span>
+                    <br />
+                  </span>
+                </div>
+              </div>
+              <br />
+            </div>
+          </span>
+          <span v-else-if='tab == "saving"'>
+            <button class='btn btn-outline-warning'  v-on:click='saveGame()'>Save game</button>
+            <button class='btn btn-outline-warning'  v-on:click='loadGame(true)'>Load game</button>
+            <button class='btn btn-outline-warning'  v-on:click='clearGame()'>Wipe save</button>
+          </span>
+          <span v-else-if='tab == "computer"'>
+            <button v-if='insertedDisk==false' v-on:click='insertDisk()' class='btn btn-outline-success'>Insert your computer disk.</button>
+            <div class='computer-screen'>
+              <span  v-bind:style="{'opacity':computerOpacity}">
+      			      <p class='list-item computer-sidebar'>
+                    <span v-for='curFile in files' :key='curFile.fileID'>
+                      <button class='list-group-item list-group-item-action active small-text' v-if='fileViewed==curFile.fileID'>{{curFile.screenName}}</button>
+                      <button class='list-group-item list-group-item-action small-text' v-else v-on:click='curFileType=curFile.type;fileViewed=curFile.fileID;cursorX=0;cursorY=0'>{{curFile.screenName}}</button>
+                    </span>
+      				     <button  class='list-group-item list-group-item-action small-text' v-on:click='addFile(files.length,"untitledfile.doc ")'>Make a file</button>
+                 </p>
+                 <span v-if='fileContents[fileViewed] && curFileType == "doc"'>
+                   <pre v-for='(line, index) in fileContents[fileViewed].split("\n")' :key='line' class='computerCode' :style="{'top':(index*2)+'vh','marginBottom':'0px'}" :style="{'text-align':'left','display': 'inline'}">{{line}} <br /></pre>
+                 </span>
+                 <span v-else-if='fileContents[fileViewed] && curFileType == "img"'>
+                   <img :src='"images/"+fileContents[fileViewed]' class='img-file' />
+                 </span>
+                 <span v-else>
+                   <div v-for='(line, index) in fileTextContents[fileViewed]'>
+                     <span class='computerCode' :style="{'top':(index*2)+'vh','marginBottom':'0px'}" v-if='index != cursorY'><pre :style="{display: 'inline'}">{{line}}</pre></span>
+                     <span v-else class='computerCode' :style="{'top':index*2+'vh'}">
+                       <pre :style='{display:"inline"}'>{{line.slice(0,cursorX)}}</pre><pre id='curLine' :style="{'backgroundColor': 'blue',display:'inline'}">{{line[cursorX]==' '?'&nbsp;':line[cursorX]}}</pre><pre :style="{display:'inline'}">{{line.slice(cursorX+1,line.length)[0]==' '?'&nbsp;'+line.slice(cursorX+2,line.length):line.slice(cursorX+1,line.length)}}</pre>
+                     </span>
+                   </div>
+                 </span>
+               </span>
+      		  </div>
+          </span>
+          <span v-else-if='tab == "mining"'>
+              <br>
+              <span>
+                Hole depth: {{bigNumberHandler(hole)}} m
+              </span>
+              <span class='left-side-box'>
+                Uncovered resources
+                <div v-for='(datum,resource) in planets["total"]'>
+                  <span v-if='resource!="progress" && (datum>0|| unlockedResources.includes(resource))'>
+                    {{resTable[resource].screenName}} - {{bigNumberHandler(datum,true)}}
+                  </span>
+                </div>
+              </span>
+              <div>Progress: {{mining['Earth'].progress.toFixed(2)}}/1000</div>
+          </span>
+          <span v-else-if='tab == "universe-statistics"'>
+            <br>
+            Progress: {{bigNumberHandler(universe.progress,true)}}
+            <span class='left-side-box'>
+              Amount of resources left to gather:
+              <div v-for='(datum,resource) in universe.visible'>
+                {{resTable[resource].screenName}} - {{bigNumberHandler(datum,true)}} left.
+              </div>
+            </span>
+          </span>
+          <span v-else-if='tab == "jobs"'>
+            <div v-for='(newJobs,jobBase,i) in jobs'>
+              <span v-if='unlockedResources.includes(jobBase)'  :style="{'top':(i+1)*25+'vh'}">
+                <span>{{resTable[jobBase].screenName}}: {{bigNumberHandler(jobCount(jobBase),true)}} </span>
+                <div v-for='newJob in newJobs' v-if='!machineStates[newJob.job] || allDictKeysAreInArray(machineStates[newJob.job].resourcesNeeded,unlockedResources.concat(unlockedFluids))'>
+                  <span>{{resTable[newJob.job].screenName}}: {{resTable[newJob.job].percent}}% </span><br />
+
+                  <span>Make a {{resTable[jobBase].screenName}} a(n) {{resTable[newJob.job].screenName}}
+                    <button v-on:click='assignJob(newJob.job,jobBase,1)'>+1%</button>
+                    <button v-on:click='assignJob(newJob.job,jobBase,10)'>+10%</button>
+                    <button v-on:click='assignJob(newJob.job,jobBase,100)'>+all</button>
+                  </span>
+                  <span>
+                    <button v-on:click='assignJob(newJob.job,jobBase,-1)'>-1%</button>
+                    <button v-on:click='assignJob(newJob.job,jobBase,-10)'>-10%</button>
+                    <button v-on:click='assignJob(newJob.job,jobBase,-100)'>-all</button>
+                  </span>
+                  <br />
+                </div>
+                <br />
                 <br />
               </span>
             </div>
-          </div>
-          <br />
-        </div>
-      </span>
-      <span v-else-if="tab == 'saving'">
-        <button class="btn btn-outline-warning"  v-on:click="saveGame()">Save game</button>
-        <button class="btn btn-outline-warning"  v-on:click="loadGame(true)">Load game</button>
-        <button class="btn btn-outline-warning"  v-on:click="clearGame()">Wipe save</button>
-      </span>
-      <span v-else-if="tab == 'computer'">
-        <button v-if="insertedDisk==false" v-on:click="insertDisk()" class="btn btn-outline-success">Insert your computer disk.</button>
-        <div class="computer-screen">
-          <span  v-bind:style="{'opacity':computerOpacity}">
-				      <p class='list-item computer-sidebar'>
-                <span v-for="curFile in files" :key="curFile.fileID">
-                  <button class="list-group-item list-group-item-action active small-text" v-if="fileViewed==curFile.fileID">{{curFile.screenName}}</button>
-                  <button class="list-group-item list-group-item-action small-text" v-else v-on:click="curFileType=curFile.type;fileViewed=curFile.fileID;cursorX=0;cursorY=0">{{curFile.screenName}}</button>
+          </span>
+          <span v-else-if='tab == "space-jobs"'>
+            <div v-for='(newJobs,jobBase,i) in jobs'>
+              <span v-if='unlockedSpaceResources.includes(jobBase)'  :style="{'top':(i+1)*25+'vh'}">
+                <span>{{resTable[jobBase].screenName}}: {{bigNumberHandler(spaceResCounts[jobBase].amount,true)}} </span>
+                <div v-for='newJob in newJobs' v-if='!machineStates[newJob.job] || allDictKeysAreInArray(machineStates[newJob.job].resourcesNeeded,unlockedResources.concat(unlockedFluids))'>
+                  <span>{{resTable[newJob.job].screenName}}: {{bigNumberHandler(spaceResCounts[newJob.job].amount,true)}} </span><br />
+                  <span>Make a {{resTable[jobBase].screenName}} a(n) {{resTable[newJob.job].screenName}}
+                    <button v-on:click='swapJobs(newJob.job,jobBase,1,true)'>+1</button>
+                    <button v-on:click='swapJobs(newJob.job,jobBase,10,true)'>+10</button>
+                    <button v-on:click='swapJobs(newJob.job,jobBase,100,true)'>+100</button>
+                    <button v-on:click='swapJobs(newJob.job,jobBase,spaceResCounts[jobBase].amount/2,true)'>+max/2</button>
+                    <button v-on:click='swapJobs(newJob.job,jobBase,spaceResCounts[jobBase].amount,true)'>+max</button>
+                  </span>
+                  <br />
+                  <span>Deassign a(n) {{resTable[newJob.job].screenName}}
+                    <button v-on:click='swapJobs(jobBase,newJob.job,1,true)'>-1</button>
+                    <button v-on:click='swapJobs(jobBase,newJob.job,10,true)'>-10</button>
+                    <button v-on:click='swapJobs(jobBase,newJob.job,100,true)'>-100</button>
+                    <button v-on:click='swapJobs(jobBase,newJob.job,spaceResCounts[newJob.job].amount/2,true)'>-max/2</button>
+                    <button v-on:click='swapJobs(jobBase,newJob.job,spaceResCounts[newJob.job].amount,true)'>-max</button>
+                  </span>
+                  <br />
+                </div>
+                <br />
+                <br />
+              </span>
+            </div>
+          </span>
+          <span v-else-if='tab == "cargo-bay"'>
+            <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isCargo})'>
+              <span v-if='unlockedResources.includes(cargoData[0])'>
+                <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(resTable[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
+                <span>{{resTable[cargoData[0]].screenName}} on rocket: {{bigNumberHandler(cargo[cargoData[0]],true)}} </span><br />
+                <span>{{resTable[cargoData[0]].screenName}} weight:  {{resTable[cargoData[0]].cargoStuff.weight}} klaxons</span><br>
+                <span>{{resTable[cargoData[0]].screenName}} fragility:  {{resTable[cargoData[0]].cargoStuff.fragility}}</span><br>
+                <span>Put a(n) {{resTable[cargoData[0]].screenName}} on a rocket
+                  <button v-on:click='addToCargo(cargoData[0],1)'>+1</button>
+                  <button v-on:click='addToCargo(cargoData[0],10)'>+10</button>
+                  <button v-on:click='addToCargo(cargoData[0],100)'>+100</button>
+                  <button v-on:click='addToCargo(cargoData[0],1000)'>+1K</button>
+                  <button v-on:click='addToCargo(cargoData[0],10000)'>+10K</button>
+                  <button v-on:click='addToCargo(cargoData[0],resTable[cargoData[0]].amount/2)'>+max/2</button>
+                  <button v-on:click='addToCargo(cargoData[0],resTable[cargoData[0]].amount)'>+max</button>
                 </span>
-					     <button  class="list-group-item list-group-item-action small-text" v-on:click='addFile(files.length,"untitledfile.doc ")'>Make a file</button>
-             </p>
-             <span v-if="fileContents[fileViewed] && curFileType == 'doc'" >
-               <pre v-for="(line, index) in fileContents[fileViewed].split('\n')" :key="line" class="computerCode" :style='{"top":(index*2)+"vh","marginBottom":"0px"}' :style="{'text-align':'left','display': 'inline'}">{{line}} <br /></pre>
-             </span>
-             <span v-else-if="fileContents[fileViewed] && curFileType == 'img'">
-               <img :src="'images/'+fileContents[fileViewed]" class="img-file" />
-             </span>
-             <span v-else>
-               <div v-for="(line, index) in fileTextContents[fileViewed]">
-                 <span class="computerCode" :style='{"top":(index*2)+"vh","marginBottom":"0px"}' v-if="index != cursorY"><pre :style='{display: "inline"}'>{{line}}</pre></span>
-                 <span v-else class="computerCode" :style='{"top":index*2+"vh"}'>
-                   <pre :style='{display:"inline"}'>{{line.slice(0,cursorX)}}</pre><pre id='curLine' :style="{'backgroundColor': 'blue',display:'inline'}">{{line[cursorX]==' '?'&nbsp;':line[cursorX]}}</pre><pre :style="{display:'inline'}">{{line.slice(cursorX+1,line.length)[0]==' '?'&nbsp;'+line.slice(cursorX+2,line.length):line.slice(cursorX+1,line.length)}}</pre>
-                 </span>
-               </div>
-             </span>
-           </span>
-			  </div>
-      </span>
-      <span v-else-if="tab == 'mining'">
-          <br>
-          <span>
-            Hole depth: {{bigNumberHandler(hole)}} m
-          </span>
-          <span class="left-side-box">
-            Uncovered resources
-            <div v-for='(datum,resource) in planets["total"]'>
-              <span v-if='resource!="progress" && (datum>0|| unlockedResources.includes(resource))'>
-                {{resTable[resource].screenName}} - {{bigNumberHandler(datum,true)}}
+                <br />
+                <span>Take a(n) {{resTable[cargoData[0]].screenName}} off a rocket
+                  <button v-on:click='removeFromCargo(cargoData[0],1)'>-1</button>
+                  <button v-on:click='removeFromCargo(cargoData[0],10)'>-10</button>
+                  <button v-on:click='removeFromCargo(cargoData[0],100)'>-100</button>
+                  <button v-on:click='removeFromCargo(cargoData[0],1000)'>-1K</button>
+                  <button v-on:click='removeFromCargo(cargoData[0],10000)'>-10K</button>
+                  <button v-on:click='removeFromCargo(cargoData[0],cargo[cargoData[0]]/2)'>-max/2</button>
+                  <button v-on:click='removeFromCargo(cargoData[0],cargo[cargoData[0]])'>-max</button>
+                </span>
+                <br />
+                <br />
+                <br />
               </span>
             </div>
           </span>
-          <div>Progress: {{mining['Earth'].progress.toFixed(2)}}/1000</div>
-      </span>
-      <span v-else-if="tab == 'jobs'">
-        <div v-for='(newJobs,jobBase,i) in jobs'>
-          <span v-if='unlockedResources.includes(jobBase)'  :style="{'top':(i+1)*25+'vh'}">
-            <span>{{resTable[jobBase].screenName}}: {{bigNumberHandler(resTable[jobBase].amount,true)}} </span>
-            <div v-for='newJob in newJobs' v-if='!machineStates[newJob.job] || allDictKeysAreInArray(machineStates[newJob.job].resourcesNeeded,unlockedResources.concat(unlockedFluids))'>
-              <span>{{resTable[newJob.job].screenName}}: {{bigNumberHandler(resTable[newJob.job].amount,true)}} </span><br />
-              <span>Make a {{resTable[jobBase].screenName}} a(n) {{resTable[newJob.job].screenName}}
-                <button v-on:click='swapJobs(newJob.job,jobBase,1)'>+1</button>
-                <button v-on:click='swapJobs(newJob.job,jobBase,10)'>+10</button>
-                <button v-on:click='swapJobs(newJob.job,jobBase,100)'>+100</button>
-                <button v-on:click='swapJobs(newJob.job,jobBase,resTable[jobBase].amount/2)'>+max/2</button>
-                <button v-on:click='swapJobs(newJob.job,jobBase,resTable[jobBase].amount)'>+max</button>
+          <span v-else-if='tab == "space-mt"'>
+            <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isTransportable})'>
+              <span v-if='unlockedSpaceResources.includes(cargoData[0])'>
+                <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(spaceResCounts[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
+                <span>Frostium energy required:  {{resTable[cargoData[0]].transportStuff.cost}}</span><br>
+                <span>Transport {{resTable[cargoData[0]].screenName}}
+                  <button v-on:click='transport(cargoData[0],1,true)'>1</button>
+                  <button v-on:click='transport(cargoData[0],10,true)'>10</button>
+                  <button v-on:click='transport(cargoData[0],100,true)'>100</button>
+                  <button v-on:click='transport(cargoData[0],"max/2",true)'>max/2</button>
+                  <button v-on:click='transport(cargoData[0],spaceResCounts[cargoData[0]].amount,true)'>max</button>
+                </span>
+                <br />
+                <br />
               </span>
-              <br />
-              <span>Deassign a(n) {{resTable[newJob.job].screenName}}
-                <button v-on:click='swapJobs(jobBase,newJob.job,1)'>-1</button>
-                <button v-on:click='swapJobs(jobBase,newJob.job,10)'>-10</button>
-                <button v-on:click='swapJobs(jobBase,newJob.job,100)'>-100</button>
-                <button v-on:click='swapJobs(jobBase,newJob.job,resTable[newJob.job].amount/2)'>-max/2</button>
-                <button v-on:click='swapJobs(jobBase,newJob.job,resTable[newJob.job].amount)'>-max</button>
+            </div>
+          </span>
+          <span v-else-if='tab == "mt"'>
+            <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isTransportable})'>
+              <span v-if='unlockedResources.includes(cargoData[0])'>
+                <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(resTable[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
+                <span>Frostium energy required:  {{resTable[cargoData[0]].transportStuff.cost}}</span><br>
+                <span>Transport {{resTable[cargoData[0]].screenName}}
+                  <button v-on:click='transport(cargoData[0],1,false)'>1</button>
+                  <button v-on:click='transport(cargoData[0],10,false)'>10</button>
+                  <button v-on:click='transport(cargoData[0],100,false)'>100</button>
+                  <button v-on:click='transport(cargoData[0],"max/2",false)'>max/2</button>
+                  <button v-on:click='transport(cargoData[0],resTable[cargoData[0]].amount,false)'>max</button>
+                </span>
+                <br />
+                <br />
               </span>
+            </div>
+          </span>
+          <span v-else-if='tab == "scripts"'>
+            <div v-for='extension in unSaveable.extensions' :key = 'extension[0]' v-if='Object.entries(scripts[extension[0]]).length>0'>
+              {{extension[1]}}<br>
+                {{resTable[extension[2]].screenName}}: {{bigNumberHandler(resTable[extension[2]].amount,true)}}
+              <div v-for='(script,key) in scripts[extension[0]]'>
+                {{script.screenName}}: {{script.percent}}%
+                <button v-on:click='assignScript(extension[0],script.fileID,1)'>+1%</button>
+                <button v-on:click='assignScript(extension[0],script.fileID,5)'>+5%</button>
+                <button v-on:click='assignScript(extension[0],script.fileID,100)'>+all</button>
+                <button v-on:click='assignScript(extension[0],script.fileID,-1)'>-1%</button>
+                <button v-on:click='assignScript(extension[0],script.fileID,-5)'>-5%</button>
+                <button v-on:click='assignScript(extension[0],script.fileID,-100)'>-all</button>
+              </div>
               <br />
+            </div>
+          </span>
+          <span v-else-if='tab == "adaptation"'>
+            <div v-for='adaptation in availableAdaptations' v-if='!completedAdaptations.includes(adaptation)'>
+              <div class='outer'>
+                <button type='button' class='btn btn-outline-success' v-on:click='buyAdaptation(unSaveable.adaptations[adaptation])'>{{adaptation}}</button>
+                <span class='inner' >Cost: <br />
+                  <span v-for='(value, key) in unSaveable.adaptations[adaptation].cost'>{{resTable[key].screenName}}: {{bigNumberHandler(value,true)}}<br /></span><br />
+                  <span class = '--tooltip' v-if='unSaveable.adaptations[adaptation].description'>
+                    {{unSaveable.adaptations[adaptation].description}}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </span>
+          <span v-else-if='tab == "robot"'>
+            <div v-if='grid!=null' style='font-family:courier;'>
+              <div v-for='line in grid.displayGrid().split("\n")'>
+                {{line}}
+              </div>
+            </div>
+          </span>
+          <span v-else-if='tab == "fluid"'>
+            <div>
+              Fluid storage space left: {{fluidLeft>=0?bigNumberHandler(fluidLeft):0}} mB
+            </div>
+            <div>
+              Total fluid storage space: {{bigNumberHandler(resTable['fluid-storage'].storage)}} mB
+            </div>
+            <span class = 'right-side-box' v-if='unlockedFluids.length>0'>
+              <div v-for='fluid in unlockedFluids'>
+                {{resTable[fluid].screenName}} - {{bigNumberHandler(resTable[fluid].amount)}} mB
+              </div>
+            </span>
+          </span>
+          <span v-else-if='tab == "fluid-space"'>
+            <div>
+              Fluid storage space left: {{fluidLeft>=0?bigNumberHandler(fluidLeft):0}} mB
+            </div>
+            <div>
+              Total fluid storage space: {{bigNumberHandler(spaceResCounts['fluid-storage'].amount)}} mB
+            </div>
+            <span class = 'right-side-box' v-if='unlockedFluids.length>0'>
+              <div v-for='fluid in unlockedFluids'>
+                {{resTable[fluid].screenName}} - {{bigNumberHandler(spaceResCounts[fluid].amount)}} mB
+              </div>
+            </span>
+          </span>
+          <span v-else-if='tab == "statistics"'>
+            <span class = 'left-side-box'>
+              <div>
+                Time played in:<br>
+                  Minutes: {{Math.round(tickCount/600)}}<br>
+                  Hours: {{Math.round(tickCount/36000)}}<br>
+                  Days: {{Math.round(tickCount/36000/24)}}<br>
+                  Years: {{Math.round(tickCount/36000/24/365.25)}}<br>
+                  Millenia: {{Math.round(tickCount/36000/24/365250)}}<br>
+                Buildings bought: {{bigNumberHandler(buildingsBought,true)}}<br>
+                What else should I track, lucien?
+              </div>
+            </span>
+          </span>
+          <span v-else-if='tab == "rocket-silo"'>
+            <span class='list-item top-part'>
+              <span v-for='amountToBuy in buyList'>
+                <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
+                <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
+              </span>
+            </span>
+            <span class='left-side-box'>
+              <span class='outer' v-for='(rocket,name) in rocketsData' v-if='!rocket.prerequisite||launchedRockets.includes(rocket.prerequisite)'>
+                <br><button class='btn btn-outline-success' v-on:click='handleBuyBuilding(name)'>
+                  Build a {{resTable[name].screenName}}
+                </button>
+                <span class='inner' >Cost: <br />
+                  <span v-for='(value, key) in rocket.cost'>{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span><br />
+                  <span class = '--tooltip' v-if='rocket.description'>
+                    {{rocket.description}}
+                  </span>
+                </span>
+              </span>
+            </span>
+            <span class='right-side-box' v-if='rocketsBought.length>0'>
+              <span class='outer' v-for='(rocket,name) in rocketsData' v-if='rocketsBought.includes(name)'>
+                <br><button class='btn btn-outline-success' v-on:click='handleLaunchRocket(rocket)'>
+                  Launch a {{resTable[name].screenName}}
+                </button>
+                <span class='inner' >Cost: <br />
+                  <span v-for='(value, key) in rocket["launch-cost"]'>{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span><br />
+                </span>
+              </span>
+            </span>
+            <!--
+              If you're reading this, look at the code for this function/uncomment it and try it out
+              <button v-on:click = 'launchAllRockets()' class='btn btn-outline-danger close-to-bottom'>
+                LAUNCH ALL ROCKETS
+              </button>
+            !-->
+          </span>
+          <span v-else-if='tab == "space"'>
+            <span class='list-item top-part'>
+              <span v-for='amountToBuy in buyList'>
+                <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
+                <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
+              </span>
+            </span>
+            <div class='close-to-the-whole-screen'>
+              <span v-for = 'category in Object.entries(spaceCategories)' v-if='processes.length>0 || category[0]!="Processes"' :key = category[0]>
+                <button v-if='spaceCategories[category[0]]' class = 'btn btn-outline-success' v-on:click = 'spaceCategories[category[0]]=!spaceCategories[category[0]]'>
+                  {{category[0]}}
+                </button><button class = 'btn btn-outline-danger' v-else v-on:click = 'spaceCategories[category[0]]=!spaceCategories[category[0]]'>
+                  {{category[0]}}
+                </button>
+              </span>
             </div>
             <br />
             <br />
+            <span v-if='spaceCategories["Processes"]'>
+              <div v-for='curProcess in processes' :key= curProcess.displayText>
+                <div class='outer'><button v-if='isBuildingBuyable(curProcess.buildingName,true)' type='button' class='btn btn-success' v-on:click='handleBuyBuilding(curProcess.buildingName)'>{{curProcess.displayText}}  </button>
+                  <button type='button' v-else class='btn btn-outline-success' v-on:click='handleBuyBuilding(curProcess.buildingName)'>{{curProcess.displayText}}  </button><span class='inner' >Cost: <br /><span v-for='(value, key) in buildingsList[curProcess.buildingName]["cost"]'>{{resTable[key].screenName}}: {{value}}<br /></span><br /></span></div>
+              </div>
+            </span>
+            <br />
+            <div v-for='entry in Object.entries(spaceBuildings)'  v-if='spaceCategories[entry[0]]':key = 'entry[0]+"aah"'>
+              <div v-for='curBuilding in entry[1]' :key= 'curBuilding.displayText'>
+                <div class='outer'>
+                  <button type='button' v-on:click='handleBuyBuilding(curBuilding.buildingName,true)' v-if='isBuildingBuyable(curBuilding.buildingName,true)' class='btn btn-success'>{{curBuilding.displayText}} ({{bigNumberHandler(spaceJobCount(curBuilding.buildingName),true)}}) </button>
+                  <button type='button' v-else class='btn btn-outline-success'>{{curBuilding.displayText}} ({{bigNumberHandler(spaceJobCount(curBuilding.buildingName),true)}}) </button>
+                  <span class='inner' >
+                    Cost: <br />
+                    <span v-for='(value, key) in buildingsList[curBuilding.buildingName]["cost"]'>{{resTable[key].screenName}}: {{bigNumberHandler(value*resTable[curBuilding.buildingName]['multiplier'],true)}}<br /></span>
+                    <span class = '--tooltip' v-if='buildingsList[curBuilding.buildingName]["tooltip"]'>
+                      {{buildingsList[curBuilding.buildingName]['tooltip']}}
+                    </span>
+                    <br />
+                  </span>
+                </div>
+              </div>
+              <br />
+            </div>
           </span>
-        </div>
-      </span>
-      <span v-else-if="tab == 'scripts'">
-        <div v-for="extension in unSaveable.extensions" :key = 'extension[0]' v-if='Object.entries(scripts[extension[0]]).length>0'>
-          {{extension[1]}}
-          <div v-for="(script,key) in scripts[extension[0]]">
-            {{script.screenName}}: {{script.percent}}%
-            <button v-on:click='assignScript(extension[0],script.fileID,1)'>+1%</button>
-            <button v-on:click='assignScript(extension[0],script.fileID,5)'>+5%</button>
-            <button v-on:click='assignScript(extension[0],script.fileID,100)'>+all</button>
-            <button v-on:click='assignScript(extension[0],script.fileID,-1)'>-1%</button>
-            <button v-on:click='assignScript(extension[0],script.fileID,-5)'>-5%</button>
-            <button v-on:click='assignScript(extension[0],script.fileID,-100)'>-all</button>
-          </div>
-          <br />
-        </div>
-      </span>
-      <span v-else-if="tab == 'adaptation'">
-        <div v-for="adaptation in availableAdaptations" v-if="!completedAdaptations.includes(adaptation)">
-          <div class="outer">
-            <button type="button" class="btn btn-outline-success" v-on:click="buyAdaptation(unSaveable.adaptations[adaptation])">{{adaptation}}</button>
-            <span class="inner" >Cost: <br />
-              <span v-for="(value, key) in unSaveable.adaptations[adaptation].cost">{{resTable[key].screenName}}: {{bigNumberHandler(value,true)}}<br /></span><br />
-              <span class = "--tooltip" v-if="unSaveable.adaptations[adaptation].description">
-                {{unSaveable.adaptations[adaptation].description}}
+          <span v-else-if='tab == "market"'>
+            <div class='computer-screen'>
+                <p class='list-item computer-sidebar'>
+                  <span v-for='stock in Object.entries(market.stocks)' :key='stock[1].name'>
+                    <button class='list-group-item list-group-item-action active small-text' v-if='curStock==stock[0]'>{{stock[1].name}}</button>
+                    <button class='list-group-item list-group-item-action small-text' v-else v-on:click='curStock=stock[0]'>{{stock[1].name}}</button>
+                  </span>
+                  <button class='list-group-item list-group-item-action active small-text' v-if='curStock=="marketTotal"'>Market total</button>
+                  <button class='list-group-item list-group-item-action small-text' v-else v-on:click='curStock="marketTotal"'>Market total</button>
+                </p>
+              <div style='width:40vw; position:absolute; left:10vw'>
+                <trend
+                v-if='curStock!="marketTotal"'
+                :data="fillToMax(market.stocks[curStock].past,400)"
+                :gradient="['#6fa8dc', '#42b983', '#2c3e50']">
+              </trend><trend
+                v-if='curStock=="marketTotal"'
+                :data="fillToMax(market.allPast,400)"
+                :gradient="['#6fa8dc', '#42b983', '#2c3e50']">
+              </trend></div>
+              <div style='top:10vw; width:40vw; position:absolute; left:10vw' v-if='curStock!="marketTotal"'>
+                Current Price: {{bigNumberHandler(market.stocks[curStock].current,true)}} galactic credits
+                <button v-on:click='buyStock(stockBuyCount,market.stocks[curStock].name,market.stocks[curStock].current)'>Buy stock</button>
+                <button v-on:click='buyStock(-stockBuyCount,market.stocks[curStock].name,market.stocks[curStock].current)'>Sell stock</button>
+                <input type='number' v-model.number="stockBuyCount">
+              </div>
+              <div style='top:10vw; width:40vw; position:absolute; left:10vw' v-if='curStock=="marketTotal"'>
+                Market Total Price: {{bigNumberHandler(market.cur,true)}} galactic credits
+              </div>
+            </div>
+          </span>
+          <span v-else-if='tab == "market-trading"'>
+            <div v-for='(tradingData) in resTableFilterBy((res)=>{return res.isTradeable})'>
+              <span>{{resTable[tradingData[0]].screenName}}: {{bigNumberHandler(spaceResCounts[tradingData[0]].amount,resTable[tradingData[0]].isBuildable)}} </span><br>
+              <span>{{resTable[tradingData[0]].screenName}} sell price:  {{resTable[tradingData[0]].tradeableStuff.sellPrice}}</span><br>
+              <span>{{resTable[tradingData[0]].screenName}} buy price:  {{resTable[tradingData[0]].tradeableStuff.buyPrice}}</span><br>
+              <span>Sell {{resTable[tradingData[0]].screenName}}
+                <button v-on:click='handleSellMaterials(tradingData[0],1)'>1</button>
+                <button v-on:click='handleSellMaterials(tradingData[0],10)'>10</button>
+                <button v-on:click='handleSellMaterials(tradingData[0],100)'>100</button>
+                <button v-on:click='handleSellMaterials(tradingData[0],"max/2")'>max/2</button>
+                <button v-on:click='handleSellMaterials(tradingData[0],Infinity)'>max</button>
+              </span><br>
+              <span>Buy {{resTable[tradingData[0]].screenName}}
+                <button v-on:click='handleBuyMaterials(tradingData[0],1)'>1</button>
+                <button v-on:click='handleBuyMaterials(tradingData[0],10)'>10</button>
+                <button v-on:click='handleBuyMaterials(tradingData[0],100)'>100</button>
+                <button v-on:click='handleBuyMaterials(tradingData[0],"max/2")'>max/2</button>
+                <button v-on:click='handleBuyMaterials(tradingData[0],Infinity)'>max</button>
               </span>
-            </span>
-          </div>
-        </div>
-      </span>
-      <span v-else-if="tab == 'robot'">
-        <div v-if="grid!=null" style="font-family:courier;">
-          <div v-for="line in grid.displayGrid().split('\n')">
-            {{line}}
-          </div>
-        </div>
-      </span>
-      <span v-else-if="tab == 'fluid'">
-        <div>
-          Fluid storage space left: {{fluidLeft>=0?bigNumberHandler(fluidLeft):0}} mB
-        </div>
-        <div>
-          Total fluid storage space: {{bigNumberHandler(resTable['fluid-storage'].storage)}} mB
-        </div>
-        <span class = 'right-side-box' v-if='unlockedFluids.length>0'>
-          <div v-for='fluid in unlockedFluids'>
-            {{resTable[fluid].screenName}} - {{bigNumberHandler(resTable[fluid].amount)}} mB
-          </div>
-        </span>
-      </span>
-      <span v-else-if="tab == 'rocket-silo'">
-        <span class="left-side-box">
-          <span class='outer' v-for="(rocket,name) in rocketsData" v-if='!rocket.prerequisite||launchedRockets.includes(rocket.prerequisite)'>
-            <br><button class='btn btn-outline-success' v-on:click='handleBuyBuilding(name)'>
-              Build a {{resTable[name].screenName}}
-            </button>
-            <span class="inner" >Cost: <br />
-              <span v-for="(value, key) in rocket.cost">{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span><br />
-              <span class = "--tooltip" v-if="rocket.description">
-                {{rocket.description}}
-              </span>
-            </span>
+              <br />
+              <br />
+            </div>
           </span>
-        </span>
-        <span class="right-side-box" v-if='rocketsBought.length>0'>
-          <span class='outer' v-for="(rocket,name) in rocketsData" v-if='rocketsBought.includes(name)'>
-            <br><button class='btn btn-outline-success' v-on:click='handleLaunchRocket(rocket)'>
-              Launch a {{resTable[name].screenName}}
-            </button>
-            <span class="inner" >Cost: <br />
-              <span v-for="(value, key) in rocket['launch-cost']">{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span><br />
-            </span>
+          <span v-else-if='tab == "oracle"'>
+            <button v-on:click='speaketherSpeakether()'>Speak to the Oracle of Sigmoidia</button>
           </span>
-        </span>
-        <button v-on:click = 'launchAllRockets()' class="btn btn-outline-danger close-to-bottom">
-          LAUNCH ALL ROCKETS
-        </button>
+          <span v-else>
+            <div>H oow aRe youu s eEi ng<br><b>tH</b>is. No]{}<i>tI?</i>fy? a??? de654V[]el=-op/\`<br>er.</div>
+          </span>
+        </div>
       </span>
       <span v-else>
-        <div>H oow aRe youu s eEi ng<br><b>tH</b>is. No]{}<i>tI?</i>fy? a??? de654V[]el=-op/\`<br>er.</div>
+        Stop hacking my game.
       </span>
 	  </div>
-  <script src="code/data/buildings.js"></script>
-  <script src="code/data/tiles.js"></script>
-  <script src="code/data/rockets.js"></script>
-  <script src="code/data/mining.js"></script>
-  <script src="code/data/entities.js"></script>
-  <script src="code/util/saving.js"></script>
-  <script src="code/util/massProduction.js"></script>
-  <script src="code/util/largeNumbers.js"></script>
-  <script src="code/randomness/randomDistribution.js"></script>
-  <script src="code/randomness/planetCreator.js"></script>
-  <script src="code/bases/keyBindings.js"></script>
-  <script src="code/bases/console.js"></script>
-  <script src="code/classes/mining.js"></script>
-  <script src="code/classes/mineDroid.js"></script>
-  <script src="code/classes/readOnly.js"></script>
-  <script src="code/classes/robot.js"></script>
-  <script src="code/classes/tile.js"></script>
-  <script src="code/classes/entity.js"></script>
-  <script src="code/classes/worldGrid.js"></script>
-  <script src="code/preMainLoading.js"></script>
-  <script src="code/Main.js"></script>
-  <script src="code/postMainLoading.js"></script>
+  <script src='code/data/buildings.js'></script>
+  <script src='code/data/tiles.js'></script>
+  <script src='code/data/rockets.js'></script>
+  <script src='code/data/mining.js'></script>
+  <script src='code/data/miningDataV2.js'></script>
+  <script src='code/data/entities.js'></script>
+  <script src='code/util/saving.js'></script>
+  <script src='code/util/massProduction.js'></script>
+  <script src='code/util/sigmoid.js'></script>
+  <script src='code/util/largeNumbers.js'></script>
+  <script src='code/randomness/randomDistribution.js'></script>
+  <script src='code/randomness/planetCreator.js'></script>
+  <script src='code/randomness/stockCreator.js'></script>
+  <script src='code/bases/keyBindings.js'></script>
+  <script src='code/bases/console.js'></script>
+  <script src='code/classes/mining.js'></script>
+  <script src='code/classes/miningV2.js'></script>
+  <script src='code/classes/mineDroid.js'></script>
+  <script src='code/classes/readOnly.js'></script>
+  <script src='code/classes/namePool.js'></script>
+  <script src='code/classes/robot.js'></script>
+  <script src='code/classes/assembler.js'></script>
+  <script src='code/classes/tile.js'></script>
+  <script src='code/classes/stockController.js'></script>
+  <script src='code/classes/stock.js'></script>
+  <script src='code/classes/market.js'></script>
+  <script src='code/classes/entity.js'></script>
+  <script src='code/classes/worldGrid.js'></script>
+  <script src='code/preMainLoading.js'></script>
+  <script src='code/Main.js'></script>
+  <script src='code/postMainLoading.js'></script>
   </body>
 </html>

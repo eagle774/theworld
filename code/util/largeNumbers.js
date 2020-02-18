@@ -1,17 +1,24 @@
 const bigNumberHandler = (number,isBuilding)=>{
-  prefixes=['','K','M','B','T','Qa','Qi','Sx','Sp','O','N','De']
-  pos=0
-  negative = ''
+  let prefixes=['','K','M','B','T','Qa','Qi','Sx','Sp','O','N','De','UnDe','DuDe','TrDe','QaDe','QiDe','SxDe','SpDe','OcDe','NDe','Vg','UnVg','DuVg','TrVg','QaVg','QiVg','SxVg','SpVg','OcVg','NVg','Tg','UnTg','DuTg']
+  let pos=0
+  let negative = ''
   if(number<0){
     number*=-1
     negative = '-'
+  }
+  if(number<0.005&&negative=='-'){
+    negative=''
   }
   if(number == Infinity){
     return number
   }
   while(number>=1000){
-    number = number/1000
+    number /= 1000
     pos+=1
+  }
+  if(Math.round(number,1)>=1000){
+    number /= 1000
+    pos += 1
   }
   if(!isBuilding&&pos==0){
     return negative+number.toFixed(2)+prefixes[pos]

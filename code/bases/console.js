@@ -1,5 +1,5 @@
 const getPointsUpToString=(start,end,arr)=>{
-  let returnVal=""
+  let returnVal=''
   for(let i=start;i<end;i++){
     returnVal+=arr[i]
   }
@@ -43,20 +43,20 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
         let start=variable.indexOf('(')
         let arguments=getPointsUpToString(start+1,variable.length-1,variable)
         let args=[]
-        cur=""
+        cur=''
         match=0
         counter = 0
         let extraLines = []
         for(let i=0;i<arguments.length;i++){
-          if(arguments[i]==="("){
+          if(arguments[i]==='('){
             match+=1
           }
-          if(arguments[i]===")"){
+          if(arguments[i]===')'){
             match-=1
           }
           if(arguments[i]===','&&match===0){
             extraLines.push(value.variables[counter]+'='+cur)
-            cur=""
+            cur=''
             counter += 1
             continue
           }
@@ -90,23 +90,24 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
         let start=variable.indexOf('(')
         let thing=getPointsUpToString(start+1,variable.length-1,variable)
         let args=[]
-        cur=""
+        cur=''
         match=0
         for(let i=0;i<thing.length;i++){
-          if(thing[i]==="("){
+          if(thing[i]==='('){
             match+=1
           }
-          if(thing[i]===")"){
+          if(thing[i]===')'){
             match-=1
           }
           if(thing[i]===','&&match===0){
             args.push(evalVariable(cur,functions,vars,specialFuncs))
-            cur=""
+            cur=''
             continue
           }
           cur+=thing[i]
         }
-          args.push(evalVariable(cur,functions,vars,specialFuncs))
+        args.push(evalVariable(cur,functions,vars,specialFuncs))
+        console.log(value.apply(null,args))
         return value.apply(null,args)
       }
     }
@@ -131,8 +132,8 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
       let dicter={}
       for(const i of (args.length>0?args.split(','):[])){
         let parts=i.split(':')
-        if(parts[0][0]!="'" && parts[0][0]!='"'){
-          parts[0]="'"+parts[0]+"'"
+        if(parts[0][0]!='"' && parts[0][0]!='"'){
+          parts[0]='"'+parts[0]+'"'
         }
         dicter[parts[0].slice(1,parts[0].length-1)]=evalVariable(parts.slice(1).join(':'),functions,vars,specialFuncs)
       }
@@ -187,7 +188,7 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
   }
 
 
-  if(Number(variable)===Number(variable)&&variable!==""){
+  if(Number(variable)===Number(variable)&&variable!==''){
     return Number(variable)
   }
   if(vars[variable]!==undefined){
@@ -196,34 +197,34 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
   let quote=0
   let stringquote=0
   for(let i=variable.length-1;i>-1;i--){
-    if(variable[i]==='"'){
+    if(variable[i]==='\''){
       quote^=1
     }
-    if(variable[i]==="'"){
+    if(variable[i]==='\"'){
       stringquote^=1
     }
-    if(variable[i]==="+"&&quote===0&&stringquote===0){
+    if(variable[i]==='+'&&quote===0&&stringquote===0){
       return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)+evalVariable(getPointsUpToString(i+1,variable.length,variable),functions,vars,specialFuncs)
     }
-    if(variable[i]==="/"&&quote===0&&stringquote===0){
+    if(variable[i]==='/'&&quote===0&&stringquote===0){
       return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)/evalVariable(getPointsUpToString(i+1,variable.length,variable),functions,vars,specialFuncs)
     }
-    if(variable[i]==="*"&&quote===0&&stringquote===0){
+    if(variable[i]==='*'&&quote===0&&stringquote===0){
       return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)*evalVariable(getPointsUpToString(i+1,variable.length,variable),functions,vars,specialFuncs)
     }
-    if(variable[i]==="-"&&quote===0&&stringquote===0){
+    if(variable[i]==='-'&&quote===0&&stringquote===0){
       return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)-evalVariable(getPointsUpToString(i+1,variable.length,variable),functions,vars,specialFuncs)
     }
-    if(variable[i]===">"&&quote===0&&stringquote===0){
+    if(variable[i]==='>'&&quote===0&&stringquote===0){
       return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)>evalVariable(getPointsUpToString(i+1,variable.length,variable),functions,vars,specialFuncs)
     }
-    if(variable[i]==="<"&&quote===0&&stringquote===0){
+    if(variable[i]==='<'&&quote===0&&stringquote===0){
       return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)<evalVariable(getPointsUpToString(i+1,variable.length,variable),functions,vars,specialFuncs)
     }
-    if(variable[i]==="%"&&quote===0&&stringquote===0){
+    if(variable[i]==='%'&&quote===0&&stringquote===0){
       return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)%evalVariable(getPointsUpToString(i+1,variable.length,variable),functions,vars,specialFuncs)
     }
-    if(variable[i]==="."&&quote===0&&stringquote===0){
+    if(variable[i]==='.'&&quote===0&&stringquote===0){
       if(variable.slice(variable.lastIndexOf('.')).indexOf('(')+variable.lastIndexOf('.')==variable.lastIndexOf('.')-1){
         return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)[getPointsUpToString(i+1,variable.length)]
       }else{
@@ -232,18 +233,18 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
         let start=sector.indexOf('(')
         let thing=getPointsUpToString(start+1,sector.length-1,sector)
         let args=[]
-        cur=""
+        cur=''
         match=0
         for(let i=0;i<thing.length;i++){
-          if(thing[i]==="("){
+          if(thing[i]==='('){
             match+=1
           }
-          if(thing[i]===")"){
+          if(thing[i]===')'){
             match-=1
           }
           if(thing[i]===','&&match===0){
             args.push(evalVariable(cur,functions,vars,specialFuncs))
-            cur=""
+            cur=''
             continue
           }
           cur+=thing[i]
@@ -255,22 +256,22 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
       }
     }
     if(i!=variable.length-1){
-      if(variable.slice(i,i+2)=="=="){
+      if(variable.slice(i,i+2)=='=='){
         return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)==evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
       }
-      if(variable.slice(i,i+2)=="!="){
+      if(variable.slice(i,i+2)=='!='){
         return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)!=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
       }
-      if(variable.slice(i,i+2)=="<="){
+      if(variable.slice(i,i+2)=='<='){
         return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)<=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
       }
-      if(variable.slice(i,i+2)==">="){
+      if(variable.slice(i,i+2)=='>='){
         return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)>=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
       }
     }
   }
   variable = nVar
-  if((variable[0]==='\''&&variable[variable.length-1]==='\'')||(variable[0]==='"'&&variable[variable.length-1]==='"')){
+  if((variable[0]==='\''&&variable[variable.length-1]==='\'')||(variable[0]==='\"'&&variable[variable.length-1]==='\"')){
     return getPointsUpToString(1,variable.length-1,variable)
   }
 }
@@ -281,7 +282,7 @@ let parseCode=(code,passedInFuncs={},vars={},functions = {})=>{
       return evalVariable(code[i].match(/return .*/g)[0].slice(7),passedInFuncs,vars,functions)
     }
     if(code[i].match(/if\(.*\){/g)){
-      matches=code[i].match(/if\([^)]*\){/g)
+      matches=code[i].match(/if\(.*\){/g)
       count=1
       found=[]
       for(let j=i;j<code.length;j++){
@@ -431,7 +432,7 @@ let pointerPath=function(path,pathList=[]){
     return pathList
   }
   if(path.indexOf('.')==-1 && path.indexOf(']')==-1){
-    pathList.push([path,"leave"])
+    pathList.push([path,'leave'])
     return pathList
   }
   if(path.indexOf('.')==0){

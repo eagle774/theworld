@@ -112,4 +112,4 @@ class WorldGrid extends Saveable{
   }
 }
 
-registerClass('worldGrid',WorldGrid)
+registerClass('worldgrid',WorldGrid)
