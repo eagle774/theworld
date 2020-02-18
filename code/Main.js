@@ -837,13 +837,6 @@ let App = new Vue({
 		},
 		//gametick
 		tick: function() {
-	/*		if(!this.freeGiftGiven){
-				this.freeGiftGiven=true
-				alert('You\'re a loyal member of our fan club. Please accept your gift of one free assembler')
-				this.incrementResource('assembler',1)
-				this.addVisibleResource('assembler')
-			}
-			*/
 			if(this.computerChanged){
 				this.computerChanged-=1
 			}
