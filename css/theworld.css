@@ -25,7 +25,7 @@
 .inner {
   display: none;
   top: 0;
-  right: 5px;
+  right: 20px;
 }
 .computer-screen {
   border:5px solid black;
@@ -86,7 +86,7 @@
 
 .top-part{
   position:absolute;
-  top:10px;
+  top:60px;
   right:200px;
   word-wrap:break-word;
 }

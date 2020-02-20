@@ -26,7 +26,7 @@
         </div>
         <div class='display-left' v-else-if='tab.includes("market")'>
           <div>
-            {{resTable['galactic-credit'].screenName}}: {{bigNumberHandler(resTable['galactic-credit'].amount,false)}}
+            {{resTable['galactic-credits'].screenName}}: {{bigNumberHandler(resTable['galactic-credits'].amount,false)}}
           </div>
           <div>
             Net Worth: {{bigNumberHandler(getNetWorth(),false)}}
@@ -144,7 +144,7 @@
           </span>
           <span v-else-if='tab == "universe-statistics"'>
             <br>
-            Progress: {{bigNumberHandler(universe.progress,true)}}
+            Progress: {{bigNumberHandler(universe.progress,true)}}/10.0B
             <span class='left-side-box'>
               Amount of resources left to gather:
               <div v-for='(datum,resource) in universe.visible'>
@@ -336,13 +336,14 @@
             <span class = 'left-side-box'>
               <div>
                 Time played in:<br>
-                  Minutes: {{Math.round(tickCount/600)}}<br>
-                  Hours: {{Math.round(tickCount/36000)}}<br>
-                  Days: {{Math.round(tickCount/36000/24)}}<br>
-                  Years: {{Math.round(tickCount/36000/24/365.25)}}<br>
-                  Millenia: {{Math.round(tickCount/36000/24/365250)}}<br>
+                  Seconds: {{Math.floor(tickCount/10)}}<br>
+                  Minutes: {{Math.floor(tickCount/600)}}<br>
+                  Hours: {{Math.floor(tickCount/36000)}}<br>
+                  Days: {{Math.floor(tickCount/36000/24)}}<br>
+                  Years: {{Math.floor(tickCount/36000/24/365.25)}}<br>
+                  Millenia: {{Math.floor(tickCount/36000/24/365250)}}<br>
                 Buildings bought: {{bigNumberHandler(buildingsBought,true)}}<br>
-                What else should I track, lucien?
+                What else should I track?
               </div>
             </span>
           </span>
@@ -391,7 +392,7 @@
               </span>
             </span>
             <div class='close-to-the-whole-screen'>
-              <span v-for = 'category in Object.entries(spaceCategories)' v-if='processes.length>0 || category[0]!="Processes"' :key = category[0]>
+              <span v-for = 'category in Object.entries(spaceCategories)' v-if='category[0]!="Processes"' :key = category[0]>
                 <button v-if='spaceCategories[category[0]]' class = 'btn btn-outline-success' v-on:click = 'spaceCategories[category[0]]=!spaceCategories[category[0]]'>
                   {{category[0]}}
                 </button><button class = 'btn btn-outline-danger' v-else v-on:click = 'spaceCategories[category[0]]=!spaceCategories[category[0]]'>
@@ -400,13 +401,6 @@
               </span>
             </div>
             <br />
-            <br />
-            <span v-if='spaceCategories["Processes"]'>
-              <div v-for='curProcess in processes' :key= curProcess.displayText>
-                <div class='outer'><button v-if='isBuildingBuyable(curProcess.buildingName,true)' type='button' class='btn btn-success' v-on:click='handleBuyBuilding(curProcess.buildingName)'>{{curProcess.displayText}}  </button>
-                  <button type='button' v-else class='btn btn-outline-success' v-on:click='handleBuyBuilding(curProcess.buildingName)'>{{curProcess.displayText}}  </button><span class='inner' >Cost: <br /><span v-for='(value, key) in buildingsList[curProcess.buildingName]["cost"]'>{{resTable[key].screenName}}: {{value}}<br /></span><br /></span></div>
-              </div>
-            </span>
             <br />
             <div v-for='entry in Object.entries(spaceBuildings)'  v-if='spaceCategories[entry[0]]':key = 'entry[0]+"aah"'>
               <div v-for='curBuilding in entry[1]' :key= 'curBuilding.displayText'>

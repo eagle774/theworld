@@ -140,10 +140,10 @@ let rocketsData = {
   },
   'cargo-rocket':{
     'cost':{
-      'frostium':2000000,
-      'steel':5000000,
-      'duranium':5000000,
-      'tungsten':5000000,
+      'frostium':1500000,
+      'steel':1500000,
+      'duranium':1500000,
+      'tungsten':1500000,
     },
     'launch-cost':{
       'fire':5000000000,

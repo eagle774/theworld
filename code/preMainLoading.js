@@ -39,10 +39,10 @@ let data = {
 	errorLog: [],
 	tabs: [{
 		displayText: 'Main',
-		tab: 'main'
+		tab: 'main',
 	},{
 		displayText: 'Saves',
-		tab: 'saving'
+		tab: 'saving',
 	}],
 	unSaveable:{
 		buttons:{},
@@ -93,7 +93,7 @@ let data = {
 	discoveredJobs:[],
 	sortOrder:['wood'],
 	spaceFluidLeft:0,
-	version:'0.1.1',
+	version:'0.1.2',
 	unlockedSpaceResources:[],
 	newBuildings:0,
 	unlockedSpaceFluids:[],
@@ -101,7 +101,7 @@ let data = {
 	availableAdaptations:[],
 	naughty:false,
 	categories:{'Processes':true,'Interaction':true},
-	spaceCategories:{'Processes':true}
+	spaceCategories:{}
 }
 function Res(name,sname){
 	this.stuff={
@@ -131,7 +131,7 @@ function Res(name,sname){
 	}
 	return this
 }
-const godMode = false
+const godMode = true
 const addButtonConstructor = (displayText, todo) => {
 	data.buttons.push({
 		displayText,
@@ -516,7 +516,7 @@ const construct = () => {
 			.finalize()
 		new Res('ice', 'Ice')
 			.configure('storage', 1000)
-			.isCargo(1,8)
+			.isCargo(8,1)
 			.isTradeable(10,1)
 			.isTransportable(1)
 			.hasFluidForm('water','Water',1)
@@ -605,7 +605,7 @@ const construct = () => {
 		new Res('leo-iii', 'LEO III')
 			.isRocket()
 			.finalize()
-		new Res('cargo-rocket', 'Cargo Ship')
+		new Res('cargo-rocket', 'Cargo Rocket')
 			.isRocket()
 			.finalize()
 		//rocket parts
@@ -658,7 +658,7 @@ const construct = () => {
 			.isSpaceLocked()
 			.configure('locked',true)
 			.setMachine({
-				'frostium-energy':100
+				'frostium-energy':10
 			},{
 				'shadows':0.0001,
 			})
@@ -839,6 +839,7 @@ const construct = () => {
 				'titanium':2000,
 				'iron':10000,
 				'copper':10000,
+				'stone':30000,
 			})
 			.finalize()
 		//gasses deprecated

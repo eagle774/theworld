@@ -66,7 +66,7 @@ let App = new Vue({
 			}
 			this.spaceBuildings=spaceBuildings
 		},
-		addTab: function(displayText, tab,common=false) {
+		addTab: function(displayText, tab, letter, common=false) {
 			for (let i = 0; i < this.tabs.length; i++) {
 				if (this.tabs[i].tab === tab) {
 					if(!common){
@@ -396,6 +396,7 @@ let App = new Vue({
 			}
 			localStorage['gameSave']=JSON.stringify(save)
 			this.loadGame()
+			return true
 		},
 		loadGame: function(playerMade){
 			if(localStorage['gameSave']){
@@ -441,10 +442,17 @@ let App = new Vue({
 				for(const [key,value] of Object.entries(save)){
 					this.$set(this,key,value)
 				}
-				if(newVersion!==save.version){
+				if(newVersion!=save.version){
 					alert('Who are you, using an outdated client?')
-					for(const [key,value] of Object.entries(save.resTable)){
-						this.$set(this.resTable[key],'percent',0)
+					if(newVersion=='0.1.0'){
+						for(const [key,value] of Object.entries(save.resTable)){
+							this.$set(this.resTable[key],'percent',0)
+						}
+					}
+					for(const [key,value] of this.resTableFilterBy((res)=>{return res.isCargo})){
+						if(!this.cargo[key]){
+							this.cargo[key]=0
+						}
 					}
 				}
 				this.version = newVersion
@@ -577,7 +585,9 @@ let App = new Vue({
 			this.message=newMessage
 		},
 		setTab: function(tab){
-			this.tab = tab
+			if(this.getTab(tab)){
+				this.tab = tab
+			}
 			if(tab=='adaptation'){
 				this.editTab('adaptation','Adaptations')
 			}
@@ -689,7 +699,7 @@ let App = new Vue({
 			let number = Infinity
 			let building = this.buildingsList[buildingName]
 			if(!building){
-				return this.errorLog.push('Building '+buildingName+' doesn\'t exist.')
+				return !this.errorLog.push('Building '+buildingName+' doesn\'t exist.')
 			}
 			let buyable = true
 			let table = !inSpace?this.resTable:this.spaceResCounts
@@ -867,7 +877,7 @@ let App = new Vue({
 					addStock(stockCreator(this.stockNamePool))
 				}
 			}
-			this.universe.incProgress(this.spaceResCounts['hypersonic-shuttle'])
+			this.universe.incProgress(this.spaceResCounts['hypersonic-shuttle'].amount)
 			if (this.insertedDisk && this.computerOpacity < 1) {
 				this.computerOpacity += 1 / 600
 			}
@@ -944,11 +954,11 @@ let App = new Vue({
         }
         if(this.spaceResCounts[this.spaceMachinePriority[i]].amount>0&&machine.multiplier>0){
 	        for(const [key,value] of Object.entries(machine['results'])){
-						this.incResSpace(key,value*this.resTable[this.machinePriority[i]].spaceMachineSettings.multiplier*this.spaceResCounts[this.machinePriority[i]].amount*machine.multiplier)
+						this.incResSpace(key,value*this.resTable[this.spaceMachinePriority[i]].spaceMachineSettings.multiplier*this.spaceResCounts[this.spaceMachinePriority[i]].amount*machine.multiplier)
             this.addSpaceResource(key,true)
 					}
 		      for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
-						this.incResSpace(key,-value*this.spaceResCounts[this.machinePriority[i]].amount*machine.multiplier)
+						this.incResSpace(key,-value*this.spaceResCounts[this.spaceMachinePriority[i]].amount*machine.multiplier)
 					}
         }
         this.spaceMachineStates[this.spaceMachinePriority[i]]=machine
@@ -1233,11 +1243,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 		},
 		//rocketry
 		handleLaunchRocket: function(rocket){
-			if(control){
-				this.launchRocket(rocket,10)
-			}else{
-				this.launchRocket(rocket,1)
-			}
+			this.launchRocket(rocket,1)
 		},
 		launchRocket: function(rocket,number){
 			let buyable = true

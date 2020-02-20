@@ -117,7 +117,7 @@ let buildingsData = {
       "frostium-core": 10,
       "frostium-battery":10,
     },
-		"tooltip":"It sucks in the light",
+		"tooltip":"It sucks in the light. (Requires frostium energy)",
     'category':'Shadows',
   },
   "spit": {
@@ -341,7 +341,7 @@ let buildingsData = {
       "iron":40,
       "copper":40
     },
-    'tooltip':'To prevent china hoaxes',
+    'tooltip':'To prevent chinese hoaxes',
     'category':'Energy',
     'effects':[
       {"funcName":"incrementResourceSpecial","args":['energy','storage',20]},
@@ -398,10 +398,10 @@ let buildingsData = {
       "wireless-energy-transferer":1,
       "matter-transporter":1
     },
-    'tooltip':'The pinnacle of matter transfer technology',
+    'tooltip':'Send friendly robots out into space to gather resources.',
     'category':'Shadows',
     'effects':[
-      {'funcName':'addTab','args':['Space M.T.','space-mt',true]}
+      {'funcName':'addTab','args':['Space Resources','universe-statistics',true]}
     ]
   },
   "solar-panel-satellite":{
@@ -544,10 +544,10 @@ let buildingsData = {
   },
   'cargo-rocket':{
     'cost':{
-      'frostium':2000000,
-      'steel':5000000,
-      'duranium':5000000,
-      'tungsten':5000000,
+      'frostium':1500000,
+      'steel':1500000,
+      'duranium':1500000,
+      'tungsten':1500000,
     },
     'category':'Hey, how are you seeing this?',
     'type':'rocket'
