@@ -131,7 +131,7 @@ function Res(name,sname){
 	}
 	return this
 }
-const godMode = true
+const godMode = false
 const addButtonConstructor = (displayText, todo) => {
 	data.buttons.push({
 		displayText,
