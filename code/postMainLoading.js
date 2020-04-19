@@ -26,16 +26,13 @@ addKeyBinding((event) => {
   if (event.key === 'Backspace') return App.deletion(-1,event)
 })
 addKeyBinding((event) => {
-  if (event.key === 'r' && event.ctrlKey) return true
-})
-addKeyBinding((event) => {
   if (event.key === 's' && event.ctrlKey){
     event.preventDefault();
     return App.saveGame()
   }
 })
 addKeyBinding((event) => {
-  if (event.key === 'ArrowRight' && App.tabPos+1<App.tabs.length/10){
+  if (event.key === 'ArrowRight' && App.tabPos<App.tabs.length/6){
     App.tabPos+=1
     return true
   }
@@ -48,19 +45,19 @@ addKeyBinding((event) => {
 })
 addKeyBinding((event)=>{
   if(Number(event.key)&&event.key!=='0'){
-    if(App.tabs[App.tabPos*10-1+Number(event.key)]){
-      return App.setTab(App.tabs[App.tabPos*10-1+Number(event.key)].tab)
+    if(App.tabs[App.tabPos*6-1+Number(event.key)]){
+      return App.setTab(App.tabs[App.tabPos*6-1+Number(event.key)].tab)
     }
   }else if(event.key==='0'){
-    if(App.tabs[App.tabPos*10+9]){
-      return App.setTab(App.tabs[App.tabPos*10+9].tab)
+    if(App.tabs[App.tabPos*6+9]){
+      return App.setTab(App.tabs[App.tabPos*6+5].tab)
     }
   }
 })
 App.unSaveable.buttons.explore=App.explore
 App.unSaveable.buttons.getWood=()=>{App.incrementResourceByHand('wood',1)}
 App.unSaveable.buttons.mineStone=()=>{App.incrementResourceByHand('stone',1)}
-window.setInterval(App.tick, 100);
+tickFunc=window.setInterval(App.tick, 100);
 App.newGrid()
 App.loadGame(false)
 App.buildingsList=buildingsData

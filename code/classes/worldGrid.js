@@ -68,9 +68,6 @@ class WorldGrid extends Saveable{
     this.entityGrid[startX][startY] = null
     return [true]
   }
-  moveTile(startX, startY, mx, my){
-    return 'Please stop'
-  }
   tick(app){
     for(let i=0;i<this.size;i++){
       for(let j=0;j<this.size;j++){

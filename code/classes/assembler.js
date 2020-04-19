@@ -1,6 +1,5 @@
-class Assembler extends Saveable{
+class Assembler{
   constructor(resTable){
-    super(resTable)
     this.acted = false
     this.resTable=new ReadOnly(()=>{return JSON.parse(JSON.stringify(resTable))})
   }
@@ -14,5 +13,3 @@ class Assembler extends Saveable{
     return app.howManyPlease(name,false)>=amount
   }
 }
-
-registerClass('assembler',Assembler)
