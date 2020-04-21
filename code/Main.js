@@ -726,7 +726,7 @@ let App = new Vue({
 			let building = this.buildingsList[buildingName]
 			let buyable = true
 			let table = !inSpace?this.resTable:this.spaceResCounts
-			if(this.resTable[buildingName].unique && table[buildingName].amount>0){
+			if(this.resTable[buildingName] && this.resTable[buildingName].unique && table[buildingName].amount>0){
 				return false;
 			}
 			for (const [key, value] of Object.entries(building.cost)) {
