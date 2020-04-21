@@ -1215,10 +1215,7 @@ const construct = () => {
 	data.checks['notFrostiumBatteryMade']=true
 	data.checks['notFrostiumFurnaceMade']=true
 	data.checks['notSpacePanelMade']=true
-
-
 	//Init adaptations
-
 	//misc
 	addAdaptation(
 		[],(app)=>{
@@ -1265,7 +1262,7 @@ const construct = () => {
 	addAdaptation(
 		[
 		(app)=>{
-			return app.spaceResCounts['trishardic-geode'].amount>=0
+			return app.spaceResCounts['trishardic-geode'].amount>0
 		}
 	],(app)=>{
 		app.resTable['industrial-smelter'].spaceLocked = false

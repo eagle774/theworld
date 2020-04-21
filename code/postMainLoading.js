@@ -32,7 +32,7 @@ addKeyBinding((event) => {
   }
 })
 addKeyBinding((event) => {
-  if (event.key === 'ArrowRight' && App.tabPos<App.tabs.length/6){
+  if (event.key === 'ArrowRight' && App.tabPos<Math.floor(App.tabs.length/6)){
     App.tabPos+=1
     return true
   }
