@@ -420,6 +420,14 @@ let buildingsData = {
     'tooltip':'A satellite to collect energy',
     'category':'Energy',
   },
+  "solar-panel-satellite-cluster":{
+    "type":"building",
+    "cost": {
+      "solar-panel-satellite":1000,
+    },
+    'tooltip':'A satellite cluster is more efficient',
+    'category':'Energy',
+  },
   "hypersonic-shuttle":{
     "type":"building",
     "cost": {

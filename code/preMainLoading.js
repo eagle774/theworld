@@ -180,7 +180,7 @@ function Res(name,sname){
 	}
 	return this
 }
-const godMode = false
+const godMode = true
 const addButtonConstructor = (displayText, todo) => {
 	data.buttons.push({
 		displayText,
@@ -762,6 +762,7 @@ const construct = () => {
 				'duranium':777,
 				'steel':7777,
 			},100)
+			.isTransportable(20000)
 			.hasCSS({'color':'orange','text-shadow':'black 0px 0px 1px'})
 			.finalize()
 		//rockets
@@ -1019,10 +1020,12 @@ const construct = () => {
 				copper:0.02,
 			})
 			.finalize()
-			new Res('industrial-smelter', 'Industrial Smelter')
-				.configure('buildName','Build an Industrial Smelter')
-				.isBuildable()
-				.finalize()
+		new Res('industrial-smelter', 'Industrial Smelter')
+			.configure('buildName','Build an Industrial Smelter')
+			.isBuildable()
+			.isSpaceLocked()
+			.configure("locked",true)
+			.finalize()
 		new Res('stone-miner', 'Stone Miner')
 			.configure('buildName','Throw together a stone miner to mine stone')
 			.isBuildable()
@@ -1149,7 +1152,16 @@ const construct = () => {
 			.configure('buildName','Make a satellite to charge your space station.')
 			.configure('locked',true)
 			.setMachine({},{
-				'energy':100,
+				'energy':20,
+			})
+			.finalize()
+		//special
+		new Res('solar-panel-satellite-cluster', 'Solar Panel Satellite Cluster')
+			.isBuildable()
+			.configure('buildName','Arrange satellites to catch as much sunlight as possible')
+			.configure('locked',true)
+			.setMachine({},{
+				'energy':50000,
 			})
 			.finalize()
 		//special
@@ -1254,10 +1266,10 @@ const construct = () => {
 	],(app)=>{
 		app.resTable['pressurizer'].locked = false
 	},'Iron compressing 2','Truer uselessness.',{
-		'stone':5000,
-		'copper':1000,
+		'stone':10000,
+		'copper':10000,
 		'compressed-iron':1000,
-		'titanium':1000
+		'titanium':5000
 	})
 	addAdaptation(
 		[
@@ -1266,6 +1278,7 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.resTable['industrial-smelter'].spaceLocked = false
+		app.resTable['industrial-smelter'].locked = false
 	},'Advanced gem working','To give your planets that extra sparkling touch',{
 		'iron':100000,
 		'duranium':100000
@@ -1320,6 +1333,18 @@ const construct = () => {
 	addAdaptation(
 		[
 		(app)=>{
+			return app.jobCount('stone-furnace')>=20000&&app.completedAdaptations.includes('Most efficient furnaces')
+		}
+	],(app)=>{
+		app.machineStates['stone-furnace'].resourcesNeeded.stone*=0.25
+	},'Even more efficient furnaces','I lied earlier.',{
+		'tungsten':100000,
+		'duranium':10000,
+		'steel':1000,
+	})
+	addAdaptation(
+		[
+		(app)=>{
 			return app.resTable['titanium'].amount>0
 		}
 	],(app)=>{
@@ -1355,6 +1380,9 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=1.5
+		app.spaceMachineStates['solar-panel'].results.energy*=1.5
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=1.5
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=1.5
 	},'Pholtovaic cells I','More powerful solar panels',{
 		'iron':250,
 		'copper':250
@@ -1366,6 +1394,9 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=1.75
+		app.spaceMachineStates['solar-panel'].results.energy*=1.75
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=1.75
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=1.75
 	},'Pholtovaic cells II','Even more powerful solar panels',{
 		'iron':5000,
 		'copper':5000,
@@ -1378,6 +1409,9 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=2
+		app.spaceMachineStates['solar-panel'].results.energy*=2
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=2
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=2
 	},'Pholtovaic cells III','Super powerful solar panels',{
 		'iron':10000,
 		'copper':10000,
@@ -1391,9 +1425,12 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=2.25
+		app.spaceMachineStates['solar-panel'].results.energy*=2.25
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=2.25
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=2.25
 	},'Pholtovaic cells IV','Super-duper powerful solar panels',{
-		'iron':100000,
-		'copper':50000,
+		'iron':500000,
+		'copper':250000,
 		'compressed-iron':10000,
 		'tungsten':20000,
 		'steel':10000,
@@ -1405,6 +1442,9 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=2.5
+		app.spaceMachineStates['solar-panel'].results.energy*=2.5
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=2.5
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=2.5
 	},'Pholtovaic cells V','Incredibly powerful solar panels',{
 		'iron':1000000,
 		'copper':500000,
@@ -1420,6 +1460,9 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=2.75
+		app.spaceMachineStates['solar-panel'].results.energy*=2.75
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=2.75
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=2.75
 	},'Pholtovaic cells VI','Ridiculously powerful solar panels',{
 		'iron':5000000,
 		'copper':2500000,
@@ -1435,6 +1478,9 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=3
+		app.spaceMachineStates['solar-panel'].results.energy*=3
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=3
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=3
 	},'Pholtovaic cells VII','Way too powerful solar panels',{
 		'iron':20000000,
 		'copper':400000,
@@ -1451,6 +1497,9 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=3.25
+		app.spaceMachineStates['solar-panel'].results.energy*=3.25
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=3.25
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=3.25
 	},'Pholtovaic cells VIII','Can anything be this powerful',{
 		'iron':20000000,
 		'copper':400000,
@@ -1467,6 +1516,9 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.machineStates['solar-panel'].results.energy*=3.5
+		app.spaceMachineStates['solar-panel'].results.energy*=3.5
+		app.spaceMachineStates['solar-panel-satellite'].results.energy*=3.5
+		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=3.5
 	},'Pholtovaic cells IX','Please stop.',{
 		'iron':200000000,
 		'copper':4000000,
@@ -1515,7 +1567,27 @@ const construct = () => {
 	],(app)=>{
 		app.multipliers['.robo']*=1.25
 	},'Tungsten robots','Equip robots with a tungsten axe',{
-		'tungsten':50000,
+		'tungsten':30000,
+	})
+	addAdaptation(
+		[
+		(app)=>{
+			return app.jobCount('robot')>=80000&&app.completedAdaptations.includes('Tungsten robots')
+		}
+	],(app)=>{
+		app.multipliers['.robo']*=1.5
+	},'Duranium robots','Equip robots with a duranium axe',{
+		'duranium':5000,
+	})
+	addAdaptation(
+		[
+		(app)=>{
+			return app.jobCount('robot')>=200000&&app.completedAdaptations.includes('Duranium robots')
+		}
+	],(app)=>{
+		app.multipliers['.robo']*=1.75
+	},'Frostium robots','Equip robots with a frostium axe',{
+		'frostium':5000,
 	})
 	//miners
 	addAdaptation(
@@ -1536,7 +1608,7 @@ const construct = () => {
 	],(app)=>{
 		app.multipliers['.mnr']*=1.75
 		app.setMessage('Will I ever escape this planet?')
-	},'Titanium droids','Equip droids with a titanium axe',{
+	},'Titanium droids','Equip droids with a titanium pickaxe',{
 		'titanium':1000,
 	})
 	addAdaptation(
@@ -1547,7 +1619,7 @@ const construct = () => {
 	],(app)=>{
 		app.multipliers['.mnr']*=1.5
 		app.setMessage('Is my fate to become like the rest of The Dreamers?')
-	},'Steel droids','Equip droids with a steel axe',{
+	},'Steel droids','Equip droids with a steel pickaxe',{
 		'steel':1000,
 	})
 	addAdaptation(
@@ -1558,8 +1630,30 @@ const construct = () => {
 	],(app)=>{
 		app.multipliers['.robo']*=1.25
 		app.setMessage('What can I do when I go back?\nPretend this all never happened?')
-	},'Tungsten droids','Equip droids with a tungsten axe',{
-		'tungsten':50000,
+	},'Tungsten droids','Equip droids with a tungsten pickaxe',{
+		'tungsten':30000,
+	})
+	addAdaptation(
+		[
+		(app)=>{
+			return app.jobCount('robot')>=80000&&app.completedAdaptations.includes('Tungsten droids')
+		}
+	],(app)=>{
+		app.multipliers['.mnr']*=1.5
+		app.setMessage('I\'ve got to find a way to stand up to them.')
+	},'Duranium droids','Equip droids with a duranium pickaxe',{
+		'duranium':5000,
+	})
+	addAdaptation(
+		[
+		(app)=>{
+		app.setMessage('I\'ve got to find a way to stop their tyranny.')
+			return app.jobCount('robot')>=200000&&app.completedAdaptations.includes('Duranium droids')
+		}
+	],(app)=>{
+		app.multipliers['.mnr']*=1.75
+	},'Frostium droids','Equip droids with a frostium pickaxe',{
+		'frostium':5000,
 	})
 	//fluids and alloys
 	addAdaptation(
@@ -1660,12 +1754,12 @@ const construct = () => {
 	\nIn the scripts tab allocate all the droids to the new file.\
 	\nIn that file, type one line: miner.digHole(). This tells the droid to dig a hole so that you can start uncovering more resources \
 	\nYou can see your progress in digging the hole in the mining tab. \
-	\nOnce your hole gets to 100 metres create a second script, rename it to mine.mnr, and add the line miner.digAtDepth(100).\
+	\nOnce your hole gets to 100 metres create a second script, rename it to mine.mnr, and add the line miner.mineAtDepth(100).\
 	\nAgain, allocate some droids to the script. \
 	\nThis script tells the droid to mine at a depth of 100 metres. By mining at different depths you can find different types of resources.\
 	\nUsually you want to have the depth you mine at as big as possible, but you can\'t have it bigger than your hole, and at depths close to the center you lose access to some resources. \
 	\nAll this does so far is have your droids uncover resources, it doesn\'t help them mine resources\
-	\nTo mine resources you have to run miner.mineResource(\'resourceYouWantToMine\'). For some reason the resource has to be all lowercase, and with hyphens instead of spaces\
+	\nTo mine resources you have to run miner.mineResource(\'resource-you-want-to-mine\'). For some reason the resource has to be all lowercase, and with hyphens instead of spaces\
 	\nFor instance miner.mineResource(\'stone\') mines stone and miner.mineResource('iron-ore') mines Iron Ore\
 	\nTo control robots you have to use a different syntax.\
 	\nThe two main commands are robot.chopAdjacentTiles() and robot.moveRandom()\

@@ -891,7 +891,7 @@ let App = new Vue({
 		//gametick
 		tick: function() {
 			if(this.debug){
-				console.time('startingTick')
+				console.time('wholeTick')
 				console.time('grid, saving, computer')
 			}
 			if(this.computerChanged){
@@ -1361,7 +1361,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 					this.debug = false
 					this.temporaryDebug = false
 				}
-				console.timeEnd('startingTick')
+				console.timeEnd('wholeTick')
 			}
 		},
 		//jobs

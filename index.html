@@ -134,7 +134,7 @@
           <span v-else-if='tab == "mining"'>
               <br>
               <span>
-                Hole depth: {{bigNumberHandler(hole)}} m
+                Hole depth: {{bigNumberHandler(hole)}}m
               </span>
               <span class='left-side-box'>
                 Uncovered resources
@@ -157,8 +157,8 @@
             </span>
           </span>
           <span v-else-if='tab == "jobs"'>
-            <div v-for='(newJobs,jobBase,i) in jobs'>
-              <span v-if='unlockedResources.includes(jobBase)'  :style="{'top':(i+1)*25+'vh'}">
+            <div v-for='(newJobs,jobBase,i) in jobs' v-if='unlockedResources.includes(jobBase)' >
+              <span  :style="{'top':(i+1)*25+'vh'}">
                 <span>{{resTable[jobBase].screenName}}: {{bigNumberHandler(jobCount(jobBase),true)}} </span>
                 <div v-for='newJob in newJobs' v-if='!machineStates[newJob.job] || allDictKeysAreInArray(machineStates[newJob.job].resourcesNeeded,unlockedResources.concat(unlockedFluids))'>
                   <span>{{resTable[newJob.job].screenName}}: {{resTable[newJob.job].percent}}% </span><br />
