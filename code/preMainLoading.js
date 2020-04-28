@@ -1662,11 +1662,11 @@ const construct = () => {
 	addAdaptation(
 		[
 		(app)=>{
-		app.setMessage('I\'ve got to find a way to stop their tyranny.')
 			return app.jobCount('robot')>=200000&&app.completedAdaptations.includes('Duranium droids')
 		}
 	],(app)=>{
 		app.multipliers['.mnr']*=1.75
+		app.setMessage('They will pay for what they\'ve done.')
 	},'Frostium droids','Equip droids with a frostium pickaxe',{
 		'frostium':5000,
 	})
