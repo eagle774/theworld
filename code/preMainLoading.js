@@ -1666,7 +1666,7 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.multipliers['.mnr']*=1.75
-		app.setMessage('They will pay for what they\'ve done.')
+		app.setMessage('I\'ve got to find a way to stop their tyranny.')
 	},'Frostium droids','Equip droids with a frostium pickaxe',{
 		'frostium':5000,
 	})
