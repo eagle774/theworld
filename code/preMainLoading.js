@@ -180,7 +180,8 @@ function Res(name,sname){
 	}
 	return this
 }
-const godMode = true
+let jobsToAdd = {};
+const godMode = false
 const addButtonConstructor = (displayText, todo) => {
 	data.buttons.push({
 		displayText,
@@ -190,11 +191,22 @@ const addButtonConstructor = (displayText, todo) => {
 }
 const addJob = (base, job) => {
 	if(!data.jobs[base]){
-		data.jobs[base]=[]
+		if(!jobsToAdd[base]){
+			jobsToAdd[base]=[]
+		}
+		if(data.resTable[base]){
+			data.jobs[base]=jobsToAdd[base]
+		}
 	}
-	data.jobs[base].push({
-		job
-	})
+	if(data.jobs[base]){
+		data.jobs[base].push({
+			job
+		})
+	}else{
+		jobsToAdd[base].push({
+			job
+		})
+	}
 }
 const addExtension = (parts) => {
 	data.unSaveable.extensions.push(parts)
@@ -236,6 +248,9 @@ Res.prototype.finalize = function(){
 	pastPerTick:[0],
 	tempPastPerTick:[0],
 	percent:0}
+	if(jobsToAdd[this.stuff.name]){
+		data.jobs[this.stuff.name] = jobsToAdd[this.stuff.name]
+	}
 	if(godMode){
 		if(this.stuff.storage<1e30){
 			this.stuff.storage=1e30
@@ -642,8 +657,8 @@ const construct = () => {
 				'molten-steel':5,
 				energy:50
 			},10)
-			//3 pumps to 1 steel melters to 4 alloyers, coolers
 			.finalize()
+			//3 pumps to 1 steel melters to 4 alloyers, coolers
 		//crystals
 		new Res('trishardic-geode', 'Trishardic Geode')
 			.configure('storage', 10)
@@ -1519,7 +1534,7 @@ const construct = () => {
 		app.spaceMachineStates['solar-panel'].results.energy*=3.5
 		app.spaceMachineStates['solar-panel-satellite'].results.energy*=3.5
 		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=3.5
-	},'Pholtovaic cells IX','Please stop.',{
+	},'Pholtovaic cells IX','I didn\'t even add this one to the game.',{
 		'iron':200000000,
 		'copper':4000000,
 		'compressed-iron':7500000,

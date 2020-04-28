@@ -269,7 +269,6 @@ let buildingsData = {
   "alloyer": {
     "type":"building",
     "cost": {
-      "stone": 1000,
       "iron":20000,
       "copper":20000,
       "titanium":5000,
@@ -291,7 +290,6 @@ let buildingsData = {
   "cooler": {
     "type":"building",
     "cost": {
-      "stone": 1000,
       "iron":20000,
       "copper":20000,
       "titanium":5000,
@@ -313,7 +311,6 @@ let buildingsData = {
   "melter": {
     "type":"building",
     "cost": {
-      "stone": 1000,
       "iron":20000,
       "copper":20000,
       "titanium":5000,

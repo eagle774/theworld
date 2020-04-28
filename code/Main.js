@@ -847,7 +847,11 @@ let App = new Vue({
 			}
 		},
 		incrementResourceSpecial: function(res, thing, amount, multiplier = 1) {
-			this.configureResource(res, thing,this.resTable[res][thing] + amount*multiplier)
+			if(!this.resTable[res]){
+				console.log("Missing resouce: "+res)
+			}else{
+				this.configureResource(res, thing,this.resTable[res][thing] + amount*multiplier)
+			}
 		},
 		incrementResourceSpecialSpace: function(res, thing, amount, multiplier = 1) {
 			this.configureResourceSpace(res, thing,this.spaceResCounts[res][thing] + amount*multiplier)
