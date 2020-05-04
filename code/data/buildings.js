@@ -154,7 +154,7 @@ let buildingsData = {
       {'funcName':'configureResource','args':['combustion-engine','locked',false]}
     ],
 		"tooltip":"This takes a suprisingly small amount of resources",
-    'category':'Technical'
+    'category':'Special'
   },
   "stone-miner": {
     "type":"building",

@@ -460,7 +460,7 @@ const addMineMachine = (materialName,resourcesNeeded,results) => {
   	resourcesRecieved:{
 
   	},
-  	results:results,
+  	results:JSON.parse(JSON.stringify(results)),
 		multiplier:1
 	}
 	data.mineMachinePriority.push(materialName)
@@ -472,7 +472,7 @@ const addMachine = (materialName,resourcesNeeded,results) => {
   	resourcesRecieved:{
 
   	},
-  	results:results,
+  	results:JSON.parse(JSON.stringify(results)),
 		multiplier:1
 	}
 	data.machinePriority.push(materialName)
@@ -484,7 +484,7 @@ const addSpaceMachine = (materialName,resourcesNeeded,results) => {
   	resourcesRecieved:{
 
   	},
-  	results:results,
+  	results:JSON.parse(JSON.stringify(results)),
 		multiplier:1
 	}
 	data.spaceMachinePriority.push(materialName)
@@ -495,7 +495,7 @@ const addSpaceMineMachine = (materialName,resourcesNeeded,results) => {
   	resourcesRecieved:{
 
   	},
-  	results:results,
+  	results:JSON.parse(JSON.stringify(results)),
 		multiplier:1
 	}
 	data.spaceMineMachinePriority.push(materialName)
@@ -1020,6 +1020,7 @@ const construct = () => {
 		new Res('computer', 'Computers')
 			.configure('buildName','Forge a computer')
 			.isBuildable()
+			.configure('storage',1)
 			.finalize()
 		//resource buildings
 		new Res('stone-furnace', 'Stone Furnace')
@@ -1269,6 +1270,7 @@ const construct = () => {
 	addAdaptation(
 		[],(app)=>{
 		app.resTable['compressor'].locked = false
+		app.addBuilding('compressor')
 	},'Iron compressing','True uselessness.',{
 		'iron':100,
 		'wood':50
@@ -1280,6 +1282,7 @@ const construct = () => {
 		}
 	],(app)=>{
 		app.resTable['pressurizer'].locked = false
+		app.addBuilding('pressurizer')
 	},'Iron compressing 2','Truer uselessness.',{
 		'stone':10000,
 		'copper':10000,
@@ -1394,8 +1397,11 @@ const construct = () => {
 			return app.resTable['solar-panel'].amount>=5
 		}
 	],(app)=>{
+		console.log(app.machineStates['solar-panel'].results.energy)
 		app.machineStates['solar-panel'].results.energy*=1.5
+		console.log(app.machineStates['solar-panel'].results.energy)
 		app.spaceMachineStates['solar-panel'].results.energy*=1.5
+		console.log(app.machineStates['solar-panel'].results.energy)
 		app.spaceMachineStates['solar-panel-satellite'].results.energy*=1.5
 		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=1.5
 	},'Pholtovaic cells I','More powerful solar panels',{

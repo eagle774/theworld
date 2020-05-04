@@ -163,10 +163,10 @@ let App = new Vue({
 			let saveLine = file[y]
 			let newX = x;
 			let newY = y;
-			if (x === 0 && y === 0 && mx < 0) return false;
-			if (y === 0 && my < 0) return false;
-			if (x === saveLine.length - 1 && y === file.length - 1 && mx > 0) return false;
-			if (y === file.length && my > 0) return false;
+			if (x === 0 && y === 0 && mx < 0) return true;
+			if (y === 0 && my < 0) return true;
+			if (x === saveLine.length - 1 && y === file.length - 1 && mx > 0) return true;
+			if (y === file.length && my > 0) return true;
 			if (file.length > y + my && y + my >= 0 && my !== 0) {
 				if (file[y + my].length-1 < x) {
 					newX = file[y + my].length - 1
@@ -397,9 +397,17 @@ let App = new Vue({
 				for(const [key,value] of Object.entries(save.spaceResCounts)){
 					this.spaceResCounts[key]=value
 				}
-				save.spaceResCounts=this.spaceResCounts
+				save.spaceResCounts = this.spaceResCounts
+				for(const [key,value] of Object.entries(save.machineStates)){
+					this.machineStates[key]=value
+				}
 				save.machineStates = this.machineStates
 				save.machinePriority = this.machinePriority
+				for(const [key,value] of Object.entries(save.spaceMachineStates)){
+					this.spaceMachineStates[key]=value
+				}
+				save.spaceMachineStates = this.spaceMachineStates
+				save.spaceMachinePriority = this.spaceMachinePriority
 				for(const [key,value] of Object.entries(save.mining)){
 					mineSave = new Mine()
 					mineSave.setData(value)
@@ -655,6 +663,7 @@ let App = new Vue({
 				this.configureResource('incendinary-pile', 'locked', false)
 				this.configureButton(1, 'displayText', 'Explore (Locked)')
 				this.configureButton(1, 'ready', false)
+				this.addTab('Jobs','jobs')
 				this.message='In the cave you find a rusted steam engine,\nblueprints for a computer and a computer disk.'
 				this.addButton('Mine stone', 'mineStone')
 			}
@@ -706,7 +715,7 @@ let App = new Vue({
 			for (const [key, value] of Object.entries(building.cost)) {
 				number = Math.floor(Math.min(number, table[key].amount / value))
 			}
-			return number
+			return number<this.resTable[buildingName].storage?number:this.resTable[buildingName].storage
 		},
 		isBuildingBuyable: function(buildingName,inSpace){
 			let building = this.buildingsList[buildingName]
@@ -1281,8 +1290,8 @@ let App = new Vue({
 \nNothing is found below 1,000,000,000m.\
 \nCoal is found at 10m-10,000,000m\
 \nStone is found at all depths.\
-\nCopper is found at 100m-100,000m\
-\nIron is found at 100m-100,000m\
+\nCopper is found at 100m-500,000m\
+\nIron is found at 100m-500,000m\
 \nTitanium is found at 100,000m-100,000,000m\
 \nTungsten is found at 1,000,000m-1,000,000,000m\
 -Anonymous', 'doc')

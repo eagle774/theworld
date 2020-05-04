@@ -24,10 +24,10 @@ const bigNumberHandler = (number,isBuilding)=>{
     return negative+number.toFixed(2)+prefixes[pos]
   }
   if(pos==0){
-    return (Math.round(number*100000)/100000+'').length>
+    return (Math.round(number*100)/100+'').length>
     number.toFixed(2).length?
     negative+number.toFixed(2):
-    negative+(Math.round(number*100000)/100000+'')
+    negative+(Math.round(number*100)/100+'')
   }
   if(number.toFixed('2')<10){
     return negative+number.toFixed('2')+prefixes[pos]

@@ -1,4 +1,10 @@
 addKeyBinding((event) => {
+  if (event.key === 's' && event.ctrlKey){
+    event.preventDefault();
+    return App.saveGame()
+  }
+})
+addKeyBinding((event) => {
   if (event.key.length === 1) {
     if(event.key === '\''){
       event.preventDefault()
@@ -8,10 +14,30 @@ addKeyBinding((event) => {
   return false;
 })
 addKeyBinding((event) => {
-  if (event.key === 'ArrowUp') return App.moveCursor(0, -1);
-  if (event.key === 'ArrowDown') return App.moveCursor(0, 1);
-  if (event.key === 'ArrowLeft') return App.moveCursor(-1, 0);
-  if (event.key === 'ArrowRight') return App.moveCursor(1, 0);
+  if (event.key === 'ArrowUp'){
+    if(App.moveCursor(0, -1)){
+      event.preventDefault()
+      return true
+    }
+  }
+  if (event.key === 'ArrowDown') {
+    if(App.moveCursor(0, 1)){
+      event.preventDefault()
+      return true
+    }
+  }
+  if (event.key === 'ArrowLeft'){
+    if(App.moveCursor(-1, 0)){
+      event.preventDefault()
+      return true
+    }
+  }
+  if (event.key === 'ArrowRight'){
+    if(App.moveCursor(1, 0)){
+      event.preventDefault()
+      return true
+    }
+  }
   return false;
 })
 addKeyBinding((event) => {
@@ -24,12 +50,6 @@ addKeyBinding((event) => {
 addKeyBinding((event) => {
   if (event.key === 'Delete') return App.deletion(0,event)
   if (event.key === 'Backspace') return App.deletion(-1,event)
-})
-addKeyBinding((event) => {
-  if (event.key === 's' && event.ctrlKey){
-    event.preventDefault();
-    return App.saveGame()
-  }
 })
 addKeyBinding((event) => {
   if (event.key === 'ArrowRight' && App.tabPos<Math.ceil(App.tabs.length/6)-1){

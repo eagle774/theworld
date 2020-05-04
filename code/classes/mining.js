@@ -71,7 +71,7 @@ class Mine extends Saveable{
     let results = []
     for(let i=0;i<allocated.length;i++){
       let result = Math.min(this.resources[resources[i]].total,(this.getVal(resources[i],'sizeMin')+this.getVal(resources[i],'sizeMax'))/2*randomDistribution()*allocated[i])
-      this.resources[resources[i]].total-=Math.floor(result)
+      this.resources[resources[i]].total-=result
       results.push([result,resources[i]])
     }
     return results

@@ -1,1 +1,1 @@
-rocket adding function, port to it
+Per tick issues -- fixed
