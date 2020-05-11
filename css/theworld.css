@@ -35,7 +35,8 @@
   top:24vh;
   left:20vw;
   text-align:center;
-  overflow:auto;
+  overflow-y:auto;
+  word-wrap:break-word;
 }
 
 @keyframes example {

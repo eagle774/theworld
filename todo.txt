@@ -1,1 +1,20 @@
 Per tick issues -- fixed
+Assemblers can build multiple things in one script. -- done
+When making new file automatically head there.
+Todo - Make assemblers behave nicer. -- done
+Make letter under cursor white. -- done
+Add custom option to buy thingy.
+Increase tick time/streamline code parser.
+Auto load upon launch.
+Launch rocket button in cargo bay.
+Add max cargo bay and launch in one. --done
+Have space assemblers
+Space show buyable. -- done.
+Big number handler on matter transporter
+Rebalance market.
+Check for in unlockedResources with fluids
+Make computer text wrap.
+Make wiki for the game on github
+Mining ice in space. -- done.
+Rearrange resTable machine order manually through machine states.
+Coal from asteroid miners -- done

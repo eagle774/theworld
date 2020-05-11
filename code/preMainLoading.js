@@ -311,6 +311,7 @@ Res.prototype.isRocketPart = function(rocketPart){
 Res.prototype.isSpaceRocket = function(rocketType){
 	this.stuff.locked = true
 	this.stuff.rocketType = rocketType
+	this.stuff.spaceLocked = true
 	return this.isBuildable()
 }
 Res.prototype.isBuildable = function(){
@@ -529,9 +530,6 @@ const construct = () => {
 			.isTradeable(5,1)
 			.isTransportable(1)
 			.finalize()
-		new Res('flint-and-steel', 'Flint and Steel')
-			.configure('storage', 1)
-			.finalize()
 		new Res('coal', 'Coal')
 			.configure('storage', 400)
 			.isCargo(3,0.1)
@@ -671,24 +669,26 @@ const construct = () => {
 				'aerome':1,
 			},1000)
 			.finalize()
+		new Res('carbon', 'Carbon')
+			.configure('storage', 1000000)
+			.isTransportable(0.001)
+			.isTradeable(0,0)
+			.finalize()
 		new Res('ruby', 'Ruby')
 			.configure('storage', 10)
 			.isTransportable(10000)
-			.isUnholy()
 			.hasCSS({'color':'red'})
 			.isTradeable(10000000,4000000)
 			.finalize()
 		new Res('aerome', 'Aerome')
 			.configure('storage', 10)
 			.isTransportable(10000)
-			.isUnholy()
 			.hasCSS({'color':'black','text-shadow':'#f0ff25 0px 0px 2px'})
 			.isTradeable(5000000,2000000)
 			.finalize()
 		new Res('emerald', 'Emerald')
 			.configure('storage', 10)
 			.isTransportable(10000)
-			.isUnholy()
 			.hasCSS({'color':'lime'})
 			.isTradeable(5000000,2000000)
 			.finalize()
@@ -728,6 +728,9 @@ const construct = () => {
 		new Res('frostium-energy', 'Frostium Energy')
 			.configure('storage',0)
 			.hasCSS({'color':'lightblue','text-shadow':'0px 0px 2px blue'})
+			.finalize()
+		new Res('flint-and-steel', 'Flint and Steel')
+			.configure('storage', 1)
 			.finalize()
 		//arcanity
 		new Res('shadows', 'Shadows')
@@ -773,9 +776,9 @@ const construct = () => {
 			.configure('storage',10)
 			.isSmeltable(1000000,{
 				'pyrome':1,
-				'diomine':100,
-				'duranium':777,
-				'steel':7777,
+				'diomine':6666,
+				'duranium':666666,
+				'steel':666666,
 			},100)
 			.isTransportable(20000)
 			.hasCSS({'color':'orange','text-shadow':'black 0px 0px 1px'})
@@ -891,6 +894,7 @@ const construct = () => {
 			.configure('buildName','Create a facility to store shadows on Earth.')
 			.isSpaceLocked()
 			.isBuildable()
+			.configure('locked',true)
 			.finalize()
 		new Res('pocket-storage-dimension', 'Pocket Storage Dimension')
 			.configure('buildName','Use the mystical properties of shadows to store resources')
@@ -947,6 +951,7 @@ const construct = () => {
 				'frostium-energy':10
 			},{
 				'copper-ore':1000000,
+				'stone':10000000,
 				'iron-ore':1000000,
 				'tungsten-ore':10000,
 				'titanium-ore':50000,
@@ -1021,6 +1026,7 @@ const construct = () => {
 			.configure('buildName','Forge a computer')
 			.isBuildable()
 			.configure('storage',1)
+			.isSpaceLocked()
 			.finalize()
 		//resource buildings
 		new Res('stone-furnace', 'Stone Furnace')
@@ -1083,6 +1089,7 @@ const construct = () => {
 			.isBuildable()
 			.addInactiveState()
 			.configure('locked',true)
+			.isSpaceLocked()
 			.setMachine({
 				coal:10,
 				iron:10,
@@ -1091,6 +1098,20 @@ const construct = () => {
 				steel:0.1,
 			})
 			.configure('buildName','Make a Pressurizer')
+			.finalize()
+		new Res('space-pressurizer', 'Pressurizer')
+			.isBuildable()
+			.configure('locked',true)
+			.isSpaceLocked()
+			.addInactiveState()
+			.setMachine({
+				carbon:1000,
+				iron:10,
+				energy:30,
+			},{
+				steel:0.1,
+			})
+			.configure('buildName','Make an iron-carbon Pressurizer')
 			.finalize()
 		new Res('asteroid-miner', 'Asteroid Miner')
 			.isBuildable()
@@ -1105,6 +1126,8 @@ const construct = () => {
 				'iron':10000,
 				'copper':10000,
 				'stone':30000,
+				'ice':2000,
+				'carbon':20,
 				'molten-diomine':1,
 				'trishardic-geode':0.001,
 			})
@@ -1300,6 +1323,17 @@ const construct = () => {
 	},'Advanced gem working','To give your planets that extra sparkling touch',{
 		'iron':100000,
 		'duranium':100000
+	},true)
+	addAdaptation(
+		[
+		(app)=>{
+			return app.spaceResCounts['carbon'].amount>0
+		}
+	],(app)=>{
+		app.resTable['space-pressurizer'].spaceLocked = false
+	},'Space pressurizers','It\'s actually pretty useful.',{
+		'iron':100000,
+		'carbon':100000
 	},true)
 	//furnaces
 	addAdaptation(
@@ -1522,13 +1556,13 @@ const construct = () => {
 		app.spaceMachineStates['solar-panel-satellite'].results.energy*=3.25
 		app.spaceMachineStates['solar-panel-satellite-cluster'].results.energy*=3.25
 	},'Pholtovaic cells VIII','Can anything be this powerful',{
-		'iron':20000000,
-		'copper':400000,
-		'compressed-iron':2500000,
-		'tungsten':2500000,
-		'steel':10000000,
-		'duranium':1000000,
-		'frostium':1000
+		'iron':2000000000,
+		'copper':40000000,
+		'compressed-iron':250000000,
+		'tungsten':250000000,
+		'steel':1000000000,
+		'duranium':5000000,
+		'frostium':500000,
 	})
 	addAdaptation(
 		[

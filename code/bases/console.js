@@ -224,6 +224,36 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
     if(variable[i]==='%'&&quote===0&&stringquote===0){
       return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)%evalVariable(getPointsUpToString(i+1,variable.length,variable),functions,vars,specialFuncs)
     }
+    if(i!=variable.length-1){
+      if(variable.slice(i,i+2)=='=='){
+        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)==evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
+      }
+      if(variable.slice(i,i+2)=='!='){
+        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)!=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
+      }
+      if(variable.slice(i,i+2)=='<='){
+        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)<=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
+      }
+      if(variable.slice(i,i+2)=='&&'){
+        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)&&evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
+      }
+      if(variable.slice(i,i+2)=='||'){
+        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)||evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
+      }
+      if(variable.slice(i,i+2)=='>='){
+        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)>=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
+      }
+    }
+  }
+  quote=0
+  stringquote=0
+  for(let i=variable.length-1;i>-1;i--){
+    if(variable[i]==='\''){
+      quote^=1
+    }
+    if(variable[i]==='\"'){
+      stringquote^=1
+    }
     if(variable[i]==='.'&&quote===0&&stringquote===0){
       if(variable.slice(variable.lastIndexOf('.')).indexOf('(')+variable.lastIndexOf('.')==variable.lastIndexOf('.')-1){
         return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)[getPointsUpToString(i+1,variable.length)]
@@ -253,20 +283,6 @@ var evalVariable = function(variable,functions,vars,specialFuncs){
           args.push(evalVariable(cur,functions,vars,specialFuncs))
         }
         return value.apply(evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs),args)
-      }
-    }
-    if(i!=variable.length-1){
-      if(variable.slice(i,i+2)=='=='){
-        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)==evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
-      }
-      if(variable.slice(i,i+2)=='!='){
-        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)!=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
-      }
-      if(variable.slice(i,i+2)=='<='){
-        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)<=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
-      }
-      if(variable.slice(i,i+2)=='>='){
-        return evalVariable(getPointsUpToString(0,i,variable),functions,vars,specialFuncs)>=evalVariable(getPointsUpToString(i+2,variable.length,variable),functions,vars,specialFuncs)
       }
     }
   }

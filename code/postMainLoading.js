@@ -5,6 +5,12 @@ addKeyBinding((event) => {
   }
 })
 addKeyBinding((event) => {
+  if (event.key === 'w' && event.ctrlKey){
+    event.preventDefault();
+    return App.clearGame()
+  }
+})
+addKeyBinding((event) => {
   if (event.key.length === 1) {
     if(event.key === '\''){
       event.preventDefault()

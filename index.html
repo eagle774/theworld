@@ -124,7 +124,7 @@
                    <div v-for='(line, index) in fileTextContents[fileViewed]'>
                      <span class='computerCode' :style="{'top':(index*2)+'vh','marginBottom':'0px'}" v-if='index != cursorY'><pre :style="{display: 'inline'}">{{line}}</pre></span>
                      <span v-else class='computerCode' :style="{'top':index*2+'vh'}">
-                       <pre :style='{display:"inline"}'>{{line.slice(0,cursorX)}}</pre><pre id='curLine' :style="{'backgroundColor': 'blue',display:'inline'}">{{line[cursorX]==' '?'&nbsp;':line[cursorX]}}</pre><pre :style="{display:'inline'}">{{line.slice(cursorX+1,line.length)[0]==' '?'&nbsp;'+line.slice(cursorX+2,line.length):line.slice(cursorX+1,line.length)}}</pre>
+                       <pre :style='{display:"inline"}'>{{line.slice(0,cursorX)}}</pre><pre id='curLine' :style="{'backgroundColor': 'blue',color:'white',display:'inline'}">{{line[cursorX]==' '?'&nbsp;':line[cursorX]}}</pre><pre :style="{display:'inline'}">{{line.slice(cursorX+1,line.length)[0]==' '?'&nbsp;'+line.slice(cursorX+2,line.length):line.slice(cursorX+1,line.length)}}</pre>
                      </span>
                    </div>
                  </span>
@@ -146,7 +146,7 @@
               </span>
               <div>Progress: {{mining['Earth'].progress.toFixed(2)}}/1000</div>
           </span>
-          <span v-else-if='tab == "space-resource-statistics"'>
+          <span v-else-if='tab == "universe-statistics"'>
             <br>
             Progress: {{bigNumberHandler(universe.progress,true)}}/10.0B
             <span class='left-side-box'>
@@ -238,7 +238,7 @@
             <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isTransportable})'>
               <span v-if='unlockedSpaceResources.includes(cargoData[0])'>
                 <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(spaceResCounts[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
-                <span>Frostium energy required:  {{resTable[cargoData[0]].transportStuff.cost}}</span><br>
+                <span>Frostium energy required:  {{bigNumberHandler(resTable[cargoData[0]].transportStuff.cost)}}</span><br>
                 <span>Transport {{resTable[cargoData[0]].screenName}}
                   <button v-on:click='transport(cargoData[0],1,true)'>1</button>
                   <button v-on:click='transport(cargoData[0],10,true)'>10</button>
@@ -255,7 +255,7 @@
             <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isTransportable})'>
               <span v-if='unlockedResources.includes(cargoData[0])'>
                 <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(resTable[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
-                <span>Frostium energy required:  {{resTable[cargoData[0]].transportStuff.cost}}</span><br>
+                <span>Frostium energy required:  {{bigNumberHandler(resTable[cargoData[0]].transportStuff.cost)}}</span><br>
                 <span>Transport {{resTable[cargoData[0]].screenName}}
                   <button v-on:click='transport(cargoData[0],1,false)'>1</button>
                   <button v-on:click='transport(cargoData[0],10,false)'>10</button>
@@ -325,7 +325,7 @@
               Total fluid storage space: {{bigNumberHandler(spaceResCounts['fluid-storage'].amount)}} mB
             </div>
             <span class = 'right-side-box' v-if='unlockedFluids.length>0'>
-              <div v-for='fluid in unlockedFluids'>
+              <div v-for='fluid in unlockedSpaceFluids'>
                 {{resTable[fluid].screenName}} - {{bigNumberHandler(spaceResCounts[fluid].amount)}} mB
               </div>
             </span>
@@ -464,8 +464,8 @@
             <div v-for='entry in Object.entries(spaceBuildings)'  v-if='spaceCategories[entry[0]]':key = 'entry[0]+"aah"'>
               <div v-for='curBuilding in entry[1]' :key= 'curBuilding.displayText'>
                 <div class='outer'>
-                  <button type='button' v-on:click='handleBuyBuilding(curBuilding.buildingName,true)' v-if='spaceResCounts[curBuilding.buildingName].amount==1&&resTable[curBuilding.buildingName].unique' class='btn btn-dark'>{{curBuilding.displayText}} ({{bigNumberHandler(spaceJobCount(curBuilding.buildingName),true)}}) </button>
-                    <button type='button' v-on:click='handleBuyBuilding(curBuilding.buildingName,true)' v-else-if='isBuildingBuyable(curBuilding.buildingName,true)' class='btn btn-success'>{{curBuilding.displayText}} ({{bigNumberHandler(spaceJobCount(curBuilding.buildingName),true)}}) </button>
+                  <button type='button' v-if='spaceResCounts[curBuilding.buildingName].amount==1&&resTable[curBuilding.buildingName].unique' class='btn btn-dark'>{{curBuilding.displayText}} ({{bigNumberHandler(spaceJobCount(curBuilding.buildingName),true)}}) </button>
+                  <button type='button' v-on:click='handleBuyBuilding(curBuilding.buildingName,true)' v-else-if='isBuildingBuyable(curBuilding.buildingName,true)' class='btn btn-success'>{{curBuilding.displayText}} ({{bigNumberHandler(spaceJobCount(curBuilding.buildingName),true)}}) +{{bigNumberHandler(howManyPlease(curBuilding.buildingName,true),true)}} </button>
                   <button type='button' v-else class='btn btn-outline-success'>{{curBuilding.displayText}} ({{bigNumberHandler(spaceJobCount(curBuilding.buildingName),true)}}) </button>
                   <span class='inner' >
                     Cost: <br />

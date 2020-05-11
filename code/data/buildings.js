@@ -119,6 +119,9 @@ let buildingsData = {
     },
 		"tooltip":"It sucks in the light. (Requires frostium energy)",
     'category':'Shadows',
+    'effects':[
+      {'funcName':'addBuilding','args':['wireless-energy-transporter']}
+    ]
   },
   "spit": {
     "type":"building",
@@ -182,9 +185,6 @@ let buildingsData = {
     "cost": {
       "stone": 20
     },
-    "effects":[
-      {'funcName':'addTab','args':['Jobs','jobs',true]}
-    ],
 		"tooltip":"Watch out for that inserter",
     'category':'Metal Machine'
   },
@@ -231,14 +231,23 @@ let buildingsData = {
     },
     'category':'Metal Machine'
   },
+  "space-pressurizer": {
+    "type":"building",
+    "cost": {
+      "compressed-iron":1000,
+      "copper":2000,
+      "titanium":20000,
+    },
+    'category':'Metal Machine'
+  },
   "rocket-launcher": {
     "type":"building",
     "cost": {
-      "stone":100000000,
-      "iron":500000000,
-      "copper":500000000,
+      "stone":10000000000,
+      "iron":1500000000,
+      "copper":1500000000,
       "steel":80000000,
-      "tungsten":50000000,
+      "tungsten":150000000,
       "duranium":1000000,
       "frostium-core":1000
     },
@@ -377,6 +386,9 @@ let buildingsData = {
     },
     'tooltip':'The pinnacle of energy transfer technology',
     'category':'Energy',
+    'effects':[
+      {'funcName':'addBuilding','args':['matter-transporter']}
+    ]
   },
   "matter-transporter":{
     "type":"building",
@@ -611,7 +623,7 @@ let buildingsData = {
     'tooltip':'Contains the ethereal shadows',
     'category':'Storage',
     "effects": [
-      {"funcName":"incrementResourceSpecial","args":['shadow','storage',10]},
+      {"funcName":"incrementResourceSpecial","args":['shadows','storage',10]},
     ],
   },
   "rocket-construction-facility": {
@@ -637,25 +649,25 @@ let buildingsData = {
     'tooltip':'A whole extra dimension for storage',
     'category':'Storage',
     "effects": [
-      {"funcName":"incrementResourceSpecial","args":['tungsten','storage',100000]},
-      {"funcName":"incrementResourceSpecial","args":['titanium','storage',500000]},
-      {"funcName":"incrementResourceSpecial","args":['compressed-iron','storage',100000]},
-      {"funcName":"incrementResourceSpecial","args":['steel','storage',500000]},
-      {"funcName":"incrementResourceSpecial","args":['duranium','storage',100000]},
-      {"funcName":"incrementResourceSpecial","args":['frostium','storage',500000]},
+      {"funcName":"incrementResourceSpecial","args":['tungsten','storage',100000000]},
+      {"funcName":"incrementResourceSpecial","args":['titanium','storage',500000000]},
+      {"funcName":"incrementResourceSpecial","args":['compressed-iron','storage',100000000]},
+      {"funcName":"incrementResourceSpecial","args":['steel','storage',500000000]},
+      {"funcName":"incrementResourceSpecial","args":['duranium','storage',100000000]},
+      {"funcName":"incrementResourceSpecial","args":['frostium','storage',500000000]},
       {"funcName":"incrementResourceSpecial","args":['aeromine-glass','storage',5000]},
       {"funcName":"incrementResourceSpecial","args":['ruby-laser-lens','storage',5000]},
       {"funcName":"incrementResourceSpecial","args":['emerald-laser-lens','storage',5000]},
-      {"funcName":"incrementResourceSpecial","args":['wood','storage',500000]},
-      {"funcName":"incrementResourceSpecial","args":['iron','storage',200000]},
-      {"funcName":"incrementResourceSpecial","args":['ice','storage',10000000]},
-      {"funcName":"incrementResourceSpecial","args":['copper','storage',200000]},
-      {"funcName":"incrementResourceSpecial","args":['stone','storage',1000000]},
-      {"funcName":"incrementResourceSpecial","args":['coal','storage',2000000]},
-      {"funcName":"incrementResourceSpecial","args":['iron-ore','storage',1000000]},
-      {"funcName":"incrementResourceSpecial","args":['tungsten-ore','storage',500000]},
-      {"funcName":"incrementResourceSpecial","args":['titanium-ore','storage',2500000]},
-      {"funcName":"incrementResourceSpecial","args":['copper-ore','storage',1000000]},
+      {"funcName":"incrementResourceSpecial","args":['wood','storage',500000000]},
+      {"funcName":"incrementResourceSpecial","args":['iron','storage',200000000]},
+      {"funcName":"incrementResourceSpecial","args":['ice','storage',10000000000]},
+      {"funcName":"incrementResourceSpecial","args":['copper','storage',200000000]},
+      {"funcName":"incrementResourceSpecial","args":['stone','storage',1000000000]},
+      {"funcName":"incrementResourceSpecial","args":['coal','storage',2000000000]},
+      {"funcName":"incrementResourceSpecial","args":['iron-ore','storage',1000000000]},
+      {"funcName":"incrementResourceSpecial","args":['tungsten-ore','storage',500000000]},
+      {"funcName":"incrementResourceSpecial","args":['titanium-ore','storage',2500000000]},
+      {"funcName":"incrementResourceSpecial","args":['copper-ore','storage',1000000000]},
     ],
   },
   "industrial-smelter": {

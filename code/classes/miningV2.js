@@ -17,9 +17,9 @@ class MineV2 extends Saveable{
   }
   incProgress(amount){
     this.progress+=amount
-    if(this.progress>1e10){
-      this.explore(Math.floor(this.progress/1e10))
-      this.progress%=1e10
+    if(this.progress>1e6){
+      this.explore(Math.floor(this.progress/1e6))
+      this.progress%=1e6
     }
   }
   explore(size){
@@ -33,7 +33,7 @@ class MineV2 extends Saveable{
     }
     for(let i=0;i<resources.length;i++){
       let result = Math.min(this.resources[resources[i]].total,(this.getVal(resources[i],'average'))*randomDistribution()*size)
-      this.resources[resources[i]].total-=Math.floor(result)
+      this.resources[resources[i]].total-=result
       results.push([result,resources[i]])
       this.visible[resources[i]]+=result
     }

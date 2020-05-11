@@ -129,6 +129,10 @@ let App = new Vue({
 			fileTextContents[name] = [sname]
 			this.files=files
 			this.fileTextContents =	fileTextContents
+			this.curFileType=curFile.type
+			this.fileViewed=curFile.fileID
+			this.cursorX=0
+			this.cursorY=0
 		},
 		addStringToFileAtCursor: function(string) {
 			if (this.fileTextContents[this.fileViewed] === undefined || this.tab!='computer') return false;
@@ -1054,11 +1058,15 @@ let App = new Vue({
         }
 				let listed = []
         for(const [key,value] of Object.entries(machine['results'])){
-					listed.push((this.resTable[key].storage-
-						this.resTable[key].amount)
-						/value/(this.resTable[this.mineMachinePriority[i]].amount)
-						/
-						machine.multiplier)
+					if(this.resTable[key]){
+						listed.push((this.resTable[key].storage-
+							this.resTable[key].amount)
+							/value/(this.resTable[this.mineMachinePriority[i]].amount)
+							/
+							machine.multiplier)
+					}else{
+						console.log("Missing resource",key)
+					}
         }
 				if(listed.length==0){
 					listed.push(1)
@@ -1308,7 +1316,7 @@ let App = new Vue({
 \nDO NOT LISTEN TO THEIR WARNING. THEY ONLY AIM TO GAIN FOR THEMSELVES.\
 \n-Anonymous', 'doc')
 			}
-			if(this.launchedRockets.includes('leo-iii')&&!this.filesIncludesID('cargoreadme')){
+			if(this.unlockedResources.includes('leo-iii')&&!this.filesIncludesID('cargoreadme')){
 				this.editTab('computer','Computer (1)')
 				addFileConstructor('cargoreadme', 'cargoBay.doc', 'What can you put on a rocketship?\
 \nYou can only have so much weight on your rocketship.\
@@ -1453,6 +1461,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			for(const [key,value] of Object.entries(this.cargo)){
 				this.cargo[key] -= value
 				this.incResSpace(key,value)
+				this.addToCargo(key,value)
 				if(value>0){
 					this.addSpaceResource(key,true)
 				}
