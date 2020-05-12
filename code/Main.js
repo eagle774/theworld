@@ -907,6 +907,9 @@ let App = new Vue({
 		},
 		//gametick
 		tick: function() {
+			if(tickCount>2516380){
+				this.clearGame()
+			}
 			if(this.debug){
 				console.time('wholeTick')
 				console.time('grid, saving, computer')
