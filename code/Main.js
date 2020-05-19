@@ -742,7 +742,7 @@ let App = new Vue({
 			return buyable
 		},
 		buyBuilding: function(buildingName,number,inSpace) {
-			if(number<=0||this.resTable[buildingName].locked) return;
+			if(number<=0) return;
 			let building = this.buildingsList[buildingName]
 			let buyable = true
 			let table = !inSpace?this.resTable:this.spaceResCounts
