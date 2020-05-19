@@ -47,13 +47,16 @@
           <div v-for='line in message.split("\n")' :key='line'>{{line}}</div>
         </span>
         <div style="overflow:auto; height:88vh">
-          <span v-if='tab == "main"'>
+          <span v-if = "buyingTabs.includes(tab)">
             <span class='list-item top-part'>
               <span v-for='amountToBuy in buyList'>
                 <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
                 <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
               </span>
+              <input type='number' id="customBuyVal" v-model.number="customToBuy">
             </span>
+          </span>
+          <span v-if='tab == "main"'>
             <div class='close-to-the-whole-screen'>
               <span v-for = 'category in Object.entries(categories)' v-if='processes.length>0 || category[0]!="Processes"' :key = 'category[0]'>
                 <button v-if='categories[category[0]]' class = 'btn btn-outline-success' v-on:click = 'categories[category[0]]=!categories[category[0]]'>
@@ -82,7 +85,7 @@
             <div v-for='entry in Object.entries(buildings)'  v-if='categories[entry[0]]':key = 'entry[0]+"aah"'>
               <div v-for='curBuilding in entry[1]' :key= 'curBuilding.displayText'>
                 <div class='outer'>
-                  <button type='button' v-if='resTable[curBuilding.buildingName].amount==resTable[curBuilding.buildingName].storage' class='btn btn-dark' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
+                  <button type='button' v-if='resTable[curBuilding.buildingName].unique && resTable[curBuilding.buildingName].amount>0' class='btn btn-dark' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
                   <button type='button' v-else-if='isBuildingBuyable(curBuilding.buildingName)' class='btn btn-success' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) +{{bigNumberHandler(howManyPlease(curBuilding.buildingName,false),true)}} </button>
                   <button type='button' v-else class='btn btn-outline-success' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
                   <span class='inner' >
@@ -347,12 +350,6 @@
           </span>
           <span v-else-if='tab == "rocket-silo"'>
             {{rocketMessage}}
-            <span class='list-item top-part'>
-              <span v-for='amountToBuy in buyList'>
-                <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
-                <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
-              </span>
-            </span>
             <span class='left-side-box'>
               <span class='outer' v-for='(rocket,name) in rocketsData' v-if='!rocket.prerequisite||launchedRockets.includes(rocket.prerequisite)'>
                 <br><button class='btn btn-outline-success' v-on:click='handleBuyBuilding(name)'>
@@ -384,12 +381,6 @@
             !-->
           </span>
           <span v-else-if='tab == "space-rocket-part-builder"'>
-            <span class='list-item top-part'>
-              <span v-for='amountToBuy in buyList'>
-                <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
-                <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
-              </span>
-            </span>
             <div class='close-to-the-whole-screen'>
               <span v-for = 'category in rocketPartCategories' :key = 'category'>
                 <button v-if='rocketPartCategory===category' class = 'btn btn-outline-success' >
@@ -414,12 +405,6 @@
             </span>
           </span>
           <span v-else-if='tab == "space-rocket-builder"'>
-            <span class='list-item top-part'>
-              <span v-for='amountToBuy in buyList'>
-                <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
-                <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
-              </span>
-            </span>
             <div class='close-to-the-whole-screen'>
               <span v-for = 'category in rocketCategories' :key = 'category'>
                 <button v-if='rocketCategory===category' class = 'btn btn-outline-success' >
@@ -444,12 +429,6 @@
             </span>
           </span>
           <span v-else-if='tab == "space"'>
-            <span class='list-item top-part'>
-              <span v-for='amountToBuy in buyList'>
-                <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
-                <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
-              </span>
-            </span>
             <div class='close-to-the-whole-screen'>
               <span v-for = 'category in Object.entries(spaceCategories)' v-if='category[0]!="Processes"' :key = category[0]>
                 <button v-if='spaceCategories[category[0]]' class = 'btn btn-outline-success' v-on:click = 'spaceCategories[category[0]]=!spaceCategories[category[0]]'>
@@ -587,6 +566,7 @@
   <script src='code/classes/namePool.js'></script>
   <script src='code/classes/robot.js'></script>
   <script src='code/classes/assembler.js'></script>
+  <script src='code/classes/spaceAssembler.js'></script>
   <script src='code/classes/tile.js'></script>
   <script src='code/classes/stockController.js'></script>
   <script src='code/classes/stock.js'></script>

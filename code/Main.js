@@ -119,18 +119,18 @@ let App = new Vue({
 			}
 		},
 		//files
-		addFile: function(name, sname) {
+		addFile: function(id, sname) {
 			let files = this.files
 			let fileTextContents = this.fileTextContents
 			files.push({
 				screenName: sname,
-				fileID: name
+				fileID: id
 			})
-			fileTextContents[name] = [sname]
+			fileTextContents[id] = [sname]
 			this.files=files
 			this.fileTextContents =	fileTextContents
-			this.curFileType=curFile.type
-			this.fileViewed=curFile.fileID
+			this.curFileType=undefined
+			this.fileViewed=id
 			this.cursorX=0
 			this.cursorY=0
 		},
@@ -429,6 +429,9 @@ let App = new Vue({
 				universe.setData(save.universe)
 				save.universe = universe
 				pool = new NamePool()
+				save.actualMachinePriority = save.machinePriority
+				save.machinePriority = this.correctMachineOrder
+				save.spaceMachinePriority = this.correctMachineOrder
 				pool.setData(save.stockNamePool)
 				save.stockNamePool = pool
 				for(const [key,value] of Object.entries(save)){
@@ -469,6 +472,7 @@ let App = new Vue({
 			if(window.confirm('Are you sure you want to clear your game storage?')){
 				localStorage.clear();
 				location.reload();
+				location.replace('https://github.com/eagle774/theworld/wiki/Getting-Started');
 			}
 		},
 		//utility
@@ -704,6 +708,8 @@ let App = new Vue({
 		handleBuyBuilding: function(buildingName,inSpace){
 			if(this.toBuy=='max'){
 				this.buyBuilding(buildingName,Infinity,inSpace)
+			}else if(this.toBuy=='custom'){
+				this.buyBuilding(buildingName,this.customToBuy,inSpace)
 			}else{
 				this.buyBuilding(buildingName,this.toBuy,inSpace)
 			}
@@ -736,6 +742,7 @@ let App = new Vue({
 			return buyable
 		},
 		buyBuilding: function(buildingName,number,inSpace) {
+			if(number<=0||this.resTable[buildingName].locked) return;
 			let building = this.buildingsList[buildingName]
 			let buyable = true
 			let table = !inSpace?this.resTable:this.spaceResCounts
@@ -907,9 +914,6 @@ let App = new Vue({
 		},
 		//gametick
 		tick: function() {
-			if(tickCount>2516380){
-				this.clearGame()
-			}
 			if(this.debug){
 				console.time('wholeTick')
 				console.time('grid, saving, computer')
@@ -1129,8 +1133,15 @@ let App = new Vue({
       }
 			if(this.debug){
 				console.timeEnd('spaceMineMachinePriority')
+				console.time('machineChecking')
+			}
+			for(const machine of this.actualMachinePriority){
+				if(!this.machinePriority.includes(machine)){
+					console.log('Machine '+machine+" has not been added to the machine priority list.")
+				}
 			}
 			if(this.debug){
+				console.timeEnd('machineChecking')
 				console.time('addingBuildings')
 			}
 			this.newBuildings=0
@@ -1201,7 +1212,7 @@ let App = new Vue({
 					if(!this.multipliers[extension[0]]){
 						this.multipliers[extension[0]]=1
 					}
-					allocated = this.allocateItemsPercent(this.resTable[extension[2]].amount*this.multipliers[extension[0]],scripts)
+					allocated = this.allocateItemsPercent(!extension[4]?this.resTable[extension[2]].amount:this.spaceResCounts[extension[2]].amount*this.multipliers[extension[0]],scripts)
 					entries = Object.entries(scripts)
 					for(let i=0;i<entries.length;i++){
 						funcs = extension[3](this,allocated[i])

@@ -23,18 +23,6 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['energy','storage',50]},
     ]
   },
-  "combustion-engine": {
-    "type":"building",
-    "cost": {
-      "iron": 20,
-      "copper": 20
-    },
-		"tooltip":"Burn fire in a fire burning machine",
-    'category':'Energy',
-    'effects':[
-      {"funcName":"incrementResourceSpecial","args":['energy','storage',100]},
-    ]
-  },
   "bucket": {
     "type":"building",
     "cost": {

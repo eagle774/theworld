@@ -26,7 +26,7 @@ let data = {
 	toBuy:1,
 	universe,
 	stocks:{},
-	buyList:[1,10,100,'max'],
+	buyList:[1,10,100,'max','custom'],
   machineStates:{},
   spaceMachineStates:{},
   mineMachineStates:{},
@@ -82,6 +82,7 @@ let data = {
 	multipliers:{},
 	buildings: {},
 	speakethSpeaketh:false,
+	actualMachinePriority:[],
 	computerChanged:false,
 	processes: [],
 	logger:console.log,
@@ -105,6 +106,72 @@ let data = {
 		}
 	},
 	hole:0,
+	correctMachineOrder:[
+		//producers
+		"gift-god",
+		"solar-panel",
+		"frostium-battery",
+		"shadow-collector",
+		//energy makers
+		"fire",
+		"steam-engine",
+		"solar-panel-satellite",
+		"solar-panel-satellite-cluster",
+		//basic utility
+		"stone-miner",
+		"fire-starter",
+		"incendinary-pile",
+		"coal-incendinary-pile",
+		//furnaces
+		"stone-furnace",
+		"iron-furnace",
+		"iron-frostium-furnace",
+		"tungsten-furnace",
+		"tungsten-frostium-furnace",
+		"copper-furnace",
+		"copper-frostium-furnace",
+		"titanium-furnace",
+		"titanium-frostium-furnace",
+		"gold-furnace",
+		"gold-frostium-furnace",
+		//secondary parts
+		"compressor",
+		"pressurizer",
+		"space-pressurizer",
+		//melters
+		"iron-melter",
+		"copper-melter",
+		"titanium-melter",
+		"tungsten-melter",
+		"gold-melter",
+		"steel-melter",
+		"diomine-melter",
+		"ice-melter",
+		"pump",
+		"duranium-melter",
+		"frostium-melter",
+		//alloyers
+		"molten-duranium-alloyer",
+		"molten-frostium-alloyer",
+		//coolers
+		"molten-iron-cooler",
+		"molten-copper-cooler",
+		"molten-titanium-cooler",
+		"molten-tungsten-cooler",
+		"molten-gold-cooler",
+		"molten-steel-cooler",
+		"molten-diomine-cooler",
+		"molten-duranium-cooler",
+		"molten-frostium-cooler",
+		"water-cooler",
+		//space machines
+		"sun-miner",
+		"trishardic-geode-industrial-smelter",
+		"aeromine-glass-industrial-smelter",
+		"ruby-laser-lens-industrial-smelter",
+		"emerald-laser-lens-industrial-smelter",
+		"tempered-pyrome-industrial-smelter",
+	],
 	spaceResCounts:{},
 	jobs:{
 
@@ -128,10 +195,12 @@ let data = {
 	version:'0.1.3',
 	unlockedSpaceResources:[],
 	newBuildings:0,
+	customToBuy:0,
 	unlockedSpaceFluids:[],
 	curRes:'wood',
 	buildingsBought:0,
 	availableAdaptations:[],
+	buyingTabs:['main','space','space-rocket-buider','rocket-silo','space-rocket-part-builder'],
 	naughty:false,
 	views:['pastAmount','pastPerTick'],
 	curView:'pastAmount',
@@ -284,7 +353,7 @@ Res.prototype.setJobOf = function(jobName){
 	this.stuff.isJobOf=jobName
 	return this
 }
-Res.prototype.setUnique = function(jobName){
+Res.prototype.setUnique = function(){
 	this.stuff.unique = true;
 	return this
 }
@@ -818,7 +887,7 @@ const construct = () => {
 		new Res('rocket-construction-facility', 'Rocket Construction Facility')
 			.configure('buildName','Create the machinery to make custom space craft.')
 			.configure("locked",true)
-			.setUnique(1)
+			.setUnique()
 			.isBuildable()
 			.finalize()
 		new Res('basic-hull', 'Basic Hull')
@@ -1025,6 +1094,7 @@ const construct = () => {
 		new Res('computer', 'Computers')
 			.configure('buildName','Forge a computer')
 			.isBuildable()
+			.setUnique()
 			.configure('storage',1)
 			.isSpaceLocked()
 			.finalize()
@@ -1154,18 +1224,6 @@ const construct = () => {
 				energy:1
 			})
 			.finalize()
-		new Res('combustion-engine', 'Combustion Engine')
-			.configure('buildName','Craft a combustion engine')
-			.isBuildable()
-			.isSpaceLocked()
-			.addInactiveState()
-			.configure('locked', true)
-			.setMachine({
-				fire:0.1
-			},{
-				energy:1
-			})
-			.finalize()
 		new Res('fire-starter', 'Fire Starter')
 			.configure('buildName','Slap together a fire starter')
 			.isBuildable()
@@ -1210,6 +1268,7 @@ const construct = () => {
 			.configure('buildName','Create a spit')
 			.configure('storage', 1)
 			.isSpaceLocked()
+			.setUnique()
 			.finalize()
 		new Res('adaptation-chamber', 'Adaptation Chamber')
 			.isBuildable()
@@ -1787,6 +1846,16 @@ const construct = () => {
 	'chopTree':(x,y)=>{
 		robot.chopTree(x,y,app.grid,number)
 	}}}}])
+	addExtension(['.sasmblr','Space Assembler','assembler',
+	(app,number)=>{
+	assembler = new SpaceAssembler(app.resTable)
+	return {'assembler':{'resources':assembler.resTable.data,
+	'constructBuilding':(name,amount)=>{
+		assembler.buildBuilding(app,name,amount,number)
+	},
+	'isBuildingBuyable':(name,amount)=>{
+		return assembler.isBuildingBuyable(app,name,amount)
+	},}}},true])
 	addExtension(['.asmblr','Assembler','assembler',
 	(app,number)=>{
 	assembler = new Assembler(app.resTable)
