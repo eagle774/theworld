@@ -472,7 +472,6 @@ let App = new Vue({
 			if(window.confirm('Are you sure you want to clear your game storage?')){
 				localStorage.clear();
 				location.reload();
-				location.replace('https://github.com/eagle774/theworld/wiki/Getting-Started');
 			}
 		},
 		//utility
@@ -583,6 +582,20 @@ let App = new Vue({
 			}
 			return true
 		},
+		allPrerequisitesMet: function(prerequisites,inSpace){
+			for(prerequisite of prerequisites){
+				if(inSpace){
+					if(!this.unlockedSpaceResources.includes(prerequisite)){
+						return false
+					}
+				}else{
+					if(!this.unlockedResources.includes(prerequisite)){
+						return false
+					}
+				}
+			}
+			return true
+		},
 		fillToMax: function(array,amount){
 			let toAdd =array[array.length-1]
 			copiedArray = array.concat([])
@@ -628,7 +641,7 @@ let App = new Vue({
 		//fluids
 		updateFluids: function(inSpace){
 			if(!inSpace){
-				let fluidStore = this.resTable['fluid-storage'].storage
+				let fluidStore = this.resTable['fluidStorage'].storage
 				let fluids = this.resTableFilterBy((res)=>{return res.isFluid})
 				for(const [key,value] of fluids){
 					fluidStore-=value.amount*value.fluidStuff.density
@@ -638,7 +651,7 @@ let App = new Vue({
 				}
 				this.fluidLeft=fluidStore
 			}else{
-				let fluidStore = this.spaceResCounts['fluid-storage'].amount
+				let fluidStore = this.spaceResCounts['fluidStorage'].amount
 				let fluids = this.resTableFilterBy((res)=>{return res.isFluid})
 				for(const [key,value] of fluids){
 					fluidStore-=this.spaceResCounts[key].amount*value.fluidStuff.density
@@ -648,9 +661,9 @@ let App = new Vue({
 		},
 		//player interaction
 		explore: function() {
-			if (!this.unlockedResources.includes('flint-and-steel')) {
-				this.addVisibleResource('flint-and-steel')
-				this.incrementResource('flint-and-steel', 1)
+			if (!this.unlockedResources.includes('flintAndSteel')) {
+				this.addVisibleResource('flintAndSteel')
+				this.incrementResource('flintAndSteel', 1)
 				this.message='While searching for a place to store your wood you stumble across some flint and steel.'
 				this.addBuilding('fire')
 				this.configureButton(1, 'displayText', 'Explore (Locked)')
@@ -661,14 +674,14 @@ let App = new Vue({
 				this.configureButton(1, 'displayText', 'Explore (Locked)')
 				this.message='While looking around you stumble across a river.'
 				this.configureButton(1, 'ready', false)
-			} else if (!this.unlockedResources.includes('steam-engine') && this.checks['steamExplore']) {
-				this.addVisibleResource('steam-engine')
-				this.incrementResource('steam-engine', 1)
-				this.addVisibleResource('computer-disk')
+			} else if (!this.unlockedResources.includes('steamEngine') && this.checks['steamExplore']) {
+				this.addVisibleResource('steamEngine')
+				this.incrementResource('steamEngine', 1)
+				this.addVisibleResource('computerDisk')
 				this.addVisibleResource('computer')
-				this.incrementResource('computer-disk', 1)
+				this.incrementResource('computerDisk', 1)
 				this.configureResource('barns', 'locked', false)
-				this.configureResource('incendinary-pile', 'locked', false)
+				this.configureResource('incendinaryPile', 'locked', false)
 				this.configureButton(1, 'displayText', 'Explore (Locked)')
 				this.configureButton(1, 'ready', false)
 				this.addTab('Jobs','jobs')
@@ -703,7 +716,7 @@ let App = new Vue({
 		insertDisk: function() {
 			this.insertedDisk=true
 			this.computerOpaque=true
-			this.incrementResource('computer-disk', -1)
+			this.incrementResource('computerDisk', -1)
 		},
 		handleBuyBuilding: function(buildingName,inSpace){
 			if(this.toBuy=='max'){
@@ -743,6 +756,9 @@ let App = new Vue({
 		},
 		buyBuilding: function(buildingName,number,inSpace) {
 			if(number<=0) return;
+			if(this.resTable[buildingName].unique){
+				number = 1
+			}
 			let building = this.buildingsList[buildingName]
 			let buyable = true
 			let table = !inSpace?this.resTable:this.spaceResCounts
@@ -758,15 +774,12 @@ let App = new Vue({
 			}
 			if (buyable) {
 				if (building.results === undefined) {
-					if(inSpace&&buildingName==='solar-panel'&&this.checks['notSpacePanelMade']){
+					if(inSpace&&buildingName==='solarPanel'&&this.checks['notSpacePanelMade']){
 						this.setCheck('notSpacePanelMade')
 						this.setMessage('Solar panels are twice as effective in space.')
 					}
-					if(!inSpace&&buildingName==='matter-transporter'){
-						this.addTab('Earth M.T.','mt')
-					}
-					if(!inSpace){
-						number = Math.min(number,this.resTable[buildingName].storage-this.resTable[buildingName].amount)
+					if(!inSpace&&buildingName==='matterTransporter'){
+						this.addTab('Earth M.T.','MT')
 					}
 					if (number!=0) {
 						if(building.type=='rocket'&&!this.rocketsBought.includes(buildingName)){
@@ -798,10 +811,10 @@ let App = new Vue({
 								this[effects[i].funcName].apply(this,effects[i].args.concat(number,inSpace))
 							}
 						}
-						if (buildingName === 'spit' || buildingName==='bucket-of-water') {
-							if (this.checks['spitMade'] && this.checks['bucket-waterMade'] && !this.checks['hang-bucketUnlocked']) {
+						if (buildingName === 'spit' || buildingName==='bucketOfWater') {
+							if (this.checks['spitMade'] && this.checks['bucketWaterMade'] && !this.checks['hangBucketUnlocked']) {
 								this.addProcess('Hang a bucket on the spit', 'hangbucket')
-								this.setCheck('hang-bucketUnlocked', true)
+								this.setCheck('hangBucketUnlocked', true)
 							}
 						}
 						this.buildingsBought+=number
@@ -959,7 +972,7 @@ let App = new Vue({
 				console.timeEnd('market')
 				console.time("conversions, checks and opacity")
 			}
-			this.universe.incProgress(this.spaceResCounts['hypersonic-shuttle'].amount)
+			this.universe.incProgress(this.spaceResCounts['hypersonicShuttle'].amount)
 			if (this.insertedDisk && this.computerOpacity < 1) {
 				this.computerOpacity += 1 / 600
 			}
@@ -1330,7 +1343,7 @@ let App = new Vue({
 \nDO NOT LISTEN TO THEIR WARNING. THEY ONLY AIM TO GAIN FOR THEMSELVES.\
 \n-Anonymous', 'doc')
 			}
-			if(this.unlockedResources.includes('leo-iii')&&!this.filesIncludesID('cargoreadme')){
+			if(this.unlockedResources.includes('leoIII')&&!this.filesIncludesID('cargoreadme')){
 				this.editTab('computer','Computer (1)')
 				addFileConstructor('cargoreadme', 'cargoBay.doc', 'What can you put on a rocketship?\
 \nYou can only have so much weight on your rocketship.\
@@ -1342,7 +1355,7 @@ let App = new Vue({
 			if(this.spaceResCounts['satellite'].amount>=1&&!this.filesIncludesID('marketreadme')){
 				this.editTab('computer','Computer (1)')
 				this.addTab('Market','market')
-				this.incrementResource('galactic-credits',1000)
+				this.incrementResource('galacticCredits',1000)
 				addFileConstructor('marketreadme', 'market.doc', 'We have recieved your satellite communication.\
 \nYour request to have access to our market has been accepted. We have given you a starting fund of one thousand galactic credits. \
 \nYou will not be given more. We hope that this represents a desire to rejoin our society peacefully.\
@@ -1351,7 +1364,7 @@ let App = new Vue({
 			}
 			if(this.resTable['assembler'].amount>=1&&!this.filesIncludesID('assemblerreadme')){
 				this.editTab('computer','Computer (1)')
-				this.incrementResource('galactic-credits',1000)
+				this.incrementResource('galacticCredits',1000)
 				addFileConstructor('assemblerreadme', 'assembler.doc', 'The asssembler\'s file extension is .asmblr, and it has two main commands.\n \
 The first command is assembler.constructBuilding, which takes in the name of the building(all lowercase and hyphenated), and how many to build per tick.\n \
 The second is isBuildingBuyable, and takes in two arguments, name and how many per tick.\n \
@@ -1360,7 +1373,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 	\n \
 } purchases one barn a tick, but always leaves you with at least three hundred wood.\n ', 'doc')
 			}
-			if(!this.getTab('statistics')&&this.unlockedResources.includes('iron-ore')){
+			if(!this.getTab('statistics')&&this.unlockedResources.includes('ironOre')){
 				this.addTab('Statistics','statistics')
 			}
 			if(this.debug){
@@ -1440,7 +1453,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			let maxFragility=-1
 			let totalWeight=0
 			number = Math.min(number,this.resTable[rocket.name].amount)
-			for (const [key, value] of Object.entries(rocket['launch-cost'])) {
+			for (const [key, value] of Object.entries(rocket['launchCost'])) {
 				if (this.resTable[key].amount < value) {
 					buyable = false
 					break
@@ -1450,7 +1463,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			}
 			if(buyable&&number>=1){
 				for(const[key,value] of Object.entries(this.cargo)){
-					if(this.resTable[key].cargoStuff.fragility>rocket['maximum-fragility']&&(value>0)){
+					if(this.resTable[key].cargoStuff.fragility>rocket['maximumFragility']&&(value>0)){
 						this.setMessage('You have a too fragile item ('+this.resTable[key].screenName+
 						') on your rocket ship')
 						return false;
@@ -1460,15 +1473,15 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			}else{
 				return false
 			}
-			if(totalWeight>rocket['cargo-capacity']){
+			if(totalWeight>rocket['cargoCapacity']){
 			  this.setMessage('You have too much weight on your rocket ship.')
 				return false
 			}
 			this.resTable[rocket.name].amount-=number
-			for (const [key, value] of Object.entries(rocket['launch-cost'])) {
+			for (const [key, value] of Object.entries(rocket['launchCost'])) {
 				this.incrementResource(key,-value*number)
 			}
-			this.message = rocket['launch-message']
+			this.message = rocket['launchMessage']
 			if(!this.launchedRockets.includes(rocket.name)){
 				this.launchedRockets.push(rocket.name)
 			}
@@ -1482,7 +1495,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			}
 			if(rocket.height>=2000000&&!this.getTab('space')){
 				this.addTab('Space','space')
-				this.addTab('Space Jobs','space-jobs')
+				this.addTab('Space Jobs','spaceJobs')
 			}
 			return true
 		},
@@ -1492,7 +1505,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			let cost = {}
 			let launched = 0
 			for (const [key, value] of toLaunch) {
-				for(const [resource,amount] of Object.entries(this.rocketsData[key]['launch-cost'])){
+				for(const [resource,amount] of Object.entries(this.rocketsData[key]['launchCost'])){
 					if(!cost[resource]){
 						cost[resource]=amount*value.amount
 					}else{
@@ -1566,7 +1579,7 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			let buyable = true
 			let table = !inSpace?this.resTable:this.spaceResCounts
 			let tableTo = inSpace?this.resTable:this.spaceResCounts
-			let cost={[res]:1,'frostium-energy':this.resTable[res].transportStuff.cost}
+			let cost={[res]:1,'frostiumEnergy':this.resTable[res].transportStuff.cost}
 			for (const [key, value] of Object.entries(cost)) {
 				if (table[key].amount < value) {
 					buyable = false
@@ -1605,13 +1618,13 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 		},
 		//stocks
 		buyStock:function(amount,type,price){
-			if(amount*price<=this.resTable['galactic-credits'].amount&&amount===Math.round(amount)&&this.stocks[type]+amount>=0){
-				this.resTable['galactic-credits'].amount-=amount*price
+			if(amount*price<=this.resTable['galacticCredits'].amount&&amount===Math.round(amount)&&this.stocks[type]+amount>=0){
+				this.resTable['galacticCredits'].amount-=amount*price
 				this.stocks[type]+=amount
 			}
 		},
 		getNetWorth:function(){
-			let netWorth = this.resTable['galactic-credits'].amount
+			let netWorth = this.resTable['galacticCredits'].amount
 			for(let i=0;i<this.market.stocks.length;i++){
 				netWorth+=this.market.stocks[i].current*this.stocks[this.market.stocks[i].name]
 			}
@@ -1623,18 +1636,18 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			}
 			amount*=toMultiply
 			let gain=this.resTable[material].tradeableStuff.sellPrice*amount
-			this.incrementResource('galactic-credits',gain)
+			this.incrementResource('galacticCredits',gain)
 			this.incResSpace(material,-amount)
 		},
 		buyMaterials:function(material,amount,toMultiply=1){
 			let cost=this.resTable[material].tradeableStuff.buyPrice*amount
-			if(cost>this.resTable['galactic-credits'].amount){
-				amount=Math.floor(this.resTable['galactic-credits'].amount/this.resTable[material].tradeableStuff.buyPrice)
+			if(cost>this.resTable['galacticCredits'].amount){
+				amount=Math.floor(this.resTable['galacticCredits'].amount/this.resTable[material].tradeableStuff.buyPrice)
 			}
 			amount*=toMultiply
 			cost=this.resTable[material].tradeableStuff.buyPrice*amount
 			this.incResSpace(material,amount)
-			this.incrementResource('galactic-credits',-cost)
+			this.incrementResource('galacticCredits',-cost)
 		},
 		handleSellMaterials:function(material,amount){
 			if(amount=='max/2'){

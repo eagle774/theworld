@@ -28,7 +28,7 @@
         </div>
         <div class='display-left' v-else-if='tab.includes("market")'>
           <div>
-            {{resTable['galactic-credits'].screenName}}: {{bigNumberHandler(resTable['galactic-credits'].amount,false)}}
+            {{resTable['galacticCredits'].screenName}}: {{bigNumberHandler(resTable['galacticCredits'].amount,false)}}
           </div>
           <div>
             Net Worth: {{bigNumberHandler(getNetWorth(),false)}}
@@ -53,7 +53,7 @@
                 <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
                 <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
               </span>
-              <input type='number' id="customBuyVal" v-model.number="customToBuy">
+              <input style='width:84px' type='number' id="customBuyVal" v-model.number="customToBuy">
             </span>
           </span>
           <span v-if='tab == "main"'>
@@ -149,7 +149,7 @@
               </span>
               <div>Progress: {{mining['Earth'].progress.toFixed(2)}}/1000</div>
           </span>
-          <span v-else-if='tab == "universe-statistics"'>
+          <span v-else-if='tab == "universeStatistics"'>
             <br>
             Progress: {{bigNumberHandler(universe.progress,true)}}/10.0B
             <span class='left-side-box'>
@@ -182,7 +182,7 @@
               </span>
             </div>
           </span>
-          <span v-else-if='tab == "space-jobs"'>
+          <span v-else-if='tab == "spaceJobs"'>
             <div v-for='(newJobs,jobBase,i) in jobs'>
               <span v-if='unlockedSpaceResources.includes(jobBase)'  :style="{'top':(i+1)*25+'vh'}">
                 <span>{{resTable[jobBase].screenName}}: {{bigNumberHandler(spaceResCounts[jobBase].amount,true)}} </span>
@@ -205,7 +205,7 @@
               </span>
             </div>
           </span>
-          <span v-else-if='tab == "cargo-bay"'>
+          <span v-else-if='tab == "cargoBay"'>
             <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isCargo})'>
               <span v-if='unlockedResources.includes(cargoData[0])'>
                 <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(resTable[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
@@ -237,7 +237,7 @@
               </span>
             </div>
           </span>
-          <span v-else-if='tab == "space-mt"'>
+          <span v-else-if='tab == "spaceMT"'>
             <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isTransportable})'>
               <span v-if='unlockedSpaceResources.includes(cargoData[0])'>
                 <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(spaceResCounts[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
@@ -254,7 +254,7 @@
               </span>
             </div>
           </span>
-          <span v-else-if='tab == "mt"'>
+          <span v-else-if='tab == "MT"'>
             <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isTransportable})'>
               <span v-if='unlockedResources.includes(cargoData[0])'>
                 <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(resTable[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
@@ -312,7 +312,7 @@
               Fluid storage space left: {{fluidLeft>=0?bigNumberHandler(fluidLeft):0}} mB
             </div>
             <div>
-              Total fluid storage space: {{bigNumberHandler(resTable['fluid-storage'].storage)}} mB
+              Total fluid storage space: {{bigNumberHandler(resTable['fluidStorage'].storage)}} mB
             </div>
             <span class = 'right-side-box' v-if='unlockedFluids.length>0'>
               <div v-for='fluid in unlockedFluids'>
@@ -320,12 +320,12 @@
               </div>
             </span>
           </span>
-          <span v-else-if='tab == "fluid-space"'>
+          <span v-else-if='tab == "fluidSpace"'>
             <div>
               Fluid storage space left: {{spaceFluidLeft>=0?bigNumberHandler(spaceFluidLeft):0}} mB
             </div>
             <div>
-              Total fluid storage space: {{bigNumberHandler(spaceResCounts['fluid-storage'].amount)}} mB
+              Total fluid storage space: {{bigNumberHandler(spaceResCounts['fluidStorage'].amount)}} mB
             </div>
             <span class = 'right-side-box' v-if='unlockedFluids.length>0'>
               <div v-for='fluid in unlockedSpaceFluids'>
@@ -348,7 +348,7 @@
               </div>
             </span>
           </span>
-          <span v-else-if='tab == "rocket-silo"'>
+          <span v-else-if='tab == "rocketSilo"'>
             {{rocketMessage}}
             <span class='left-side-box'>
               <span class='outer' v-for='(rocket,name) in rocketsData' v-if='!rocket.prerequisite||launchedRockets.includes(rocket.prerequisite)'>
@@ -369,7 +369,7 @@
                   Launch a {{resTable[name].screenName}}
                 </button>
                 <span class='inner' >Cost: <br />
-                  <span v-for='(value, key) in rocket["launch-cost"]'>{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span><br />
+                  <span v-for='(value, key) in rocket["launchCost"]'>{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span><br />
                 </span>
               </span>
             </span>
@@ -380,7 +380,7 @@
               </button>
             !-->
           </span>
-          <span v-else-if='tab == "space-rocket-part-builder"'>
+          <span v-else-if='tab == "spaceRocketPartBuilder"'>
             <div class='close-to-the-whole-screen'>
               <span v-for = 'category in rocketPartCategories' :key = 'category'>
                 <button v-if='rocketPartCategory===category' class = 'btn btn-outline-success' >
@@ -391,12 +391,14 @@
               </span>
             </div>
             <span class='left-side-box'>
-              <span class='outer' v-for='rocketPart in resTableFilterBy((res)=>{return res.rocketPart==rocketPartCategory})' v-if='!rocketPart[1].prerequisite||unlockedSpaceResources.includes(rocketPart[1].prerequisite)'>
-                <br><button class='btn btn-outline-success' v-on:click='handleBuyBuilding(rocketPart[0],true)'>
-                  Build a {{resTable[rocketPart[0]].screenName}}
+              <span class='outer' v-for='rocketPart in resTableFilterBy((res)=>{return res.rocketPart==rocketPartCategory})' v-if='!rocketPart[1].prerequisite||allPrerequisitesMet(rocketPart[1].prerequisite,true)'>
+                <br><button v-if="isBuildingBuyable(rocketPart[0],true)" class='btn btn-success' v-on:click='handleBuyBuilding(rocketPart[0],true)'>
+                  Build a {{resTable[rocketPart[0]].screenName}} ({{bigNumberHandler(spaceResCounts[rocketPart[0]].amount,true)}}) +{{bigNumberHandler(howManyPlease(rocketPart[0],true),true)}}
+                </button><button v-else class='btn btn-outline-success'>
+                  Build a {{resTable[rocketPart[0]].screenName}} ({{bigNumberHandler(spaceResCounts[rocketPart[0]].amount,true)}})
                 </button>
                 <span class='inner' >Cost: <br />
-                  <span v-for='(value, key) in buildingsList[rocketPart[0]].cost'>{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span>
+                  <span v-for='(value, key) in buildingsList[rocketPart[0]].cost'>{{resTable[key].screenName}}: {{bigNumberHandler(value,true)}}<br /></span>
                   <span class = '--tooltip' v-if='buildingsList[rocketPart[0]]["tooltip"]'>
                     {{buildingsList[rocketPart[0]]['tooltip']}}
                   </span>
@@ -404,7 +406,7 @@
               </span>
             </span>
           </span>
-          <span v-else-if='tab == "space-rocket-builder"'>
+          <span v-else-if='tab == "spaceRocketBuilder"'>
             <div class='close-to-the-whole-screen'>
               <span v-for = 'category in rocketCategories' :key = 'category'>
                 <button v-if='rocketCategory===category' class = 'btn btn-outline-success' >
@@ -415,12 +417,14 @@
               </span>
             </div>
             <span class='left-side-box'>
-              <span class='outer' v-for='rocket in resTableFilterBy((res)=>{return res.rocketType==rocketCategory})' v-if='!rocket[1].prerequisite||rocket.includes(rocket[1].prerequisite)'>
-                <br><button class='btn btn-outline-success' v-on:click='handleBuyBuilding(rocket[0],true)'>
-                  Build a {{resTable[rocket[0]].screenName}}
+              <span class='outer' v-for='rocket in resTableFilterBy((res)=>{return res.rocketType==rocketCategory})' v-if='!rocket[1].prerequisite||allPrerequisitesMet(rocket[1].prerequisite,true)'>
+                <br><button  v-if="isBuildingBuyable(rocket[0],true)" class='btn btn-success' v-on:click='handleBuyBuilding(rocket[0],true)'>
+                  Build a {{resTable[rocket[0]].screenName}} ({{bigNumberHandler(spaceResCounts[rocket[0]].amount,true)}}) +{{bigNumberHandler(howManyPlease(rocket[0],true),true)}}
+                </button><button v-else class='btn btn-outline-success'>
+                  Build a {{resTable[rocket[0]].screenName}} ({{bigNumberHandler(spaceResCounts[rocket[0]].amount,true)}})
                 </button>
                 <span class='inner' >Cost: <br />
-                  <span v-for='(value, key) in buildingsList[rocket[0]].cost'>{{resTable[key].screenName}}: {{bigNumberHandler(value)}}<br /></span>
+                  <span v-for='(value, key) in buildingsList[rocket[0]].cost'>{{resTable[key].screenName}}: {{bigNumberHandler(value,true)}}<br /></span>
                   <span class = '--tooltip' v-if='buildingsList[rocket[0]]["tooltip"]'>
                     {{buildingsList[rocket[0]]['tooltip']}}
                   </span>
@@ -490,7 +494,7 @@
               </div>
             </div>
           </span>
-          <span v-else-if='tab == "production-statistics"'>
+          <span v-else-if='tab == "productionStatistics"'>
             <div class='computer-screen'>
               <p class='list-item computer-sidebar'>
                 <span v-for='view in views' :key='view'>
@@ -508,7 +512,7 @@
               </select>
             </div>
           </span>
-          <span v-else-if='tab == "market-trading"'>
+          <span v-else-if='tab == "marketTrading"'>
             <div v-for='(tradingData) in resTableFilterBy((res)=>{return res.isTradeable})'>
               <span>{{resTable[tradingData[0]].screenName}}: {{bigNumberHandler(spaceResCounts[tradingData[0]].amount,resTable[tradingData[0]].isBuildable)}} </span><br>
               <span>{{resTable[tradingData[0]].screenName}} sell price:  {{bigNumberHandler(resTable[tradingData[0]].tradeableStuff.sellPrice)}}</span><br>

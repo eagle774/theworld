@@ -5,7 +5,7 @@ class StockController extends Saveable{
   run(prev){}
 }
 
-registerClass('stock-controller',StockController)
+registerClass('stockController',StockController)
 
 class RandomStockController extends StockController{
   constructor(variability){

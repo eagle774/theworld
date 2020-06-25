@@ -1,159 +1,159 @@
 let rocketsData = {
-  'wooden-rocket':{
+  'woodenRocket':{
     'cost':{
       'wood':1
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':10,
     },
     'description':'A piece of wood carved to look like a rocket.',
-    'launch-message':'Incinerated one piece of wood.',
+    'launchMessage':'Incinerated one piece of wood.',
     'height':0,
-    'cargo-capacity':0,
-    'name':'wooden-rocket',
-    'maximum-fragility':0,
+    'cargoCapacity':0,
+    'name':'woodenRocket',
+    'maximumFragility':0,
   },
-  'coal-rocket':{
+  'coalRocket':{
     'cost':{
       'coal':10
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':100,
     },
     'description':'A stack of coal in the shape of a rocket',
-    'launch-message':'Propelled coal 1m in the air',
+    'launchMessage':'Propelled coal 1m in the air',
     'height':1,
-    'name':'coal-rocket',
-    'cargo-capacity':0,
-    'maximum-fragility':0,
-    'prerequisite':'wooden-rocket',
+    'name':'coalRocket',
+    'cargoCapacity':0,
+    'maximumFragility':0,
+    'prerequisite':'woodenRocket',
   },
-  'stone-rocket':{
+  'stoneRocket':{
     'cost':{
       'stone':100
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':1000,
     },
     'description':'A pile of stone in the shape of a rocket',
-    'launch-message':'Propelled stone 10m in the air',
+    'launchMessage':'Propelled stone 10m in the air',
     'height':10,
-    'name':'stone-rocket',
-    'cargo-capacity':0,
-    'maximum-fragility':0,
-    'prerequisite':'coal-rocket',
+    'name':'stoneRocket',
+    'cargoCapacity':0,
+    'maximumFragility':0,
+    'prerequisite':'coalRocket',
   },
-  'metallic-rocket':{
+  'metallicRocket':{
     'cost':{
       'copper':1000,
       'iron':1000,
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':10000,
     },
     'description':'Metal fused together to be a rocket',
-    'launch-message':'Propelled metal close to one hundred meters in the air',
+    'launchMessage':'Propelled metal close to one hundred meters in the air',
     'height':100,
-    'name':'metallic-rocket',
-    'cargo-capacity':0,
-    'maximum-fragility':0,
-    'prerequisite':'stone-rocket',
+    'name':'metallicRocket',
+    'cargoCapacity':0,
+    'maximumFragility':0,
+    'prerequisite':'stoneRocket',
   },
-  'rare-metallic-rocket':{
+  'rareMetallicRocket':{
     'cost':{
       'tungsten':10000,
       'titanium':10000,
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':100000,
     },
     'description':'A grouping of advanced metals in the shape of a rocket',
-    'launch-message':'Launched a rare metals rocket a km (about 0.0001 miles).',
+    'launchMessage':'Launched a rare metals rocket a km (about 0.0001 miles).',
     'height':1000,
-    'name':'rare-metallic-rocket',
-    'cargo-capacity':0,
-    'maximum-fragility':0,
-    'prerequisite':'metallic-rocket',
+    'name':'rareMetallicRocket',
+    'cargoCapacity':0,
+    'maximumFragility':0,
+    'prerequisite':'metallicRocket',
   },
-  'steel-rocket':{
+  'steelRocket':{
     'cost':{
       'steel':100000
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':1000000,
     },
     'description':'Steel fused to make a rocket',
-    'launch-message':'Launched a rocket 10 km. (about 1264 feet)',
+    'launchMessage':'Launched a rocket 10 km. (about 1264 feet)',
     'height':10000,
-    'name':'steel-rocket',
-    'cargo-capacity':0,
-    'maximum-fragility':0,
-    'prerequisite':'rare-metallic-rocket',
+    'name':'steelRocket',
+    'cargoCapacity':0,
+    'maximumFragility':0,
+    'prerequisite':'rareMetallicRocket',
   },
-  'duranium-rocket':{
+  'duraniumRocket':{
     'cost':{
       'duranium':1000000
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':10000000,
     },
     'description':'A duranium rocket, the best yet',
-    'launch-message':'Launched duranium 100 km (3.7 inches) in the\nair.',
+    'launchMessage':'Launched duranium 100 km (3.7 inches) in the\nair.',
     'height':100000,
-    'name':'duranium-rocket',
-    'cargo-capacity':0,
-    'maximum-fragility':0,
-    'prerequisite':'steel-rocket',
+    'name':'duraniumRocket',
+    'cargoCapacity':0,
+    'maximumFragility':0,
+    'prerequisite':'steelRocket',
   },
-  'frostium-rocket':{
+  'frostiumRocket':{
     'cost':{
       'frostium':1000000
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':100000000,
     },
     'description':'A frostium rocket, icy blue',
-    'launch-message':'Launched a frostium rocket 1000km (12 million miles), halfway to LEO',
+    'launchMessage':'Launched a frostium rocket 1000km (12 million miles), halfway to LEO',
     'height':1000000,
-    'name':'frostium-rocket',
-    'cargo-capacity':0,
-    'maximum-fragility':0,
-    'prerequisite':'duranium-rocket',
+    'name':'frostiumRocket',
+    'cargoCapacity':0,
+    'maximumFragility':0,
+    'prerequisite':'duraniumRocket',
   },
-  'leo-iii':{
+  'leoIII':{
     'cost':{
       'frostium':1000000,
       'steel':1000000,
       'duranium':1000000,
       'tungsten':1000000,
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':1000000000,
     },
     'description':'A rocket made by taking the best parts of the other rockets',
-    'launch-message':'Launched a LEO III up into LEO',
+    'launchMessage':'Launched a LEO III up into LEO',
     'height':2000000,
-    'name':'leo-iii',
-    'cargo-capacity':1000,
-    'maximum-fragility':5,
-    'prerequisite':'frostium-rocket',
+    'name':'leoIII',
+    'cargoCapacity':1000,
+    'maximumFragility':5,
+    'prerequisite':'frostiumRocket',
   },
-  'cargo-rocket':{
+  'cargoRocket':{
     'cost':{
       'frostium':1500000,
       'steel':1500000,
       'duranium':1500000,
       'tungsten':1500000,
     },
-    'launch-cost':{
+    'launchCost':{
       'fire':5000000000,
     },
     'description':'A rocket made to carry cargo to space',
-    'launch-message':'Launched a cargo ship up to our space base',
+    'launchMessage':'Launched a cargo ship up to our space base',
     'height':2000000,
-    'name':'cargo-rocket',
-    'cargo-capacity':100000,
-    'maximum-fragility':10,
-    'prerequisite':'leo-iii',
+    'name':'cargoRocket',
+    'cargoCapacity':100000,
+    'maximumFragility':10,
+    'prerequisite':'leoIII',
   },
 }

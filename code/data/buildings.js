@@ -3,7 +3,7 @@ let buildingsData = {
     "type":"building",
     "cost": {
       "wood": 2,
-      "flint-and-steel": 0.01
+      "flintAndSteel": 0.01
     },
     "effects": [
       {"funcName":"setCheck","args":['fireMade',true]}
@@ -11,7 +11,7 @@ let buildingsData = {
 		"tooltip":"Don't touch it.",
     'category':'Utility'
   },
-  "steam-engine": {
+  "steamEngine": {
     "type":"building",
     "cost": {
       "iron": 10,
@@ -43,16 +43,16 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['tungsten','storage',1]},
       {"funcName":"incrementResourceSpecial","args":['ice','storage',1000]},
       {"funcName":"incrementResourceSpecial","args":['titanium','storage',5]},
-      {"funcName":"incrementResourceSpecial","args":['compressed-iron','storage',1]},
+      {"funcName":"incrementResourceSpecial","args":['compressedIron','storage',1]},
       {"funcName":"incrementResourceSpecial","args":['copper','storage',20]},
       {"funcName":"incrementResourceSpecial","args":['stone','storage',100]},
       {"funcName":"incrementResourceSpecial","args":['steel','storage',5]},
       {"funcName":"incrementResourceSpecial","args":['coal','storage',200]},
-      {"funcName":"incrementResourceSpecial","args":['iron-ore','storage',100]},
-      {"funcName":"incrementResourceSpecial","args":['gold-ore','storage',1]},
-      {"funcName":"incrementResourceSpecial","args":['tungsten-ore','storage',5]},
-      {"funcName":"incrementResourceSpecial","args":['titanium-ore','storage',25]},
-      {"funcName":"incrementResourceSpecial","args":['copper-ore','storage',100]},
+      {"funcName":"incrementResourceSpecial","args":['ironOre','storage',100]},
+      {"funcName":"incrementResourceSpecial","args":['goldOre','storage',1]},
+      {"funcName":"incrementResourceSpecial","args":['tungstenOre','storage',5]},
+      {"funcName":"incrementResourceSpecial","args":['titaniumOre','storage',25]},
+      {"funcName":"incrementResourceSpecial","args":['copperOre','storage',100]},
     ],
     "tooltip":"Big enough to store resources",
     'category':'Storage'
@@ -71,44 +71,44 @@ let buildingsData = {
 		"tooltip":"Dormant",
     'category':'Technical'
   },
-  "bucket-of-water": {
+  "bucketOfWater": {
     "type":"building",
     "cost": {
       "bucket": 1
     },
     "effects": [
-      {"funcName":"setCheck","args":['bucket-waterMade',true]}
+      {"funcName":"setCheck","args":['bucketWaterMade',true]}
     ],
 		"tooltip":"Why doesn't this leak?",
     'category':'Utility'
   },
-  "planet-grinder": {
+  "planetGrinder": {
     "type":"building",
     "cost": {
-      "frostium-core": 5,
+      "frostiumCore": 5,
       "frostium":1000,
       "steel":1000000,
       "tungsten":500000,
-      "frostium-battery":2,
+      "frostiumBattery":2,
     },
 		"tooltip":"The one remaining reminder of the war",
     'category':'Advanced Metal Working',
     "effects": [
       {"funcName":"setMessageIfCheck","args":['Broken planets. Dying races. Chaos.','notPlanetGrinderMade']},
       {"funcName":"setCheck","args":['notPlanetGrinderMade',false]},
-      {'funcName':'configureResource','args':['frostium-furnace','locked',false]},
+      {'funcName':'configureResource','args':['frostiumFurnace','locked',false]},
     ],
   },
-  "shadow-collector": {
+  "shadowCollector": {
     "type":"building",
     "cost": {
-      "frostium-core": 10,
-      "frostium-battery":10,
+      "frostiumCore": 10,
+      "frostiumBattery":10,
     },
 		"tooltip":"It sucks in the light. (Requires frostium energy)",
     'category':'Shadows',
     'effects':[
-      {'funcName':'addBuilding','args':['wireless-energy-transporter']}
+      {'funcName':'addBuilding','args':['wirelessEnergyTransporter']}
     ]
   },
   "spit": {
@@ -126,11 +126,11 @@ let buildingsData = {
   "hangbucket": {
     "type":"process",
     "cost": {
-      "bucket-of-water": 1
+      "bucketOfWater": 1
     },
     "results": {
       "bucket": 1,
-      "boiling-water": 200
+      "boilingWater": 200
     },
     'buildName':'Hang a bucket on the spit'
   },
@@ -142,12 +142,12 @@ let buildingsData = {
     "effects":[
       {'funcName':'addTab','args':['Computer','computer',true]},
       {'funcName':'configureResource','args':['robot','locked',false]},
-      {'funcName':'configureResource','args':['combustion-engine','locked',false]}
+      {'funcName':'configureResource','args':['combustionEngine','locked',false]}
     ],
 		"tooltip":"This takes a suprisingly small amount of resources",
     'category':'Special'
   },
-  "stone-miner": {
+  "stoneMiner": {
     "type":"building",
     "cost": {
       "stone": 10,
@@ -157,7 +157,7 @@ let buildingsData = {
 		"tooltip":"Mine stone to make a stone miner to mine stone",
     'category':'Technical'
   },
-  "fire-starter": {
+  "fireStarter": {
     "type":"building",
     "cost": {
       "wood": 20,
@@ -168,7 +168,7 @@ let buildingsData = {
 		"tooltip":"What could possibly go wrong?",
     'category':'Technical'
   },
-  "stone-furnace": {
+  "stoneFurnace": {
     "type":"building",
     "cost": {
       "stone": 20
@@ -176,7 +176,7 @@ let buildingsData = {
 		"tooltip":"Watch out for that inserter",
     'category':'Metal Machine'
   },
-  "adaptation-chamber": {
+  "adaptationChamber": {
     "type":"building",
     "cost": {
       "stone": 100,
@@ -203,7 +203,7 @@ let buildingsData = {
     "cost": {
       "iron":10000,
       "copper":10000,
-      "compressed-iron":1000,
+      "compressedIron":1000,
       "frostium":10,
     },
     'tooltip':'The only good way to make science packs.',
@@ -213,22 +213,22 @@ let buildingsData = {
     "type":"building",
     "cost": {
       "stone": 500,
-      "compressed-iron":100,
+      "compressedIron":100,
       "copper":200,
       "titanium":2000,
     },
     'category':'Metal Machine'
   },
-  "space-pressurizer": {
+  "spacePressurizer": {
     "type":"building",
     "cost": {
-      "compressed-iron":1000,
+      "compressedIron":1000,
       "copper":2000,
       "titanium":20000,
     },
     'category':'Metal Machine'
   },
-  "rocket-launcher": {
+  "rocketLauncher": {
     "type":"building",
     "cost": {
       "stone":10000000000,
@@ -237,17 +237,17 @@ let buildingsData = {
       "steel":80000000,
       "tungsten":150000000,
       "duranium":1000000,
-      "frostium-core":1000
+      "frostiumCore":1000
     },
     "effects":[
-      {'funcName':'addTab','args':['Rocket Launching','rocket-silo',true]},
+      {'funcName':'addTab','args':['Rocket Launching','rocketSilo',true]},
       {"funcName":"setMessageIfCheck","args":['The commanders, leading their rocket ships into a massacre.','notRocketLauncherMade']},
       {"funcName":"setCheck","args":['notRocketLauncherMade',false]},
     ],
     'category':'Special',
     'tooltip':'Shoot big explosive things. What could be better than that?'
   },
-  "incendinary-pile": {
+  "incendinaryPile": {
     "type":"building",
     "cost": {
       "wood": 50
@@ -255,7 +255,7 @@ let buildingsData = {
     'category':'Utility',
     'tooltip':'Perform pagan rituals to get them on fire'
   },
-  "coal-incendinary-pile": {
+  "coalIncendinaryPile": {
     "type":"building",
     "cost": {
       "coal": 100
@@ -274,11 +274,11 @@ let buildingsData = {
     },
     "effects":[
       {'funcName':'onlyRunOutOfSpace','args':[[
-        {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
+        {'funcName':'incrementResourceSpecial','args':['fluidStorage','storage',10000]},
       ]]},
       {'funcName':'onlyRunInSpace','args':[[
-        {'funcName':'addTab','args':['Space Fluids','fluid-space',true]},
-        {'funcName':'incResSpace','args':['fluid-storage',10000]},
+        {'funcName':'addTab','args':['Space Fluids','fluidSpace',true]},
+        {'funcName':'incResSpace','args':['fluidStorage',10000]},
       ]]},
       {'funcName':'updateFluids','args':[false]},
     ],
@@ -295,11 +295,11 @@ let buildingsData = {
     },
     "effects":[
       {'funcName':'onlyRunOutOfSpace','args':[[
-        {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
+        {'funcName':'incrementResourceSpecial','args':['fluidStorage','storage',10000]},
       ]]},
       {'funcName':'onlyRunInSpace','args':[[
-        {'funcName':'addTab','args':['Space Fluids','fluid-space',true]},
-        {'funcName':'incResSpace','args':['fluid-storage',10000]},
+        {'funcName':'addTab','args':['Space Fluids','fluidSpace',true]},
+        {'funcName':'incResSpace','args':['fluidStorage',10000]},
       ]]},
       {'funcName':'updateFluids','args':[false]},
     ],
@@ -317,21 +317,21 @@ let buildingsData = {
     "effects":[
       {'funcName':'addTab','args':['Fluids','fluid',true]},
       {'funcName':'onlyRunOutOfSpace','args':[[
-        {'funcName':'incrementResourceSpecial','args':['fluid-storage','storage',10000]},
+        {'funcName':'incrementResourceSpecial','args':['fluidStorage','storage',10000]},
       ]]},
       {'funcName':'configureResource','args':['alloyer','locked',false]},
       {'funcName':'configureResource','args':['cooler','locked',false]},
       {'funcName':'addBuilding','args':['alloyer']},
       {'funcName':'addBuilding','args':['cooler']},
       {'funcName':'onlyRunInSpace','args':[[
-        {'funcName':'addTab','args':['Space Fluids','fluid-space',true]},
-        {'funcName':'incResSpace','args':['fluid-storage',10000]},
+        {'funcName':'addTab','args':['Space Fluids','fluidSpace',true]},
+        {'funcName':'incResSpace','args':['fluidStorage',10000]},
       ]]},
       {'funcName':'updateFluids','args':[false]},
     ],
     'category':'Fluid Handling',
   },
-  "solar-panel": {
+  "solarPanel": {
     "type":"building",
     "cost": {
       "iron":40,
@@ -352,7 +352,7 @@ let buildingsData = {
     'tooltip':'Watertight? Why does that matter?',
     'category':'Fluid Handling'
   },
-  "frostium-core":{
+  "frostiumCore":{
     "type":"building",
     "cost": {
       "frostium":1000
@@ -363,10 +363,10 @@ let buildingsData = {
       {"funcName":"setMessageIfCheck","args":['So small to have caused such destruction','notFrostiumCoreMade']},
       {"funcName":"setMessageCSSIfCheck","args":[{'color':'lightblue','text-shadow':'0px 0px 2px blue'},'notFrostiumCoreMade']},
       {"funcName":"setCheck","args":['notFrostiumCoreMade',false]},
-      {"funcName":"addBuilding","args":['planet-grinder']},
+      {"funcName":"addBuilding","args":['planetGrinder']},
     ],
   },
-  "wireless-energy-transferer":{
+  "wirelessEnergyTransferer":{
     "type":"building",
     "cost": {
       "shadows":1,
@@ -375,10 +375,10 @@ let buildingsData = {
     'tooltip':'The pinnacle of energy transfer technology',
     'category':'Energy',
     'effects':[
-      {'funcName':'addBuilding','args':['matter-transporter']}
+      {'funcName':'addBuilding','args':['matterTransporter']}
     ]
   },
-  "matter-transporter":{
+  "matterTransporter":{
     "type":"building",
     "cost": {
       "shadows":10,
@@ -387,69 +387,201 @@ let buildingsData = {
     'tooltip':'The pinnacle of matter transfer technology',
     'category':'Shadows',
     'effects':[
-      {'funcName':'addTab','args':['Space M.T.','space-mt',true]}
+      {'funcName':'addTab','args':['Space M.T.','spaceMT',true]}
     ]
   },
-  "asteroid-miner":{
+  "asteroidMiner":{
     "type":"building",
     "cost": {
       "steel":10000,
       "tungsten":10000,
-      "frostium-battery":10,
-      "wireless-energy-transferer":1,
-      "matter-transporter":1
+      "frostiumBattery":10,
+      "wirelessEnergyTransferer":1,
+      "matterTransporter":1
     },
     'tooltip':'Send friendly robots out into space to gather resources.',
     'category':'Shadows',
     'effects':[
-      {'funcName':'addTab','args':['Space Resources','universe-statistics',true]},
+      {'funcName':'addTab','args':['Space Resources','universeStatistics',true]},
       {"funcName":"setMessageIfCheck","args":['Maybe if I had some fluid storage I could store more of what this brings back.','notAsteroidMinerMade']},
       {"funcName":"setCheck","args":['notAsteroidMinerMade',false]},
     ]
   },
-  "solar-panel-satellite":{
+  "carbonFactory":{
     "type":"building",
     "cost": {
-      "wireless-energy-transferer":1,
-      "solar-panel":20,
+      "steel":10000000000,
+      "assembler":1000000,
+    },
+    'tooltip':'A way to make carbon nanotubes.',
+    'category':'Advanced Metal Working'
+  },
+  "nanobotFactory":{
+    "type":"building",
+    "cost": {
+      "steel":10000000000,
+      "assembler":10000000,
+      "carbonNanotubes":10000000,
+    },
+    'tooltip':'Nanobots can build big things.',
+    'category':'Advanced Metal Working'
+  },
+  "solarPanelSatellite":{
+    "type":"building",
+    "cost": {
+      "wirelessEnergyTransferer":1,
+      "solarPanel":20,
       "frostium":1000
     },
     'tooltip':'A satellite to collect energy',
     'category':'Energy',
   },
-  "solar-panel-satellite-cluster":{
+  "solarPanelSatelliteCluster":{
     "type":"building",
     "cost": {
-      "solar-panel-satellite":1000,
+      "solarPanelSatellite":1000,
     },
     'tooltip':'A satellite cluster is more efficient',
     'category':'Energy',
   },
-  "hypersonic-shuttle":{
+  "solarPanelSatelliteGroup":{
     "type":"building",
     "cost": {
-      "matter-transporter":1,
+      "solarPanelSatellite":10000,
+    },
+    'tooltip':'Wholly covering vast areas the sun.',
+    'category':'Energy',
+  },
+  "dysonSwarm":{
+    "type":"building",
+    "cost": {
+      "solarPanelSatelliteGroup":100000,
+    },
+    'tooltip':'Encompassing the sun.',
+    'category':'Energy',
+  },
+  "hypersonicShuttle":{
+    "type":"spaceRocket",
+    "cost": {
+      "matterTransporter":1,
       "frostium":200000,
       'steel':1000,
-      "basic-radar":1,
-      "basic-engine":1
+      "basicRadar":1,
+      "basicEngine":1
     },
-    'tooltip':'Most things can',
+    'tooltip':'Travels faster than sound in a vacuum',
     'category':'Space Rocket Base',
   },
-  "sun-miner":{
-    "type":"building",
+  "basicTankShip":{
+    "type":"spaceRocket",
     "cost": {
-      "matter-transporter":1,
-      "basic-engine":1,
-      "heat-resistant-hull":1,
-      "basic-radar":1,
-      "wireless-energy-transferer":1,
+      "basicRadar":1,
+      "basicEngine":1,
+      "basicCannon":1,
+    },
+    'tooltip':'I\'m just building these to get the dyson sphere plans.',
+    'category':'Space Rocket Base',
+  },
+  "sturdyTankShip":{
+    "type":"spaceRocket",
+    "cost": {
+      "advancedRadar":1,
+      "advancedThruster":1,
+      "advancedCannon":1,
+    },
+    'tooltip':'Good for absorbing destructor fire -  and sadly war seems imminent.',
+    'category':'Space Rocket Base',
+  },
+  "forcefieldTankShip":{
+    "type":"spaceRocket",
+    "cost": {
+      "advancedRadar":1,
+      "advancedThruster":1,
+      "blazingCannon":1,
+      "forcefieldGenerator":1,
+    },
+    'tooltip':'Can take quite a beating from enemy ships.',
+    'category':'Space Rocket Base',
+  },
+  "basicSniperShip":{
+    "type":"spaceRocket",
+    "cost": {
+      "basicRadar":1,
+      "advancedThruster":1,
+      "basicHull":1,
+      "basicLaser":1,
+    },
+    'tooltip':'I only need these to protect myself.',
+    'category':'Space Rocket Base',
+  },
+  "advancedSupportShip":{
+    "type":"spaceRocket",
+    "cost": {
+      "advancedRadar":1,
+      "basicHull":1,
+      "advancedThruster":1,
+      "advancedRepairSuits":1,
+    },
+    'tooltip':'It\'s for the good of everyone to start the war.',
+    'category':'Space Rocket Base',
+  },
+  "teleporterSupportShip":{
+    "type":"spaceRocket",
+    "cost": {
+      "detailedRadar":1,
+      "strongHull":1,
+      "teleporterStation":1,
+    },
+    'tooltip':'Dodging out of the way.',
+    'category':'Space Rocket Base',
+  },
+  "advancedSniperShip":{
+    "type":"spaceRocket",
+    "cost": {
+      "advancedRadar":1,
+      "advancedThruster":1,
+      "focusedLaser":1,
+      "basicHull":1,
+    },
+    'tooltip':'If the galactic council doesn\'t start the war, I will, to stop their tyranny.',
+    'category':'Space Rocket Base',
+  },
+  "directSniperShip":{
+    "type":"spaceRocket",
+    "cost": {
+      "detailedRadar":1,
+      "hyperdrive":1,
+      "phasingTurret":1,
+      "basicHull":1,
+    },
+    'tooltip':'It can\'t hit your own ships.',
+    'category':'Space Rocket Base',
+  },
+  "basicSupportShip":{
+    "type":"spaceRocket",
+    "cost": {
+      "basicRadar":1,
+      "basicEngine":1,
+      "basicHull":1,
+      "basicRepairSuits":1,
+      "basicHull":1,
+    },
+    'tooltip':'It\'s not my fault if I have to use these.',
+    'category':'Space Rocket Base',
+  },
+  "sunMiner":{
+    "type":"spaceRocket",
+    "cost": {
+      "matterTransporter":1,
+      "basicEngine":1,
+      "heatResistantHull":1,
+      "basicRadar":1,
+      "wirelessEnergyTransferer":1,
     },
     'tooltip':'An important step to freedom',
     'category':'Space Rocket Base',
   },
-  "basic-hull":{
+  "basicHull":{
     "type":"rocketPart",
     "cost": {
       'steel':100000,
@@ -458,16 +590,16 @@ let buildingsData = {
     'tooltip':'Mediocre',
     'category':'Space Rocket Part',
   },
-  "heat-resistant-hull":{
+  "heatResistantHull":{
     "type":"rocketPart",
     "cost": {
       'steel':200000,
-      'aeromine-glass':10000,
+      'aeromineGlass':10000,
     },
     'tooltip':'A complete heat barrier',
     'category':'Space Rocket Part',
   },
-  "basic-engine":{
+  "basicEngine":{
     "type":"rocketPart",
     "cost": {
       'steel':100000,
@@ -477,37 +609,67 @@ let buildingsData = {
     'tooltip':'Mediocre',
     'category':'Space Rocket Part',
   },
-  "advanced-thruster":{
+  "advancedThruster":{
     "type":"rocketPart",
     "cost": {
       'steel':100000,
-      "tempered-pyrome":100,
-      "diomine":1000,
+      "temperedPyrome":666,
+      "diomine":10000,
     },
     'tooltip':'Faster than average',
     'category':'Space Rocket Part',
   },
-  "basic-repair-suits":{
+  "hyperdrive":{
     "type":"rocketPart",
     "cost": {
-      'duranium':1000,
-      "steel":1000,
+      'frostium':100000,
+      "temperedPyrome":6666,
+      "shadows":500000,
+    },
+    'tooltip':'Faster than average',
+    'category':'Space Rocket Part',
+  },
+  "teleporterStation":{
+    "type":"rocketPart",
+    "cost": {
+      "matterTransporter":1,
+      "wirelessEnergyTransferer":1,
+      "temperedPyrome":6666,
+      "shadows":100000,
+    },
+    'tooltip':'Not used by the galactic council because of their dogmatic hatred of frostium.',
+    'category':'Space Rocket Part',
+  },
+  "basicRepairSuits":{
+    "type":"rocketPart",
+    "cost": {
+      'duranium':10000,
+      "steel":10000,
       "iron":1000000,
     },
     'tooltip':'Mediocre',
     'category':'Space Rocket Part',
   },
-  "automatic-repair-robots":{
+  "automaticRepairRobots":{
     "type":"rocketPart",
     "cost": {
-      'duranium':1000,
-      "steel":1000,
-      "iron":1000000,
+      'duranium':100000,
+      "steel":100000,
+      "iron":10000000,
     },
     'tooltip':'Mediocre',
     'category':'Space Rocket Part',
   },
-  "basic-cannon":{
+  "advancedRepairSuits":{
+    "type":"rocketPart",
+    "cost": {
+      'duranium':100000,
+      "diomine":10000,
+    },
+    'tooltip':'Mediocre',
+    'category':'Space Rocket Part',
+  },
+  "basicCannon":{
     "type":"rocketPart",
     "cost": {
       'duranium':10000,
@@ -517,18 +679,60 @@ let buildingsData = {
     'tooltip':'Mediocre',
     'category':'Space Rocket Part',
   },
-  "basic-laser":{
+  "advancedCannon":{
+    "type":"rocketPart",
+    "cost": {
+      'duranium':100000,
+      "steel":1000000,
+      "iron":10000000,
+    },
+    'tooltip':'Pretty Good',
+    'category':'Space Rocket Part',
+  },
+  "blazingCannon":{
+    "type":"rocketPart",
+    "cost": {
+      'temperedPyrome':666666,
+      "diomine":10000000,
+      "frostium":10000000,
+    },
+    'tooltip':'The galactic council won\'t stand a chance.',
+    'category':'Space Rocket Part',
+  },
+  "basicLaser":{
     "type":"rocketPart",
     "cost": {
       'duranium':10000,
       "steel":100000,
       "iron":10000,
-      "ruby-laser-lens":100,
+      "rubyLaserLens":100,
     },
     'tooltip':'Powerful and deadly',
     'category':'Space Rocket Part',
   },
-  "basic-radar":{
+  "focusedLaser":{
+    "type":"rocketPart",
+    "cost": {
+      'duranium':10000,
+      "steel":100000,
+      "iron":100000,
+      "rubyLaserLens":1000,
+      "emeraldLaserLens":1000,
+    },
+    'tooltip':'Powerfuler and deadlyer',
+    'category':'Space Rocket Part',
+  },
+  "phasingTurret":{
+    "type":"rocketPart",
+    "cost": {
+      'frostium':10000,
+      "shadows":500000,
+      "temperedPyrome":6666,
+    },
+    'tooltip':'Shoots bullets that can go incorporeal',
+    'category':'Space Rocket Part',
+  },
+  "basicRadar":{
     "type":"rocketPart",
     "cost": {
       'copper':1000,
@@ -537,30 +741,48 @@ let buildingsData = {
     'tooltip':'Mediocre',
     'category':'Space Rocket Part',
   },
-  "advanced-radar":{
+  "advancedRadar":{
     "type":"rocketPart",
     "cost": {
-      'copper':1000,
-      "iron":1000,
+      'aeromineGlass':1000,
+      "steel":1000,
     },
     'tooltip':'Seeing father and faster',
     'category':'Space Rocket Part',
   },
-  "strong-hull":{
+  "detailedRadar":{
+    "type":"rocketPart",
+    "cost": {
+      'frostium':1000000,
+      "pyrome":666,
+    },
+    'tooltip':'Muh more information.',
+    'category':'Space Rocket Part',
+  },
+  "strongHull":{
     "type":"rocketPart",
     "cost": {
       'steel':500000,
       "iron":10000000,
       "copper":10000000,
-      "tempered-pyrome":1000
+      "temperedPyrome":6666
     },
     'tooltip':'Strong and sturdy',
     'category':'Space Rocket Part',
   },
-  "frostium-battery":{
+  "forcefieldGenerator":{
+    "type":"rocketPart",
+    "cost": {
+      'shadows':500000,
+      'frostium':5000000,
+    },
+    'tooltip':'Shadows are truly magical in their abilities',
+    'category':'Space Rocket Part',
+  },
+  "frostiumBattery":{
     "type":"building",
     "cost": {
-      "frostium-core":1,
+      "frostiumCore":1,
       'steel':100
     },
     'tooltip':'Focusing frostium energy',
@@ -568,14 +790,14 @@ let buildingsData = {
     "effects": [
       {"funcName":"setMessageIfCheck","args":['This brings back such memories','notFrostiumBatteryMade']},
       {"funcName":"setCheck","args":['notFrostiumBatteryMade',false]},
-      {"funcName":"incrementResourceSpecial","args":["frostium-energy","storage",100]}
+      {"funcName":"incrementResourceSpecial","args":["frostiumEnergy","storage",100]}
     ],
   },
-  "frostium-furnace":{
+  "frostiumFurnace":{
     "type":"building",
     "cost": {
-      "frostium-core":10,
-      "frostium-battery":2,
+      "frostiumCore":10,
+      "frostiumBattery":2,
       "tungsten":1000000,
       "frostium":1000,
     },
@@ -584,10 +806,10 @@ let buildingsData = {
     "effects": [
       {"funcName":"setMessageIfCheck","args":['The manufacturies, glowing with blue light,\n until they were blown up.','notFrostiumFurnaceMade']},
       {"funcName":"setCheck","args":['notFrostiumFurnaceMade',false]},
-      {"funcName":"addBuilding","args":['rocket-launcher']},
+      {"funcName":"addBuilding","args":['rocketLauncher']},
     ],
   },
-  "industrial-warehouse": {
+  "industrialWarehouse": {
     "type":"building",
     "cost": {
       "duranium":100
@@ -597,13 +819,13 @@ let buildingsData = {
     "effects": [
       {"funcName":"incrementResourceSpecial","args":['tungsten','storage',100]},
       {"funcName":"incrementResourceSpecial","args":['titanium','storage',500]},
-      {"funcName":"incrementResourceSpecial","args":['compressed-iron','storage',100]},
+      {"funcName":"incrementResourceSpecial","args":['compressedIron','storage',100]},
       {"funcName":"incrementResourceSpecial","args":['steel','storage',500]},
       {"funcName":"incrementResourceSpecial","args":['duranium','storage',10]},
       {"funcName":"incrementResourceSpecial","args":['frostium','storage',5]},
     ],
   },
-  "shadow-storage-facility": {
+  "shadowStorageFacility": {
     "type":"building",
     "cost": {
       "frostium":1000000
@@ -614,7 +836,7 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['shadows','storage',10]},
     ],
   },
-  "rocket-construction-facility": {
+  "rocketConstructionFacility": {
     "type":"building",
     "cost": {
       "iron":1000000,
@@ -624,11 +846,11 @@ let buildingsData = {
     'tooltip':'A masterpiece of metalworking',
     'category':'Storage',
     "effects": [
-      {'funcName':'addTab','args':['Rocket Part Builder','space-rocket-part-builder',true]},
-      {'funcName':'addTab','args':['Rocket Builder','space-rocket-builder',true]},
+      {'funcName':'addTab','args':['Rocket Part Builder','spaceRocketPartBuilder',true]},
+      {'funcName':'addTab','args':['Rocket Builder','spaceRocketBuilder',true]},
     ],
   },
-  "pocket-storage-dimension": {
+  "pocketStorageDimension": {
     "type":"building",
     "cost": {
       "shadows":500,
@@ -639,26 +861,26 @@ let buildingsData = {
     "effects": [
       {"funcName":"incrementResourceSpecial","args":['tungsten','storage',100000000]},
       {"funcName":"incrementResourceSpecial","args":['titanium','storage',500000000]},
-      {"funcName":"incrementResourceSpecial","args":['compressed-iron','storage',100000000]},
+      {"funcName":"incrementResourceSpecial","args":['compressedIron','storage',100000000]},
       {"funcName":"incrementResourceSpecial","args":['steel','storage',500000000]},
       {"funcName":"incrementResourceSpecial","args":['duranium','storage',100000000]},
       {"funcName":"incrementResourceSpecial","args":['frostium','storage',500000000]},
-      {"funcName":"incrementResourceSpecial","args":['aeromine-glass','storage',5000]},
-      {"funcName":"incrementResourceSpecial","args":['ruby-laser-lens','storage',5000]},
-      {"funcName":"incrementResourceSpecial","args":['emerald-laser-lens','storage',5000]},
+      {"funcName":"incrementResourceSpecial","args":['aeromineGlass','storage',5000]},
+      {"funcName":"incrementResourceSpecial","args":['rubyLaserLens','storage',5000]},
+      {"funcName":"incrementResourceSpecial","args":['emeraldLaserLens','storage',5000]},
       {"funcName":"incrementResourceSpecial","args":['wood','storage',500000000]},
       {"funcName":"incrementResourceSpecial","args":['iron','storage',200000000]},
       {"funcName":"incrementResourceSpecial","args":['ice','storage',10000000000]},
       {"funcName":"incrementResourceSpecial","args":['copper','storage',200000000]},
       {"funcName":"incrementResourceSpecial","args":['stone','storage',1000000000]},
       {"funcName":"incrementResourceSpecial","args":['coal','storage',2000000000]},
-      {"funcName":"incrementResourceSpecial","args":['iron-ore','storage',1000000000]},
-      {"funcName":"incrementResourceSpecial","args":['tungsten-ore','storage',500000000]},
-      {"funcName":"incrementResourceSpecial","args":['titanium-ore','storage',2500000000]},
-      {"funcName":"incrementResourceSpecial","args":['copper-ore','storage',1000000000]},
+      {"funcName":"incrementResourceSpecial","args":['ironOre','storage',1000000000]},
+      {"funcName":"incrementResourceSpecial","args":['tungstenOre','storage',500000000]},
+      {"funcName":"incrementResourceSpecial","args":['titaniumOre','storage',2500000000]},
+      {"funcName":"incrementResourceSpecial","args":['copperOre','storage',1000000000]},
     ],
   },
-  "industrial-smelter": {
+  "industrialSmelter": {
     "type":"building",
     "cost": {
       "steel":10000,
@@ -668,28 +890,28 @@ let buildingsData = {
     'tooltip':'Smelts rare substances',
     'category':'Advanced Metal Working',
   },
-  "wooden-rocket": {
+  "woodenRocket": {
     "type":"rocket",
     "cost": {
       "wood":1
     },
     'category':'Hey, how are you seeing this?'
   },
-  "coal-rocket": {
+  "coalRocket": {
     "type":"rocket",
     "cost": {
       "coal":10
     },
     'category':'Hey, how are you seeing this?'
   },
-  "stone-rocket": {
+  "stoneRocket": {
     "type":"rocket",
     "cost": {
       "stone":100
     },
     'category':'Hey, how are you seeing this?'
   },
-  "metallic-rocket": {
+  "metallicRocket": {
     "type":"rocket",
     "cost": {
       "copper":1000,
@@ -697,7 +919,7 @@ let buildingsData = {
     },
     'category':'Hey, how are you seeing this?'
   },
-  "rare-metallic-rocket": {
+  "rareMetallicRocket": {
     "type":"rocket",
     "cost": {
       "tungsten":10000,
@@ -705,28 +927,28 @@ let buildingsData = {
     },
     'category':'Hey, how are you seeing this?'
   },
-  "steel-rocket": {
+  "steelRocket": {
     "type":"rocket",
     "cost": {
       "steel":100000
     },
     'category':'Hey, how are you seeing this?'
   },
-  "duranium-rocket": {
+  "duraniumRocket": {
     "type":"rocket",
     "cost": {
       "duranium":1000000
     },
     'category':'Hey, how are you seeing this?'
   },
-  "frostium-rocket": {
+  "frostiumRocket": {
     "type":"rocket",
     "cost": {
       "frostium":1000000
     },
     'category':'Hey, how are you seeing this?'
   },
-  "leo-iii": {
+  "leoIII": {
     "type":"rocket",
     'cost':{
       'frostium':1000000,
@@ -735,11 +957,11 @@ let buildingsData = {
       'tungsten':1000000,
     },
     'effects':[
-      {'funcName':'addTab','args':['Cargo Bay','cargo-bay',true]}
+      {'funcName':'addTab','args':['Cargo Bay','cargoBay',true]}
     ],
     'category':'Hey, how are you seeing this?'
   },
-  'cargo-rocket':{
+  'cargoRocket':{
     'cost':{
       'frostium':1500000,
       'steel':1500000,

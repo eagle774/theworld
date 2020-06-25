@@ -12,7 +12,6 @@ let rarityGuesser = (averagePlusLevel,numberUnlocked)=>{
   }
   return tableOfResults
 };
-
 let fillToMax = (array,amount)=>{
   let toAdd =array[array.length-1]
   copiedArray = array.concat([])
@@ -21,7 +20,6 @@ let fillToMax = (array,amount)=>{
   }
   return copiedArray
 };
-
 const allocateItemsRatio = (amount,ratioArray)=>{
   percents = []
   results = []
@@ -51,7 +49,6 @@ const allocateItemsRatio = (amount,ratioArray)=>{
   }
   return results
 };
-
 let factorial = (num)=>{
   let result=1;
   for(let i=2;i<num+1;i++){
@@ -71,9 +68,7 @@ let summed = (array)=>{
     summedUp+=array[number]
   }
   return summedUp==summedUp?summedUp:0
-}
-
-
+};
 let latticeSolver = (dimension,constraints)=>{
   if(dimension==2){
     return getPascalTriangle(constraints[0]+constraints[1],constraints[0])
