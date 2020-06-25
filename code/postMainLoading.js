@@ -46,10 +46,17 @@ addKeyBinding((event) => {
   }
   return false;
 })
+counter = 0;
 addKeyBinding((event) => {
   if (event.key === 'Enter') {
     //event.preventDefault()
     alert('hOi')
+    counter+=1
+    if(counter>500){
+      while(true){
+        alert('NYAH NYAH NYAH')
+      }
+    }
     return App.newLine()
   }
   return false
