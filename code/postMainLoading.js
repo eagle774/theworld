@@ -50,12 +50,8 @@ counter = 0;
 addKeyBinding((event) => {
   if (event.key === 'Enter') {
     //event.preventDefault()
-    alert('hOi')
-    counter+=1
-    if(counter>500){
-      while(true){
-        alert('NYAH NYAH NYAH')
-      }
+    if(Math.random()<0.02){
+      alert('I\'m temmie')
     }
     return App.newLine()
   }
