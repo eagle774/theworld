@@ -46,11 +46,10 @@ addKeyBinding((event) => {
   }
   return false;
 })
-counter = 0;
 addKeyBinding((event) => {
   if (event.key === 'Enter') {
     //event.preventDefault()
-    if(Math.random()<0.02){
+    if(Math.random()<0.00002){
       alert('I\'m temmie')
     }
     return App.newLine()

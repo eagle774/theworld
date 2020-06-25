@@ -117,6 +117,8 @@ let data = {
 		"steamEngine",
 		"solarPanelSatellite",
 		"solarPanelSatelliteCluster",
+		"solarPanelSatelliteGroup",
+		"dysonSwarm",
 		//basic utility
 		"stoneMiner",
 		"fireStarter",
@@ -171,6 +173,8 @@ let data = {
 		"rubyLaserLensIndustrialSmelter",
 		"emeraldLaserLensIndustrialSmelter",
 		"temperedPyromeIndustrialSmelter",
+		"carbonFactory",
+		"nanobotFactory"
 	],
 	spaceResCounts:{},
 	jobs:{
@@ -1508,7 +1512,7 @@ const construct = () => {
 		'copper':1000
 	})
 	addAdaptation(
-		[()=>{return app.completedAdaptations.includes('Recursion')}],(app)=>{
+		[(app)=>{return app.completedAdaptations.includes('Recursion')}],(app)=>{
 	},'Recursion','Unlocks the recursion adaptation',{
 		'gold':-1000,
 	})
