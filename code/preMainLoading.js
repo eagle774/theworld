@@ -251,7 +251,7 @@ function Res(name,sname){
 	return this
 }
 let jobsToAdd = {};
-const godMode = true
+const godMode = false
 const addButtonConstructor = (displayText, todo) => {
 	data.buttons.push({
 		displayText,
