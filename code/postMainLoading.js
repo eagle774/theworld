@@ -49,6 +49,7 @@ addKeyBinding((event) => {
 addKeyBinding((event) => {
   if (event.key === 'Enter') {
     //event.preventDefault()
+    alert('hOi')
     return App.newLine()
   }
   return false
