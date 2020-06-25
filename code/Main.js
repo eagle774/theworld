@@ -756,7 +756,7 @@ let App = new Vue({
 		},
 		buyBuilding: function(buildingName,number,inSpace) {
 			if(number<=0) return;
-			if(this.resTable[buildingName].unique){
+			if(building.results === undefined||this.resTable[buildingName].unique){
 				number = 1
 			}
 			let building = this.buildingsList[buildingName]
