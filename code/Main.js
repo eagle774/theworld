@@ -10,6 +10,14 @@ let App = new Vue({
 				ready:true
 			})
 		},
+		addCustomFile: function(name,sname,content,type) {
+			this.files.push({
+				screenName: sname,
+				fileID: name,
+				type: type
+			})
+			this.fileContents[name] = content
+		},
 		addSpaceBuilding: function(buildingName) {
 			let spaceBuildings = this.spaceBuildings
 			let exists=false
@@ -1320,7 +1328,7 @@ let App = new Vue({
 			}
 			if(this.hole>=100&&!this.filesIncludesID('minereadme')){
 				this.editTab('computer','Computer (1)')
-				addFileConstructor('minereadme', 'mining.doc', 'Here is a helpful guide to the depths you find resources at certain depths.\
+				this.addCustomFile('minereadme', 'mining.doc', 'Here is a helpful guide to the depths you find resources at certain depths.\
 \nThe Galactic Council has not told you this, because they don\'t want you to succeed.\
 \nNothing is found below 1,000,000,000m.\
 \nCoal is found at 10m-10,000,000m\
@@ -1331,21 +1339,44 @@ let App = new Vue({
 \nTungsten is found at 1,000,000m-1,000,000,000m\
 -Anonymous', 'doc')
 			}
+			if(!this.getTab('statistics')&&this.unlockedResources.includes('ironOre')){
+				this.addTab('Statistics','statistics')
+			}
 			if(this.resTable['alloyer'].amount>0&&!this.filesIncludesID('alloyreadme')){
 				this.editTab('computer','Computer (2)')
-				addFileConstructor('alloyreadme', 'alloyer.doc', 'What materials can you make in an alloyer?\
+				this.addCustomFile('alloyreadme', 'alloyer.doc', 'What materials can you make in an alloyer?\
 \nI can\'t tell you all of them, but by melting as many resources as you can, you can find recipies.\
 \nA friendly reminder - You must stay away from Frostium technology.\
 \n-The Galactic Council', 'doc')
-				addFileConstructor('frostiumNecessary', 'urgent.doc', 'The Galactic Council believes you should stay away from Frostium\
+				this.addCustomFile('frostiumNecessary', 'urgent.doc', 'The Galactic Council believes you should stay away from Frostium\
 \nThis is foolishness and superstition, but even with my influence, they did not change their mind.\
 \nIf you wish to leave this planet, you will need frostium technology.\
 \nDO NOT LISTEN TO THEIR WARNING. THEY ONLY AIM TO GAIN FOR THEMSELVES.\
 \n-Anonymous', 'doc')
 			}
+			if(this.resTable['assembler'].amount>=1&&!this.filesIncludesID('assemblerreadme')){
+				this.editTab('computer','Computer (1)')
+				this.incrementResource('galacticCredits',1000)
+				this.addCustomFile('assemblerreadme', 'assembler.doc', ' The assembler\'s file extension is .asmblr, and it has two main commands.\n \
+The first command is assembler.constructBuilding, which takes in the name of the building(all lowercase and hyphenated), and how many to build per tick.\n \
+The second is isBuildingBuyable, and takes in two arguments, name and how many per tick.\n \
+if(assembler.isBuildingBuyable(\'barn\',11)){\n \
+	assembler.constructBuilding(\'barn\',1)\n \
+	\n \
+} purchases one barn a tick, but always leaves you with at least three hundred wood.\n \
+To check multiple conditions, use && to mean and. For example:\n \
+if(assembler.isBuildingBuyable(\'barn\',11)&&assembler.isBuildingBuyable(\'stoneFurnace\',11)){\n \
+	assembler.constructBuilding(\'barn\',1)\n \
+	assembler.constructBuilding(\'stoneFurnace\',1)\n \
+	\n \
+} \n \
+This example buys one barn and one furnace only if oyu can buy both simultaneously. \n \
+The script will require two assemblers to run, because two buildings are being built.\n \
+In general scripts require assemblers equal to the maximum amount of buildings being bought to run.', 'doc')
+			}
 			if(this.unlockedResources.includes('leoIII')&&!this.filesIncludesID('cargoreadme')){
 				this.editTab('computer','Computer (1)')
-				addFileConstructor('cargoreadme', 'cargoBay.doc', 'What can you put on a rocketship?\
+				this.addCustomFile('cargoreadme', 'cargoBay.doc', 'What can you put on a rocketship?\
 \nYou can only have so much weight on your rocketship.\
 \nA LEO III can only hold one thousand klaxons(the galatic standard weight unit) at any time.\
 \nIn addition, a LEO III can only hold items with a fragility of 5 or less. Anything more fragile would break.\
@@ -1356,25 +1387,19 @@ let App = new Vue({
 				this.editTab('computer','Computer (1)')
 				this.addTab('Market','market')
 				this.incrementResource('galacticCredits',1000)
-				addFileConstructor('marketreadme', 'market.doc', 'We have recieved your satellite communication.\
+				this.addCustomFile('marketreadme', 'market.doc', 'We have recieved your satellite communication.\
 \nYour request to have access to our market has been accepted. We have given you a starting fund of one thousand galactic credits. \
 \nYou will not be given more. We hope that this represents a desire to rejoin our society peacefully.\
 \nYour race\'s fate hangs on your head, and if you do not conform, we will not hesitate to exterminate you.\
 \n-The Galactic Council', 'doc')
 			}
-			if(this.resTable['assembler'].amount>=1&&!this.filesIncludesID('assemblerreadme')){
+			if(this.spaceResCounts['frostium']>=1&&!this.filesIncludesID('marketreadme')){
 				this.editTab('computer','Computer (1)')
-				this.incrementResource('galacticCredits',1000)
-				addFileConstructor('assemblerreadme', 'assembler.doc', 'The asssembler\'s file extension is .asmblr, and it has two main commands.\n \
-The first command is assembler.constructBuilding, which takes in the name of the building(all lowercase and hyphenated), and how many to build per tick.\n \
-The second is isBuildingBuyable, and takes in two arguments, name and how many per tick.\n \
-if(assembler.isBuildingBuyable(\'barn\',11)){\n \
-	assembler.constructBuilding(\'barn\',1)\n \
-	\n \
-} purchases one barn a tick, but always leaves you with at least three hundred wood.\n ', 'doc')
-			}
-			if(!this.getTab('statistics')&&this.unlockedResources.includes('ironOre')){
-				this.addTab('Statistics','statistics')
+				this.addCustomFile('marketreadme', 'market.doc', 'Now that you are in space, I can give you plans for the future.\
+\nI have the blue prints for a dyson sphere, but I fear giving them to you without you having a way to defend yourself.\
+\nI worry the galactic council will destroy you.\
+\nIf you get 10000 high level combat ships of each type, I will give you the plans.\
+\n-Anonymous', 'doc')
 			}
 			if(this.debug){
 				console.timeEnd('fileChecks')
@@ -1667,6 +1692,17 @@ if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 			this.debug = true
 			this.temporaryDebug = true
 		},
+		//testing
+		runUnitTests: function(){
+
+		},
+		runTickTest: function(){
+			console.time('oneHunderedTicks')
+			for(let i=0;i<100;i++){
+				this.tick()
+			}
+			console.timeEnd('oneHunderedTicks')
+		}
 	},
   computed: {
     resourceProductionChartTemplateDetached: function() {

@@ -2045,7 +2045,7 @@ const construct = () => {
 	assembler = new SpaceAssembler(app.resTable)
 	return {'assembler':{'resources':assembler.resTable.data,
 	'constructBuilding':(name,amount)=>{
-		assembler.buildBuilding(app,name,amount,number)
+		assembler.constructBuilding(app,name,amount,number)
 	},
 	'isBuildingBuyable':(name,amount)=>{
 		return assembler.isBuildingBuyable(app,name,amount)
@@ -2055,7 +2055,7 @@ const construct = () => {
 	assembler = new Assembler(app.resTable)
 	return {'assembler':{'resources':assembler.resTable.data,
 	'constructBuilding':(name,amount)=>{
-		assembler.buildBuilding(app,name,amount,number)
+		assembler.constructBuilding(app,name,amount,number)
 	},
 	'isBuildingBuyable':(name,amount)=>{
 		return assembler.isBuildingBuyable(app,name,amount)

@@ -974,8 +974,10 @@ let buildingsData = {
   "satellite": {
     "type":"building",
     "cost": {
-      "stone":1
+      "iron":1000,
+      "copper":1000
     },
-    'category':'Space'
+    'category':'Space',
+    "tooltip":"There is literally no point in having more than one of these."
   },
 }

@@ -73,13 +73,6 @@ addKeyBinding((event) => {
   }
 })
 addKeyBinding((event)=>{
-  let val;
-  try{
-    val = customBuyVal
-  }
-  catch{
-
-  }
   if(Number(event.key)&&event.key!=='0'&&document.activeElement!=val){
     if(App.tabs[App.tabPos*6-1+Number(event.key)]){
       return App.setTab(App.tabs[App.tabPos*6-1+Number(event.key)].tab)

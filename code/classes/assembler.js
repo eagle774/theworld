@@ -2,7 +2,7 @@ class Assembler{
   constructor(resTable){
     this.resTable=new ReadOnly(()=>{return JSON.parse(JSON.stringify(resTable))})
   }
-  buildBuilding(app,name,amount,numberOfAssemblers){
+  constructBuilding(app,name,amount,numberOfAssemblers){
     if(amount<=numberOfAssemblers){
       numberOfAssemblers-=amount;
       return app.buyBuilding(name,amount,false)
