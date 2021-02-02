@@ -1,2 +1,30 @@
-Message from anon.
-Dyson sphere.
+Make pyrome easier to get. - done?? Maybe??
+Show time remaining until maybe
+Show negative per tick.
+Pressurizer mismatch??? unclear
+Rocket launcher right side formatting
+Hide Gold
+Hide gold Again space resources
+Up space tungsten amount
+Increase iron carbon pressurizer output
+Space show new things (1)
+Space fluids 3: Return of the suc(buying buildings in space)
+Hang bucket on stick get the format treatment
+Job assignment happens after scripts, it should be the other way round
+Fix buy custom
+Fix tabs on files
+Disable extra enter for if statements
+spit > special
+Look into job page ordering
+Up rocket launcher frostium core cost
+Rejig pholtovaic cells pricing --------- for the hundredth time
+remover buttons with max cargo bay
+Buff every way of getting resources in space.
+Up iron and copper space resource amounts
+Dramatically reduce early stage 2 time spent
+Cargo bay infinite storage exploit fix
+
+Plans for stage 2 finishing
+Create some buildings costing galactic credits, because recycling systems are broken.
+Fix the market always getting way too high by the time it is unlocked
+Diplomacy/trade system

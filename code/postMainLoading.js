@@ -5,12 +5,6 @@ addKeyBinding((event) => {
   }
 })
 addKeyBinding((event) => {
-  if (event.key === 'w' && event.ctrlKey){
-    event.preventDefault();
-    return App.clearGame()
-  }
-})
-addKeyBinding((event) => {
   if (event.key.length === 1) {
     if(event.key === '\''){
       event.preventDefault()
@@ -73,7 +67,7 @@ addKeyBinding((event) => {
   }
 })
 addKeyBinding((event)=>{
-  if(Number(event.key)&&event.key!=='0'&&document.activeElement!=val){
+  if(Number(event.key)&&event.key!=='0'){
     if(App.tabs[App.tabPos*6-1+Number(event.key)]){
       return App.setTab(App.tabs[App.tabPos*6-1+Number(event.key)].tab)
     }

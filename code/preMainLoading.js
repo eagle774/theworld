@@ -82,7 +82,7 @@ let data = {
 	multipliers:{},
 	buildings: {},
 	speakethSpeaketh:false,
-	actualMachinePriority:[],
+	listOfMachines:[],
 	computerChanged:false,
 	processes: [],
 	logger:(val)=>{console.log(val);return val},
@@ -109,21 +109,23 @@ let data = {
 	correctMachineOrder:[
 		//producers
 		"giftGod",
+		"pyromeMaterializer",
 		"solarPanel",
-		"frostiumBattery",
-		"shadowCollector",
-		//energy makers
-		"fire",
-		"steamEngine",
 		"solarPanelSatellite",
 		"solarPanelSatelliteCluster",
 		"solarPanelSatelliteGroup",
 		"dysonSwarm",
+		"dysonSphere",
+		"steamEngine",
+		"frostiumBattery",
+		"shadowCollector",
+		//independent
+		"fire",
+		"incendinaryPile",
+		"coalIncendinaryPile",
 		//basic utility
 		"stoneMiner",
 		"fireStarter",
-		"incendinaryPile",
-		"coalIncendinaryPile",
 		//furnaces
 		"stoneFurnace",
 		"ironFurnace",
@@ -194,10 +196,11 @@ let data = {
 	madeParts:[],
 	fluidLeft:0,
 	discoveredJobs:[],
+	discoveredSpaceJobs:[],
 	sortOrder:['wood'],
 	spaceFluidLeft:0,
-	version:'0.1.3',
-	unlockedSpaceResources:[],
+	version:'0.5.6',
+	unlockedSpaceResources:["iron","copper","frostium","duranium","steel","compressedIron","tungsten","titanium"],
 	newBuildings:0,
 	customToBuy:0,
 	unlockedSpaceFluids:[],
@@ -214,6 +217,7 @@ let data = {
 	rocketPartCategories:['Protective','Repair','Weapon','Radar','Engine'],
 	rocketCategory:'Mining',
 	rocketCategories:['Mining','Combat Support','Combat Tank','Combat Ranged'],
+	pastTradeStatuses:[],
 }
 function Res(name,sname){
 	this.stuff={
@@ -226,6 +230,7 @@ function Res(name,sname){
 		tempPastPerTick: [0],
 		screenName: sname,
 		storage: 5,
+		tradeable:false,
 		extraPerTick: 0,
 		multiplier: 1,
 		buildName:'placeholder',
@@ -367,6 +372,13 @@ Res.prototype.isUnholy = function(){
 	this.unholy = true;
 	return this
 }
+Res.prototype.setTradeable = function(weight,cost,defaultAmount){
+	this.stuff.tradeWeight = weight;
+	this.stuff.tradeCost = cost;
+	this.stuff.tradeable = true;
+	this.stuff.tradeDefaultAmount = defaultAmount;
+	return this
+}
 Res.prototype.configureSpaceMachine = function(newSettings){
 	for(const [key,value] of Object.entries(newSettings)){
 		this.stuff.spaceMachineSettings[key]=value
@@ -412,12 +424,6 @@ Res.prototype.isTransportable = function(cost){
 }
 Res.prototype.isSpaceLocked = function(){
 	this.stuff.spaceLocked = true
-	return this
-}
-Res.prototype.isTradeable = function(buyPrice,sellPrice){
-	this.stuff.isTradeable = true
-	this.stuff.tradeableStuff.buyPrice = buyPrice
-	this.stuff.tradeableStuff.sellPrice = sellPrice
 	return this
 }
 Res.prototype.isOreOf = function(name){
@@ -595,28 +601,28 @@ const construct = () => {
 			.configure('storage', 50)
 			.isCargo(1,1)
 			.isTransportable(1)
-			.isTradeable(5,3)
+			.setTradeable(10,1,1000)
 			.hasCSS({'color':'saddlebrown'})
 			.finalize()
 		new Res('stone', 'Stone')
 			.configure('storage', 200)
 			.hasCSS({'color':'grey'})
 			.isCargo(1,2)
-			.isTradeable(5,1)
+			.setTradeable(20,1,10000)
 			.isTransportable(1)
 			.finalize()
 		new Res('coal', 'Coal')
 			.configure('storage', 400)
 			.isCargo(3,0.1)
 			.isTransportable(1)
-			.isTradeable(5,1)
+			.setTradeable(20,1,10000)
 			.finalize()
 		//metals
 		new Res('iron', 'Iron')
 			.configure('storage', 60)
 			.isTransportable(10)
 			.isCargo(2,10)
-			.isTradeable(50,30)
+			.setTradeable(30,10,10000)
 			.hasFluidForm('moltenIron','Molten Iron',1)
 			.hasCSS({'color':'rosybrown'})
 			.finalize()
@@ -630,7 +636,7 @@ const construct = () => {
 		new Res('copper', 'Copper')
 			.configure('storage', 60)
 			.hasCSS({'color':'brown'})
-			.isTradeable(50,30)
+			.setTradeable(30,10,10000)
 			.isCargo(2,10)
 			.isTransportable(10)
 			.hasFluidForm('moltenCopper','Molten Copper',1)
@@ -644,7 +650,7 @@ const construct = () => {
 			.finalize()
 		new Res('titanium', 'Titanium')
 			.configure('storage', 10)
-			.isTradeable(100,50)
+			.setTradeable(25,50,50000)
 			.isTransportable(20)
 			.hasCSS({'color':'darkgrey'})
 			.isCargo(3,50)
@@ -659,7 +665,7 @@ const construct = () => {
 			.finalize()
 		new Res('tungsten', 'Tungsten')
 			.configure('storage', 5)
-			.isTradeable(200,80)
+			.setTradeable(10,100,50000)
 			.hasCSS({'color':'green'})
 			.isCargo(3,50)
 			.isTransportable(30)
@@ -677,7 +683,6 @@ const construct = () => {
 			.hasCSS({'color':'gold'})
 			.isCargo(1000,10000)
 			.isTransportable(10000000000)
-			.isTradeable(1e30,0)
 			.hasFluidForm('moltenGold','Molten Gold',1)
 			.finalize()
 		new Res('goldOre', 'Gold Ore')
@@ -701,12 +706,12 @@ const construct = () => {
 			.configure('storage', 0)
 			.isCargo(4,500)
 			.isTransportable(100)
-			.isTradeable(1000,250)
+			.setTradeable(35,100,25000)
 			.finalize()
 		new Res('steel', 'Steel')
 			.configure('storage', 10)
 			.isCargo(5,5)
-			.isTradeable(2000,1000)
+			.setTradeable(35,40,100000)
 			.isTransportable(10)
 			.hasFluidForm('moltenSteel','Molten Steel',5)
 			.hasCSS({'color':'lightgrey'})
@@ -715,11 +720,12 @@ const construct = () => {
 			//Not the urza's legacy one.
 			.hasFluidForm('moltenDiomine','Molten Diomine',1)
 			.hasCSS({'color':'rgba(200,200,200,1)'})
+			.setTradeable(1,100,1000)
 			.finalize()
 		new Res('duranium', 'Duranium')
 			.configure('storage', 100)
 			.isCargo(2,100)
-			.isTradeable(500,200)
+			.setTradeable(5,50,100000)
 			.isTransportable(50)
 			.hasCSS({'color':'MediumAquaMarine'})
 			.hasFluidForm('moltenDuranium','Molten Duranium',1)
@@ -746,6 +752,7 @@ const construct = () => {
 		new Res('trishardicGeode', 'Trishardic Geode')
 			.configure('storage', 10)
 			.isTransportable(10000)
+			.setTradeable(1,3000,3000)
 			.hasCSS({'color':'lime'})
 			.isUnholy()
 			.smeltsInto(1000000,{
@@ -758,36 +765,36 @@ const construct = () => {
 			.configure('storage', 100000000)
 			.isTransportable(0.001)
 			.hasCSS({'color':'grey'})
-			.isTradeable(0,0)
+			.setTradeable(5,1,100000)
 			.finalize()
 		new Res('ruby', 'Ruby')
 			.configure('storage', 10)
 			.isTransportable(10000)
 			.hasCSS({'color':'red'})
-			.isTradeable(10000000,4000000)
+			.setTradeable(1,1000,1000)
 			.finalize()
 		new Res('aerome', 'Aerome')
 			.configure('storage', 10)
 			.isTransportable(10000)
+			.setTradeable(1,1000,1000)
 			.hasCSS({'color':'black','text-shadow':'#f0ff25 0px 0px 2px'})
-			.isTradeable(5000000,2000000)
 			.finalize()
 		new Res('emerald', 'Emerald')
 			.configure('storage', 10)
 			.isTransportable(10000)
 			.hasCSS({'color':'lime'})
-			.isTradeable(5000000,2000000)
+			.setTradeable(1,1000,1000)
 			.finalize()
 		new Res('pyrome', 'Pyrome')
 			.configure('storage', 10)
 			.isTransportable(10000)
+			.setTradeable(0,10000,100)
 			.hasCSS({'color':'orange','text-shadow':'black 0px 0px 4px'})
-			.isTradeable(50000000,20000000)
 			.finalize()
 		new Res('ice', 'Ice')
 			.configure('storage', 1000)
 			.isCargo(8,1)
-			.isTradeable(10,1)
+			.setTradeable(5, 1,100000)
 			.isTransportable(1)
 			.hasFluidForm('water','Water',1)
 			.hasCSS({'color':'lightblue'})
@@ -840,6 +847,7 @@ const construct = () => {
 				'aerome':10,
 				'diomine':10
 			},10)
+			.setTradeable(0.5,100,10000)
 			.hasCSS({'color':'black','text-shadow':'#f0ff25 0px 0px 2px'})
 			.finalize()
 		new Res('rubyLaserLens', 'Ruby Laser Lens')
@@ -850,6 +858,7 @@ const construct = () => {
 				'aeromineGlass':10
 			},1000)
 			.hasCSS({'color':'red'})
+			.setTradeable(0.5,100,10000)
 			.finalize()
 		new Res('emeraldLaserLens', 'Emerald Laser Lens')
 			.configure('storage',10)
@@ -859,17 +868,23 @@ const construct = () => {
 				'aeromineGlass':10
 			},1000)
 			.hasCSS({'color':'lime'})
+			.setTradeable(0.5,100,10000)
 			.finalize()
 		new Res('temperedPyrome', 'Tempered Pyrome')
 			.configure('storage',10)
 			.isSmeltable(1000000,{
 				'pyrome':1,
-				'diomine':6666,
-				'duranium':666666,
-				'steel':666666,
+				'diomine':66,
+				'duranium':666,
+				'steel':666,
 			},666)
 			.isTransportable(20000)
 			.hasCSS({'color':'orange','text-shadow':'black 0px 0px 1px'})
+			.finalize()
+		new Res('depletedPyrome', 'Depleted Pyrome')
+			.configure('storage',10)
+			.isTransportable(2000)
+			.hasCSS({'color':'orange','text-shadow':'black 0px 0px 4px'})
 			.finalize()
 		//rockets
 		new Res('woodenRocket', 'Wooden Rocket')
@@ -993,7 +1008,7 @@ const construct = () => {
 			.setMachine({
 				energy:1000000,
 			},{
-				pyrome:0.01,
+				pyrome:1,
 			})
 			.configure('buildName',"Build a spaceship to mine pyrome, a metal only found in the core of stars.")
 			.finalize()
@@ -1072,7 +1087,7 @@ const construct = () => {
 			.configure('locked', true)
 			.isSpaceLocked()
 			.finalize()
-		new Res('industrialWarehouse', 'Industrial Warehouses')
+		new Res('industrialWarehouse', 'Industrial Warehouse')
 			.configure('buildName','Maintain a monolithic industrial warehouse')
 			.isSpaceLocked()
 			.isBuildable()
@@ -1119,7 +1134,7 @@ const construct = () => {
 			.setMachine({
 				'frostiumEnergy':10
 			},{
-				'shadows':0.0001,
+				'shadows':0.001,
 			})
 			.finalize()
 		new Res('frostiumFurnace', 'Frostium Furnace')
@@ -1144,6 +1159,35 @@ const construct = () => {
 				'titaniumOre':50000,
 				'wood':10000
 			})
+			.finalize()
+		//pyrome technology
+		new Res('pyromeMaterializer', 'Pyrome Materializer')
+			.isBuildable()
+			.configure('locked', true)
+			.hasCSS({'color':'orange','text-shadow':'black 0px 0px 1px'})
+			.configure('buildName','Use the energy within pyrome to create a Pyrome materializer.')
+			.setMachine({
+				pyromeMaterializer:0.1,
+			},{
+				frostium:100000000,
+				iron:1000000000,
+				copper:1000000000,
+				depletedPyrome:1000,
+				duranium:100000000,
+				steel:1000000000
+			})
+			.finalize()
+		new Res('pyromeInfuser','Pyrome Infuser')
+			.isBuildable()
+			.configure('locked', true)
+			.configure('buildName','Infused depleted pyrome with energy.')
+			.setMachine({
+				depletedPyrome:0.1,
+				energy:100000000000
+			},{
+				temperedPyrome:0.1,
+			})
+			.addInactiveState()
 			.finalize()
 		//fluids
 		new Res('cooler', 'Cooler')
@@ -1316,8 +1360,8 @@ const construct = () => {
 				'stone':30000,
 				'ice':2000,
 				'carbon':5000,
-				'moltenDiomine':1,
-				'trishardicGeode':0.001,
+				'moltenDiomine':10,
+				'trishardicGeode':0.01,
 			})
 			.finalize()
 		new Res('carbonFactory', 'Carbon Factory')
@@ -1386,6 +1430,7 @@ const construct = () => {
 			.setMachine({},{
 				energy:0.2
 			})
+			.setTradeable(0,1000,100)
 			.configureSpaceMachine({multiplier:2})
 			.finalize()
 		new Res('solarPanelSatellite', 'Solar Panel Satellite')
@@ -1393,7 +1438,7 @@ const construct = () => {
 			.configure('buildName','Make a satellite to charge your space station.')
 			.configure('locked',true)
 			.setMachine({},{
-				'energy':20,
+				'energy':50,
 			})
 			.finalize()
 		//special
@@ -1402,23 +1447,32 @@ const construct = () => {
 			.configure('buildName','Arrange satellites to catch as much sunlight as possible')
 			.configure('locked',true)
 			.setMachine({},{
-				'energy':50000,
+				'energy':100000,
 			})
 			.finalize()
 		new Res('solarPanelSatelliteGroup', 'Solar Panel Satellite Cluster')
 			.isBuildable()
-			.configure('buildName','Arrange satellites to catch as much sunlight as possible')
+			.configure('buildName','Arrange satellites to almost surround the sun')
 			.configure('locked',true)
 			.setMachine({},{
 				'energy':1500000000,
 			})
 			.finalize()
-		new Res('dysonSwarm', 'Solar Panel Satellite Cluster')
+		new Res('dysonSwarm', 'Dyson Swarm')
 			.isBuildable()
-			.configure('buildName','Arrange satellites to catch as much sunlight as possible')
+			.configure('buildName','Use solar panels to surround the sun.')
 			.configure('locked',true)
 			.setMachine({},{
 				'energy':450000000000000,
+			})
+			.finalize()
+		new Res('dysonSphere', 'Dyson Sphere')
+			.isBuildable()
+			.configure('buildName','Use Build a megastructure to encapsulate the sun.')
+			.configure('locked',true)
+			.isSpaceLocked()
+			.setMachine({},{
+				'energy':9000000000000000000000,
 			})
 			.finalize()
 		//special
@@ -1447,12 +1501,10 @@ const construct = () => {
 		//things that just literally never show up in the actual resTable, and are part of a category that never shows up so the developer gave it a stupid name.
 		new Res('galacticCredits', 'Galatic Credits')
 			.configure('storage',Infinity)
+			.setTradeable(10,1,100000)
 			.finalize()
 		new Res('fluidStorage',confusedText)
 			.configure('storage',0)
-			.finalize()
-		new Res('water','Water')
-			.isFluid(1)
 			.finalize()
 	})()
 	if(godMode){
@@ -1461,12 +1513,14 @@ const construct = () => {
 		data.spaceResCounts['giftGod'].amount=1
 		data.resTable['fire'].amount=5000000
 		data.computerOpacity = 0.9
-		data.tabs = [{"displayText":"Main","tab":"main"},{"displayText":"Saves","tab":"saving"},{"displayText":"Statistics","tab":"statistics"},{"displayText":"Rocket Launching","tab":"rocketSilo"},{"displayText":"Adaptations","tab":"adaptation"},{"displayText":"Computer","tab":"computer"},{"displayText":"Cargo Bay","tab":"cargoBay"},{"displayText":"Space","tab":"space"},{"displayText":"Space Jobs","tab":"spaceJobs"},{"displayText":"Rocket Part Builder","tab":"spaceRocketPartBuilder"},{"displayText":"Rocket Builder","tab":"spaceRocketBuilder"}]
+		data.tabs = [{"displayText":"Main","tab":"main"},{"displayText":"Saves","tab":"saving"},{"displayText":"Statistics","tab":"statistics"},{"displayText":"Rocket Launching","tab":"rocketSilo"},{"displayText":"Adaptations","tab":"adaptation"},{"displayText":"Computer","tab":"computer"},{"displayText":"Cargo Bay","tab":"cargoBay"},{"displayText":"Space","tab":"space"},{"displayText":"Space Jobs","tab":"spaceJobs"},{"displayText":"Rocket Part Builder","tab":"spaceRocketPartBuilder"},{"displayText":"Rocket Builder","tab":"spaceRocketBuilder"},{"displayText":"Trading","tab":"tradeSpace"}]
 	}
 	//Init stocks
 	for(let i=0;i<10;i++){
 		addStock(stockCreator(data.stockNamePool))
 	}
+	//Init tradeHub
+	data.tradeHub = new TradeHub(data)
 	//Init Checks
 	addCheck('spitMade')
 	addCheck('bucketWaterMade')
@@ -1711,8 +1765,8 @@ const construct = () => {
 	},'Pholtovaic cells III','Super powerful solar panels',{
 		'iron':10000,
 		'copper':10000,
-		'compressedIron':10000,
-		'tungsten':1000
+		'compressedIron':5000,
+		'tungsten':2000
 	})
 	addAdaptation(
 		[
@@ -1729,9 +1783,9 @@ const construct = () => {
 	},'Pholtovaic cells IV','Super-duper powerful solar panels',{
 		'iron':500000,
 		'copper':250000,
-		'compressedIron':10000,
+		'compressedIron':50000,
 		'tungsten':20000,
-		'steel':10000,
+		'steel':40000,
 	})
 	addAdaptation(
 		[
@@ -1748,10 +1802,10 @@ const construct = () => {
 	},'Pholtovaic cells V','Incredibly powerful solar panels',{
 		'iron':1000000,
 		'copper':500000,
-		'compressedIron':50000,
-		'tungsten':50000,
-		'steel':20000,
-		'duranium':10000,
+		'compressedIron':100000,
+		'tungsten':200000,
+		'steel':400000,
+		'duranium':1000,
 	})
 	addAdaptation(
 		[
@@ -1766,12 +1820,12 @@ const construct = () => {
 		app.spaceMachineStates['solarPanelSatelliteGroup'].results.energy*=2.75
 		app.spaceMachineStates['dysonSwarm'].results.energy*=2.75
 	},'Pholtovaic cells VI','Ridiculously powerful solar panels',{
-		'iron':5000000,
-		'copper':2500000,
-		'compressedIron':250000,
-		'tungsten':250000,
-		'steel':100000,
-		'duranium':100000,
+		'iron':50000000,
+		'copper':25000000,
+		'compressedIron':2500000,
+		'tungsten':2500000,
+		'steel':1000000,
+		'duranium':10000,
 	})
 	addAdaptation(
 		[
@@ -1786,13 +1840,13 @@ const construct = () => {
 		app.spaceMachineStates['solarPanelSatelliteGroup'].results.energy*=3
 		app.spaceMachineStates['dysonSwarm'].results.energy*=3
 	},'Pholtovaic cells VII','Way too powerful solar panels',{
-		'iron':20000000,
-		'copper':400000,
-		'compressedIron':2500000,
-		'tungsten':2500000,
-		'steel':10000000,
-		'duranium':1000000,
-		'frostium':1000
+		'iron':50000000,
+		'copper':50000000,
+		'compressedIron':25000000,
+		'tungsten':25000000,
+		'steel':100000000,
+		'duranium':100000,
+		'frostium':10000
 	})
 	addAdaptation(
 		[
@@ -1808,12 +1862,12 @@ const construct = () => {
 		app.spaceMachineStates['dysonSwarm'].results.energy*=3.25
 	},'Pholtovaic cells VIII','Can anything be this powerful?',{
 		'iron':2000000000,
-		'copper':40000000,
+		'copper':2000000000,
 		'compressedIron':250000000,
 		'tungsten':250000000,
-		'steel':1000000000,
-		'duranium':5000000,
-		'frostium':500000,
+		'steel':3000000000,
+		'duranium':1000000,
+		'frostium':1000000,
 	})
 	addAdaptation(
 		[
@@ -1828,13 +1882,13 @@ const construct = () => {
 		app.spaceMachineStates['solarPanelSatelliteGroup'].results.energy*=3.5
 		app.spaceMachineStates['dysonSwarm'].results.energy*=3.5
 	},'Pholtovaic cells IX','...?',{
-		'iron':200000000,
-		'copper':4000000,
-		'compressedIron':7500000,
-		'tungsten':25000000,
-		'steel':62500000,
-		'duranium':2500000,
-		'frostium':2500000
+		'iron':20000000000,
+		'copper':40000000000,
+		'compressedIron':750000000,
+		'tungsten':2500000000,
+		'steel':6250000000,
+		'duranium':25000000,
+		'frostium':25000000
 	})
 	//robots
 	addAdaptation(
@@ -2042,9 +2096,8 @@ const construct = () => {
 	}}}}])
 	addExtension(['.sasmblr','Space Assembler','assembler',
 	(app,number)=>{
-	assembler = new SpaceAssembler(app.resTable)
-	return {'assembler':{'resources':assembler.resTable.data,
-	'constructBuilding':(name,amount)=>{
+	assembler = new SpaceAssembler(app.spaceResCounts)
+	return {'assembler':{'constructBuilding':(name,amount)=>{
 		assembler.constructBuilding(app,name,amount,number)
 	},
 	'isBuildingBuyable':(name,amount)=>{
@@ -2053,8 +2106,7 @@ const construct = () => {
 	addExtension(['.asmblr','Assembler','assembler',
 	(app,number)=>{
 	assembler = new Assembler(app.resTable)
-	return {'assembler':{'resources':assembler.resTable.data,
-	'constructBuilding':(name,amount)=>{
+	return {'assembler':{'constructBuilding':(name,amount)=>{
 		assembler.constructBuilding(app,name,amount,number)
 	},
 	'isBuildingBuyable':(name,amount)=>{
@@ -2089,3 +2141,4 @@ const construct = () => {
 	addButtonConstructor('Gather wood', 'getWood')
 }
 construct()
+//245 minutes, rocket silo

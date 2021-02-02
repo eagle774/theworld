@@ -42,7 +42,7 @@ let App = new Vue({
 			}
 			this.spaceBuildings=spaceBuildings
 		},
-		addTab: function(displayText, tab, letter, common=false) {
+		addTab: function(displayText, tab, common=false) {
 			for (let i = 0; i < this.tabs.length; i++) {
 				if (this.tabs[i].tab === tab) {
 					if(!common){
@@ -410,15 +410,19 @@ let App = new Vue({
 					this.spaceResCounts[key]=value
 				}
 				save.spaceResCounts = this.spaceResCounts
-				for(const [key,value] of Object.entries(save.machineStates)){
-					this.machineStates[key]=value
+				if(save.machineStates){
+					for(const [key,value] of Object.entries(save.machineStates)){
+						this.machineStates[key]=value
+					}
+					save.machineStates = this.machineStates
 				}
-				save.machineStates = this.machineStates
 				save.machinePriority = this.machinePriority
-				for(const [key,value] of Object.entries(save.spaceMachineStates)){
+				if(save.spaceMachineStates){
+					for(const [key,value] of Object.entries(save.spaceMachineStates)){
 					this.spaceMachineStates[key]=value
 				}
-				save.spaceMachineStates = this.spaceMachineStates
+					save.spaceMachineStates = this.spaceMachineStates
+				}
 				save.spaceMachinePriority = this.spaceMachinePriority
 				for(const [key,value] of Object.entries(save.mining)){
 					mineSave = new Mine()
@@ -430,18 +434,24 @@ let App = new Vue({
 					grid.setData(save.grid)
 					save.grid = grid
 				}
+
 				mark = new Market()
 				mark.setData(save.market)
 				save.market = mark
+				console.log(save.tradeHub)
+				tradeHub = new TradeHub()
+				tradeHub.setData(save.tradeHub)
+				save.tradeHub = tradeHub
 				universe = new MineV2()
 				universe.setData(save.universe)
 				save.universe = universe
 				pool = new NamePool()
-				save.actualMachinePriority = save.machinePriority
-				save.machinePriority = this.correctMachineOrder
-				save.spaceMachinePriority = this.correctMachineOrder
 				pool.setData(save.stockNamePool)
 				save.stockNamePool = pool
+
+				save.machinePriority = this.correctMachineOrder
+				save.spaceMachinePriority = this.correctMachineOrder
+				save.listOfMachines = save.machinePriority
 				for(const [key,value] of Object.entries(save)){
 					this.$set(this,key,value)
 				}
@@ -632,6 +642,9 @@ let App = new Vue({
 			if(tab=='jobs'){
 				this.editTab('jobs','Jobs')
 			}
+			if(tab=='spaceJobs'){
+				this.editTab('spaceJobs','Space Jobs')
+			}
 		},
 		setCheck: function(check,value){
 			this.checks[check]=value
@@ -692,6 +705,7 @@ let App = new Vue({
 				this.configureResource('incendinaryPile', 'locked', false)
 				this.configureButton(1, 'displayText', 'Explore (Locked)')
 				this.configureButton(1, 'ready', false)
+				this.addBuilding('computer')
 				this.addTab('Jobs','jobs')
 				this.message='In the cave you find a rusted steam engine,\nblueprints for a computer and a computer disk.'
 				this.addButton('Mine stone', 'mineStone')
@@ -919,8 +933,11 @@ let App = new Vue({
 				return toReturn
 			}
 			if(this.resTable[res].isFluid){
-				let toReturn = Math.min(amount,this.spaceFluidLeft/this.resTable[res].fluidStuff.density+this.spaceResCounts[res].amount)
-				this.spaceResCounts[res].amount+=Math.min(amount,this.spaceFluidLeft/this.resTable[res].fluidStuff.density+this.spaceResCounts[res].amount)
+				if(amount>this.spaceFluidLeft/this.resTable[res].fluidStuff.density){
+					amount = this.spaceFluidLeft/this.resTable[res].fluidStuff.density
+				}
+				let toReturn = Math.min(amount,this.spaceFluidLeft/this.resTable[res].fluidStuff.density)
+				this.spaceResCounts[res].amount+=Math.min(amount,this.spaceFluidLeft/this.resTable[res].fluidStuff.density)
 				this.updateFluids(true)
 				return toReturn
 			}else{
@@ -934,7 +951,7 @@ let App = new Vue({
 			this.grid = new WorldGrid(10)
 		},
 		//gametick
-		tick: function() {
+		generalTickUtil: function(){
 			if(this.debug){
 				console.time('wholeTick')
 				console.time('grid, saving, computer')
@@ -1012,80 +1029,85 @@ let App = new Vue({
 			}
 			if(this.debug){
 				console.timeEnd("conversions, checks and opacity")
+			}
+			this.tradeHub.tick(this)
+		},
+		machinesEverywhere: function(){
+			if(this.debug){
 				console.time('machines')
 			}
-      for(let i=0;i<this.machinePriority.length;i++){
-        let machine=this.machineStates[this.machinePriority[i]]
+			for(let i=0;i<this.machinePriority.length;i++){
+				let machine=this.machineStates[this.machinePriority[i]]
 				machine.multiplier = 1
-        for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
+				for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
 					machine.multiplier = Math.min(machine.multiplier,this.resTable[key].amount/
 						value/(this.resTable[this.machinePriority[i]].amount==0?
 							Infinity:
 								this.resTable[this.machinePriority[i]].amount))
-        }
+				}
 				let listed = []
-        for(const [key,value] of Object.entries(machine['results'])){
+				for(const [key,value] of Object.entries(machine['results'])){
 					listed.push((this.resTable[key].storage-
 						this.resTable[key].amount)
 						/value/(this.resTable[this.machinePriority[i]].amount)
 						/
 						machine.multiplier)
-        }
+				}
 				if(listed.length==0){
 					listed.push(1)
 				}
 				let maxim = Math.max.apply(null,listed)
 				machine.multiplier = Math.min(maxim==maxim?maxim:Infinity,machine.multiplier)
-        if(this.resTable[this.machinePriority[i]].amount>0&&machine.multiplier>0){
-	        for(const [key,value] of Object.entries(machine['results'])){
+				if(this.resTable[this.machinePriority[i]].amount>0&&machine.multiplier>0){
+					for(const [key,value] of Object.entries(machine['results'])){
 						this.incrementResource(key,value*this.resTable[this.machinePriority[i]].amount*machine.multiplier)
-            this.addVisibleResource(key,true)
+						this.addVisibleResource(key,true)
 					}
-		      for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
+					for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
 						this.incrementResource(key,-value*this.resTable[this.machinePriority[i]].amount*machine.multiplier)
 					}
-        }
-        this.machineStates[this.machinePriority[i]]=machine
-      }
+				}
+				this.machineStates[this.machinePriority[i]]=machine
+			}
 			if(this.debug){
 				console.timeEnd('machines')
 				console.time('machines in space')
 			}
-      for(let i=0;i<this.spaceMachinePriority.length;i++){
-        let machine=this.spaceMachineStates[this.spaceMachinePriority[i]]
+			for(let i=0;i<this.spaceMachinePriority.length;i++){
+				let machine=this.spaceMachineStates[this.spaceMachinePriority[i]]
 				machine.multiplier = 1
-        for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
+				for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
 					machine.multiplier = Math.min(machine.multiplier,this.spaceResCounts[key].amount/
 						value/(this.spaceResCounts[this.spaceMachinePriority[i]].amount==0?
 							Infinity:
 								this.spaceResCounts[this.spaceMachinePriority[i]].amount))
-        }
-        if(this.spaceResCounts[this.spaceMachinePriority[i]].amount>0&&machine.multiplier>0){
-	        for(const [key,value] of Object.entries(machine['results'])){
+				}
+				if(this.spaceResCounts[this.spaceMachinePriority[i]].amount>0&&machine.multiplier>0){
+					for(const [key,value] of Object.entries(machine['results'])){
 						this.incResSpace(key,value*this.resTable[this.spaceMachinePriority[i]].spaceMachineSettings.multiplier*this.spaceResCounts[this.spaceMachinePriority[i]].amount*machine.multiplier)
-            this.addSpaceResource(key,true)
+						this.addSpaceResource(key,true)
 					}
-		      for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
+					for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
 						this.incResSpace(key,-value*this.spaceResCounts[this.spaceMachinePriority[i]].amount*machine.multiplier)
 					}
-        }
-        this.spaceMachineStates[this.spaceMachinePriority[i]]=machine
-      }
+				}
+				this.spaceMachineStates[this.spaceMachinePriority[i]]=machine
+			}
 			if(this.debug){
 				console.timeEnd('machines in space')
 				console.time('mineMachinePriority')
 			}
 			for(let i=0;i<this.mineMachinePriority.length;i++){
-        let machine=this.mineMachineStates[this.mineMachinePriority[i]]
+				let machine=this.mineMachineStates[this.mineMachinePriority[i]]
 				machine.multiplier = 1
-        for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
+				for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
 					machine.multiplier = Math.min(machine.multiplier,this.resTable[key].amount/
 						value/(this.resTable[this.mineMachinePriority[i]].amount==0?
 							Infinity:
 								this.resTable[this.mineMachinePriority[i]].amount))
-        }
+				}
 				let listed = []
-        for(const [key,value] of Object.entries(machine['results'])){
+				for(const [key,value] of Object.entries(machine['results'])){
 					if(this.resTable[key]){
 						listed.push((this.resTable[key].storage-
 							this.resTable[key].amount)
@@ -1095,14 +1117,14 @@ let App = new Vue({
 					}else{
 						console.log("Missing resource",key)
 					}
-        }
+				}
 				if(listed.length==0){
 					listed.push(1)
 				}
 				let maxim = Math.max.apply(null,listed)
 				machine.multiplier = Math.min(maxim==maxim?maxim:Infinity,machine.multiplier)
-        if(this.resTable[this.mineMachinePriority[i]].amount>0&&machine.multiplier>0){
-	        for(const [key,value] of Object.entries(machine['results'])){
+				if(this.resTable[this.mineMachinePriority[i]].amount>0&&machine.multiplier>0){
+					for(const [key,value] of Object.entries(machine['results'])){
 						if(this.mining['Earth']['resources'][key]){
 							this.mining['Earth']['resources'][key].total-=
 							this.incrementResource(
@@ -1112,29 +1134,29 @@ let App = new Vue({
 						}else{
 							this.incrementResource(key,value*this.resTable[this.mineMachinePriority[i]].amount*machine.multiplier)
 						}
-            this.addVisibleResource(key,true)
+						this.addVisibleResource(key,true)
 					}
-		      for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
+					for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
 						this.incrementResource(key,-value*this.resTable[this.mineMachinePriority[i]].amount*machine.multiplier)
 					}
-        }
-        this.mineMachineStates[this.mineMachinePriority[i]]=machine
-      }
+				}
+				this.mineMachineStates[this.mineMachinePriority[i]]=machine
+			}
 			if(this.debug){
 				console.timeEnd('mineMachinePriority')
 				console.time('spaceMineMachinePriority')
 			}
 			for(let i=0;i<this.spaceMineMachinePriority.length;i++){
-        let machine=this.spaceMineMachineStates[this.spaceMineMachinePriority[i]]
+				let machine=this.spaceMineMachineStates[this.spaceMineMachinePriority[i]]
 				machine.multiplier = 1
-        for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
+				for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
 					machine.multiplier = Math.min(machine.multiplier,this.spaceResCounts[key].amount/
 						value/(this.spaceResCounts[this.spaceMineMachinePriority[i]].amount==0?
 							Infinity:
 								this.spaceResCounts[this.spaceMineMachinePriority[i]].amount))
-        }
-        if(this.spaceResCounts[this.spaceMineMachinePriority[i]].amount>0&&machine.multiplier>0){
-	        for(const [key,value] of Object.entries(machine['results'])){
+				}
+				if(this.spaceResCounts[this.spaceMineMachinePriority[i]].amount>0&&machine.multiplier>0){
+					for(const [key,value] of Object.entries(machine['results'])){
 						if(this.universe.visible[key]||this.universe.visible[key]==0){
 							this.universe.visible[key]-=
 							this.incResSpace(
@@ -1144,25 +1166,29 @@ let App = new Vue({
 						}else{
 							this.incResSpace(key,value*this.spaceResCounts[this.spaceMineMachinePriority[i]].amount*machine.multiplier)
 						}
-            this.addSpaceResource(key,true)
+						this.addSpaceResource(key,true)
 					}
-		      for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
+					for(const [key,value] of Object.entries(machine['resourcesNeeded'])){
 						this.incResSpace(key,-value*this.resTable[this.spaceMineMachinePriority[i]].amount*machine.multiplier)
 					}
-        }
-        this.spaceMineMachineStates[this.spaceMineMachinePriority[i]]=machine
-      }
+				}
+				this.spaceMineMachineStates[this.spaceMineMachinePriority[i]]=machine
+			}
 			if(this.debug){
 				console.timeEnd('spaceMineMachinePriority')
 				console.time('machineChecking')
 			}
-			for(const machine of this.actualMachinePriority){
+			for(const machine of this.listOfMachines){
 				if(!this.machinePriority.includes(machine)){
 					console.log('Machine '+machine+" has not been added to the machine priority list.")
 				}
 			}
 			if(this.debug){
 				console.timeEnd('machineChecking')
+			}
+		},
+		buildingsAndScripts: function(){
+			if(this.debug){
 				console.time('addingBuildings')
 			}
 			this.newBuildings=0
@@ -1172,11 +1198,11 @@ let App = new Vue({
 					if(!this.resTable[key2]){
 						console.log('Missing res: '+key2)
 					}else{
-		        if(this.resTable[key2].amount<value2/2){
+						if(this.resTable[key2].amount<value2/2){
 							available=false
 						}
 					}
-	      }
+				}
 				if(!this.resTable[key]&&this.buildingsList[key].type!='process'){
 					console.log('Missing res: '+key)
 				}else{
@@ -1188,10 +1214,10 @@ let App = new Vue({
 					}
 					let spaceAvailable=true
 					for (const [key2, value2] of Object.entries(building['cost'])) {
-		        if(this.spaceResCounts[key2].amount<value2/2){
+						if(this.spaceResCounts[key2].amount<value2/2){
 							spaceAvailable=false
 						}
-		      }
+					}
 					if(spaceAvailable&&this.buildingsList[key].type=='building'&&!this.resTable[key].spaceLocked){
 						this.addSpaceBuilding(key)
 					}
@@ -1199,29 +1225,14 @@ let App = new Vue({
 						this.addSpaceProcess(this.buildingsList[key].buildName,key)
 					}
 				}
-      }
+			}
 			if(this.debug){
 				console.timeEnd('addingBuildings')
-				console.time('findingNewJobs')
 			}
-			let newJobsFound=0
-			for (const [key, value] of Object.entries(this.jobs)) {
-				if(this.unlockedResources.includes(key)){
-					for(newJob of value){
-						if((!this.machineStates[newJob.job] ||
-							this.allDictKeysAreInArray(this.machineStates[newJob.job].resourcesNeeded,
-							this.unlockedResources.concat(this.unlockedFluids)))&&!this.discoveredJobs.includes(newJob.job)){
-							this.discoveredJobs.push(newJob.job)
-							newJobsFound+=1
-						}
-					}
-				}
-      }
 			if(this.errorLog.length>0){
 				this.errorLog=[]
 			}
 			if(this.debug){
-				console.timeEnd('findingNewJobs')
 				console.time('runningScripts')
 			}
 			for(const extension of this.unSaveable.extensions){
@@ -1233,10 +1244,19 @@ let App = new Vue({
 					if(!this.multipliers[extension[0]]){
 						this.multipliers[extension[0]]=1
 					}
-					allocated = this.allocateItemsPercent(!extension[4]?this.resTable[extension[2]].amount:this.spaceResCounts[extension[2]].amount*this.multipliers[extension[0]],scripts)
+					allocated = this.allocateItemsPercent((!extension[4]?this.resTable[extension[2]].amount:this.spaceResCounts[extension[2]].amount)*this.multipliers[extension[0]],scripts)
 					entries = Object.entries(scripts)
+					if(this.debug){
+						console.time(extension[0])
+					}
 					for(let i=0;i<entries.length;i++){
+						if(this.debug){
+							console.time('loading: '+extension[0])
+						}
 						funcs = extension[3](this,allocated[i])
+						if(this.debug){
+							console.timeEnd('loading: '+extension[0])
+						}
 						if(allocated[i]>0){
 							try{
 								parseCode(this.fileTextContents[entries[i][1].fileID].slice(1),{},funcs)
@@ -1246,10 +1266,45 @@ let App = new Vue({
 							}
 						}
 					}
+					if(this.debug){
+						console.timeEnd(extension[0])
+					}
 				}
 			}
 			if(this.debug){
 				console.timeEnd('runningScripts')
+				console.time('findingNewJobs')
+			}
+		},
+		jobsAndStuff: function(){
+			let newJobsFound=0
+			let newSpaceJobsFound=0
+			for (const [key, value] of Object.entries(this.jobs)) {
+				if(this.unlockedResources.includes(key)){
+					for(newJob of value){
+						if((!this.machineStates[newJob.job] ||
+							this.allDictKeysAreInArray(this.machineStates[newJob.job].resourcesNeeded,
+							this.unlockedResources.concat(this.unlockedFluids)))&&!this.discoveredJobs.includes(newJob.job)){
+							this.discoveredJobs.push(newJob.job)
+							newJobsFound+=1
+						}
+					}
+				}
+			}
+			for (const [key, value] of Object.entries(this.jobs)) {
+				if(this.unlockedSpaceResources.includes(key)){
+					for(newJob of value){
+						if((!this.machineStates[newJob.job] ||
+							this.allDictKeysAreInArray(this.spaceMachineStates[newJob.job].resourcesNeeded,
+							this.unlockedSpaceResources.concat(this.unlockedSpaceFluids)))&&!this.discoveredSpaceJobs.includes(newJob.job)){
+							this.discoveredSpaceJobs.push(newJob.job)
+							newSpaceJobsFound+=1
+						}
+					}
+				}
+			}
+			if(this.debug){
+				console.timeEnd('findingNewJobs')
 				console.time('jobAssignment')
 			}
 			for(const [name,jobsList] of Object.entries(this.jobs)){
@@ -1322,22 +1377,33 @@ let App = new Vue({
 				}
 				this.editTab('jobs', 'Jobs ('+newJobsFound+')')
 			}
+			if(newSpaceJobsFound!==0){
+				tabToEdit = this.getTab('spaceJobs')
+				if(tabToEdit.displayText!='Space Jobs'){
+					newSpaceJobsFound -= '-'+tabToEdit.displayText.slice(12,tabToEdit.displayText.length-1)
+				}
+				this.editTab('spaceJobs', 'Space Jobs ('+newSpaceJobsFound+')')
+			}
 			if(this.debug){
 				console.timeEnd('assortedBitsAndPieces')
+			}
+		},
+		filesAndCharts: function(){
+			if(this.debug){
 				console.time('fileChecks')
 			}
 			if(this.hole>=100&&!this.filesIncludesID('minereadme')){
 				this.editTab('computer','Computer (1)')
 				this.addCustomFile('minereadme', 'mining.doc', 'Here is a helpful guide to the depths you find resources at certain depths.\
-\nThe Galactic Council has not told you this, because they don\'t want you to succeed.\
-\nNothing is found below 1,000,000,000m.\
-\nCoal is found at 10m-10,000,000m\
-\nStone is found at all depths.\
-\nCopper is found at 100m-500,000m\
-\nIron is found at 100m-500,000m\
-\nTitanium is found at 100,000m-100,000,000m\
-\nTungsten is found at 1,000,000m-1,000,000,000m\
--Anonymous', 'doc')
+	\nThe Galactic Council has not told you this, because they don\'t want you to succeed.\
+	\nNothing is found below 1,000,000,000m.\
+	\nCoal is found at 10m-10,000,000m\
+	\nStone is found at all depths.\
+	\nCopper is found at 100m-500,000m\
+	\nIron is found at 100m-500,000m\
+	\nTitanium is found at 100,000m-100,000,000m\
+	\nTungsten is found at 1,000,000m-1,000,000,000m\
+	-Anonymous', 'doc')
 			}
 			if(!this.getTab('statistics')&&this.unlockedResources.includes('ironOre')){
 				this.addTab('Statistics','statistics')
@@ -1345,61 +1411,73 @@ let App = new Vue({
 			if(this.resTable['alloyer'].amount>0&&!this.filesIncludesID('alloyreadme')){
 				this.editTab('computer','Computer (2)')
 				this.addCustomFile('alloyreadme', 'alloyer.doc', 'What materials can you make in an alloyer?\
-\nI can\'t tell you all of them, but by melting as many resources as you can, you can find recipies.\
-\nA friendly reminder - You must stay away from Frostium technology.\
-\n-The Galactic Council', 'doc')
+	\nI can\'t tell you all of them, but by melting as many resources as you can, you can find recipies.\
+	\nA friendly reminder - You must stay away from Frostium technology.\
+	\n-The Galactic Council', 'doc')
 				this.addCustomFile('frostiumNecessary', 'urgent.doc', 'The Galactic Council believes you should stay away from Frostium\
-\nThis is foolishness and superstition, but even with my influence, they did not change their mind.\
-\nIf you wish to leave this planet, you will need frostium technology.\
-\nDO NOT LISTEN TO THEIR WARNING. THEY ONLY AIM TO GAIN FOR THEMSELVES.\
-\n-Anonymous', 'doc')
+	\nThis is foolishness and superstition, but even with my influence, they did not change their mind.\
+	\nIf you wish to leave this planet, you will need frostium technology.\
+	\nDO NOT LISTEN TO THEIR WARNING. THEY ONLY AIM TO GAIN FOR THEMSELVES.\
+	\n-Anonymous', 'doc')
 			}
 			if(this.resTable['assembler'].amount>=1&&!this.filesIncludesID('assemblerreadme')){
 				this.editTab('computer','Computer (1)')
 				this.incrementResource('galacticCredits',1000)
 				this.addCustomFile('assemblerreadme', 'assembler.doc', ' The assembler\'s file extension is .asmblr, and it has two main commands.\n \
-The first command is assembler.constructBuilding, which takes in the name of the building(all lowercase and hyphenated), and how many to build per tick.\n \
-The second is isBuildingBuyable, and takes in two arguments, name and how many per tick.\n \
-if(assembler.isBuildingBuyable(\'barn\',11)){\n \
+	The first command is assembler.constructBuilding, which takes in the name of the building(all lowercase and hyphenated), and how many to build per tick.\n \
+	The second is isBuildingBuyable, and takes in two arguments, name and how many per tick.\n \
+	if(assembler.isBuildingBuyable(\'barn\',11)){\n \
 	assembler.constructBuilding(\'barn\',1)\n \
 	\n \
-} purchases one barn a tick, but always leaves you with at least three hundred wood.\n \
-To check multiple conditions, use && to mean and. For example:\n \
-if(assembler.isBuildingBuyable(\'barn\',11)&&assembler.isBuildingBuyable(\'stoneFurnace\',11)){\n \
+	} purchases one barn a tick, but always leaves you with at least three hundred wood.\n \
+	To check multiple conditions, use && to mean and. For example:\n \
+	if(assembler.isBuildingBuyable(\'barn\',11)&&assembler.isBuildingBuyable(\'stoneFurnace\',11)){\n \
 	assembler.constructBuilding(\'barn\',1)\n \
 	assembler.constructBuilding(\'stoneFurnace\',1)\n \
 	\n \
-} \n \
-This example buys one barn and one furnace only if oyu can buy both simultaneously. \n \
-The script will require two assemblers to run, because two buildings are being built.\n \
-In general scripts require assemblers equal to the maximum amount of buildings being bought to run.', 'doc')
+	} \n \
+	This example buys one barn and one furnace only if oyu can buy both simultaneously. \n \
+	The script will require two assemblers to run, because two buildings are being built.\n \
+	In general scripts require assemblers equal to the maximum amount of buildings being bought to run.', 'doc')
 			}
 			if(this.unlockedResources.includes('leoIII')&&!this.filesIncludesID('cargoreadme')){
 				this.editTab('computer','Computer (1)')
 				this.addCustomFile('cargoreadme', 'cargoBay.doc', 'What can you put on a rocketship?\
-\nYou can only have so much weight on your rocketship.\
-\nA LEO III can only hold one thousand klaxons(the galatic standard weight unit) at any time.\
-\nIn addition, a LEO III can only hold items with a fragility of 5 or less. Anything more fragile would break.\
-\nA cargo ship can hold one hundred thousand klaxons, and items with a fragility of up to ten.\
-\n-Anonymous', 'doc')
+	\nYou can only have so much weight on your rocketship.\
+	\nA LEO III can only hold one thousand klaxons(the galatic standard weight unit) at any time.\
+	\nIn addition, a LEO III can only hold items with a fragility of 5 or less. Anything more fragile would break.\
+	\nA cargo ship can hold one hundred thousand klaxons, and items with a fragility of up to ten.\
+	\n-Anonymous', 'doc')
 			}
 			if(this.spaceResCounts['satellite'].amount>=1&&!this.filesIncludesID('marketreadme')){
 				this.editTab('computer','Computer (1)')
 				this.addTab('Market','market')
 				this.incrementResource('galacticCredits',1000)
 				this.addCustomFile('marketreadme', 'market.doc', 'We have recieved your satellite communication.\
-\nYour request to have access to our market has been accepted. We have given you a starting fund of one thousand galactic credits. \
-\nYou will not be given more. We hope that this represents a desire to rejoin our society peacefully.\
-\nYour race\'s fate hangs on your head, and if you do not conform, we will not hesitate to exterminate you.\
-\n-The Galactic Council', 'doc')
+	\nYour request to have access to our market has been accepted. We have given you a starting fund of one thousand galactic credits. \
+	\nYou will not be given more. We hope that this represents a desire to rejoin our society peacefully.\
+	\nYour race\'s fate hangs on your head, and if you do not conform, we will not hesitate to exterminate you.\
+	\n-The Galactic Council', 'doc')
 			}
-			if(this.spaceResCounts['frostium']>=1&&!this.filesIncludesID('marketreadme')){
+			if(this.spaceResCounts['frostium']>=1&&!this.filesIncludesID('dysonspheremessage')){
 				this.editTab('computer','Computer (1)')
-				this.addCustomFile('marketreadme', 'market.doc', 'Now that you are in space, I can give you plans for the future.\
-\nI have the blue prints for a dyson sphere, but I fear giving them to you without you having a way to defend yourself.\
-\nI worry the galactic council will destroy you.\
-\nIf you get 10000 high level combat ships of each type, I will give you the plans.\
+				this.addCustomFile('dysonspheremessage', 'dysonsphere.doc', 'Now that you are in space, I can give you plans for the future.\
+	\nI have the blue prints for a dyson sphere, but I fear giving them to you without you having a way to defend yourself.\
+	\nI worry the galactic council will destroy you.\
+	\nIf you get 10000 high level combat ships of each type, I will give you the plans.\
+	\n-Anonymous', 'doc')
+				this.addCustomFile('spaceassemblermessage', 'spaceassemblers.doc', 'In case you are wondering, assemblers still work in space.\
+\nYou simply need to change the extension from .asmblr to .sasmblr\
 \n-Anonymous', 'doc')
+			}
+			if(this.spaceResCounts['forcefieldTankShip']>=10000&&this.spaceResCounts['teleporterSupportShip']>=10000&&this.spaceResCounts['directSniperShip']>=10000&&!this.filesIncludesID('dysonspherereward')){
+				this.editTab('computer','Computer (1)')
+				this.addCustomFile('dysonspherereward', 'dysonsphere.doc', 'I just want to congratulate you on your progress.\
+	\nEnclosed you will find the plans for a dyson sphere.\
+	\nUsing it\'s power, you need to create a ship to travel to Dendram\
+	\nThis is the only way to get the machines you need to combat the galactic council.\
+	\n-Anonymous', 'doc')
+				this.resTable.dysonSphere.spaceLocked = true;
 			}
 			if(this.debug){
 				console.timeEnd('fileChecks')
@@ -1414,12 +1492,12 @@ In general scripts require assemblers equal to the maximum amount of buildings b
 				if(this.resTable[key].pastPerTick.length>200){
 					this.resTable[key].pastPerTick.shift()
 				}
-	      this.configureResource(key, 'extraPerTick', 0)
+				this.configureResource(key, 'extraPerTick', 0)
 				this.spaceResCounts[key].pastPerTick.push(this.spaceResCounts[key].extraPerTick)
 				if(this.spaceResCounts[key].pastPerTick.length>200){
 					this.spaceResCounts[key].pastPerTick.shift()
 				}
-	      this.configureResourceSpace(key, 'extraPerTick', 0)
+				this.configureResourceSpace(key, 'extraPerTick', 0)
 			}
 			if(this.debug){
 				console.timeEnd('chart')
@@ -1436,6 +1514,13 @@ In general scripts require assemblers equal to the maximum amount of buildings b
 				}
 				console.timeEnd('wholeTick')
 			}
+		},
+		tick: function() {
+			this.generalTickUtil()
+			this.machinesEverywhere()
+			this.buildingsAndScripts()
+			this.jobsAndStuff()
+			this.filesAndCharts()
 		},
 		//jobs
 		jobCount: function(job){
@@ -1702,6 +1787,10 @@ In general scripts require assemblers equal to the maximum amount of buildings b
 				this.tick()
 			}
 			console.timeEnd('oneHunderedTicks')
+		},
+		//trading
+		acceptTrade: function(i){
+			tradeHub.acceptTrade(App,i)
 		}
 	},
   computed: {

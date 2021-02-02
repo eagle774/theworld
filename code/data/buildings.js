@@ -96,7 +96,7 @@ let buildingsData = {
     "effects": [
       {"funcName":"setMessageIfCheck","args":['Broken planets. Dying races. Chaos.','notPlanetGrinderMade']},
       {"funcName":"setCheck","args":['notPlanetGrinderMade',false]},
-      {'funcName':'configureResource','args':['frostiumFurnace','locked',false]},
+      {'funcName':'addBuilding','args':['frostiumFurnace']},
     ],
   },
   "shadowCollector": {
@@ -108,7 +108,7 @@ let buildingsData = {
 		"tooltip":"It sucks in the light. (Requires frostium energy)",
     'category':'Shadows',
     'effects':[
-      {'funcName':'addBuilding','args':['wirelessEnergyTransporter']}
+      {'funcName':'addBuilding','args':['wirelessEnergyTransferer']}
     ]
   },
   "spit": {
@@ -375,7 +375,7 @@ let buildingsData = {
     'tooltip':'The pinnacle of energy transfer technology',
     'category':'Energy',
     'effects':[
-      {'funcName':'addBuilding','args':['matterTransporter']}
+      {'funcName':'addSpaceBuilding','args':['matterTransporter']}
     ]
   },
   "matterTransporter":{
@@ -402,10 +402,30 @@ let buildingsData = {
     'tooltip':'Send friendly robots out into space to gather resources.',
     'category':'Shadows',
     'effects':[
-      {'funcName':'addTab','args':['Space Resources','universeStatistics',true]},
+      {'funcName':'addTab','args':['Space Resources','spaceResources',true]},
       {"funcName":"setMessageIfCheck","args":['Maybe if I had some fluid storage I could store more of what this brings back.','notAsteroidMinerMade']},
       {"funcName":"setCheck","args":['notAsteroidMinerMade',false]},
     ]
+  },
+  "pyromeMaterializer":{
+    "type":"building",
+    "cost": {
+      "temperedPyrome":10000
+    },
+    'tooltip':'100% guaranteed to work or your money back.',
+    'category':'Advanced Metal Working',
+    "effects": [
+      {"funcName":"addSpaceBuilding","args":['pyromeInfuser']},
+    ],
+  },
+  "pyromeInfuser":{
+    "type":"building",
+    "cost": {
+      "temperedPyrome":100000,
+      "aeromineGlass":100000,
+    },
+    'tooltip':'Infuse depleted pyrome with way too much energy',
+    'category':'Advanced Metal Working',
   },
   "carbonFactory":{
     "type":"building",
@@ -435,6 +455,9 @@ let buildingsData = {
     },
     'tooltip':'A satellite to collect energy',
     'category':'Energy',
+    'effects':[
+      {'funcName':'addSpaceBuilding','args':['solarPanelSatelliteCluster']}
+    ]
   },
   "solarPanelSatelliteCluster":{
     "type":"building",
@@ -443,19 +466,38 @@ let buildingsData = {
     },
     'tooltip':'A satellite cluster is more efficient',
     'category':'Energy',
+    'effects':[
+      {'funcName':'addSpaceBuilding','args':['solarPanelSatelliteGroup']}
+    ]
   },
   "solarPanelSatelliteGroup":{
     "type":"building",
     "cost": {
-      "solarPanelSatellite":10000,
+      "solarPanelSatelliteCluster":10000,
     },
     'tooltip':'Wholly covering vast areas the sun.',
     'category':'Energy',
+    'effects':[
+      {'funcName':'addSpaceBuilding','args':['dysonSwarm']}
+    ]
   },
   "dysonSwarm":{
     "type":"building",
     "cost": {
       "solarPanelSatelliteGroup":100000,
+    },
+    'tooltip':'Surrounding the sun.',
+    'category':'Energy',
+  },
+  "dysonSphere":{
+    "type":"building",
+    "cost": {
+      "dysonSwarm":100000,
+      "iron":1000000000000000,
+      "copper":1000000000000000,
+      "frostium":1000000000000,
+      "aeromineGlass":1000000000,
+      "emerald":1000000000,
     },
     'tooltip':'Encompassing the sun.',
     'category':'Energy',
