@@ -1,5 +1,5 @@
 class Faction extends Saveable{
-  constructor(name,alignment){
+  constructor(name,alignment,pos){
     super(name)
     if(this.isNotFake()){
       this.name = name
@@ -9,6 +9,7 @@ class Faction extends Saveable{
       this.thoughts = 0
       this.timeToNext = Math.random()*100+150
       this.screenName = factionData[name].screenName
+      this.pos = pos
     }
   }
   tick(tradeHub,app){
@@ -31,7 +32,7 @@ class Faction extends Saveable{
       tradeHub.trades.push(tradesToAdd[i])
     }
     this.timeToNext-=1
-    if(this.timeToNext<=0&&curTrades<=3){
+    if(this.timeToNext<=0&&curTrades<4){
       this.timeToNext = Math.random()*100+150
       tradeHub.trades.push(this.newTrade(app))
     }
@@ -109,10 +110,10 @@ class Faction extends Saveable{
       }
     }
     //calculate amounts of each
-    let amountBuy = options[chosenResourceBuy].tradeDefaultAmount*(Math.random()*0.2+0.9)
+    let amountBuy = options[chosenResourceBuy].tradeDefaultAmount*(Math.random()*0.2+0.9)*app.tradeHub.tradeExpertise
     let timeToDisappear = 1000
-    let amountSell = amountBuy*options[chosenResourceBuy].tradeCost/options[chosenResourceSell].tradeCost*(Math.random()*0.2+0.9)
-    return {time:0,screenName:this.screenName,name:this.name,buying:chosenResourceBuy,selling:chosenResourceSell,timeToDisappear,amountBuy,amountSell}
+    let amountSell = amountBuy*options[chosenResourceBuy].tradeCost/options[chosenResourceSell].tradeCost*(Math.random()*0.2+0.9)*(1+this.thoughts/100)
+    return {pos:this.pos,time:0,screenName:this.screenName,name:this.name,buying:chosenResourceBuy,selling:chosenResourceSell,timeToDisappear,amountBuy,amountSell}
   }
 }
 

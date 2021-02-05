@@ -328,7 +328,7 @@ let parseCode=(code,passedInFuncs={},vars={},functions = {})=>{
           for(let j=i;j<found[0];j++){
             if(j==found[0]-1 && j==i){
               lines.push(code[j].slice(matches[0].length,found[1])+' ')
-            }else if(j==found[0]-1){
+            }else if(j==found[0]){
               lines.push(code[j].slice(0,found[1])+' ')
             }else if(j==i){
               lines.push(code[j].slice(matches[0].length))

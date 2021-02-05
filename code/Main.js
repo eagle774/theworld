@@ -39,6 +39,7 @@ let App = new Vue({
 				if(!Object.keys(this.spaceCategories).includes(this.buildingsList[buildingName].category)){
 					this.$set(this.spaceCategories,this.buildingsList[buildingName].category,true)
 				}
+				this.newSpaceBuildings += 1
 			}
 			this.spaceBuildings=spaceBuildings
 		},
@@ -126,6 +127,31 @@ let App = new Vue({
 				this.errorLog.push('Could not add resource '+resource+' as it is already displayed.')
 			}
 		},
+		addBuilding: function(buildingName) {
+			let buildings = this.buildings
+			let exists=false
+			for(const [key,value] of Object.entries(buildings)){
+				for(let i=0;i<value.length;i++){
+					if(value[i].buildingName==buildingName){
+						exists=true
+					}
+				}
+			}
+			if(!exists){
+				this.newBuildings+=1
+				if(!buildings[this.buildingsList[buildingName].category]){
+					this.$set(this.buildings,this.buildingsList[buildingName].category,[])
+				}
+				buildings[this.buildingsList[buildingName].category].push({
+					displayText:this.resTable[buildingName].buildName,
+					buildingName
+				})
+				if(!Object.keys(this.categories).includes(this.buildingsList[buildingName].category)){
+					this.$set(this.categories,this.buildingsList[buildingName].category,true)
+				}
+			}
+			this.buildings=buildings
+		},
 		//files
 		addFile: function(id, sname) {
 			let files = this.files
@@ -203,31 +229,6 @@ let App = new Vue({
 
 		  this.computerChanged=2
 			return true
-		},
-		addBuilding: function(buildingName) {
-			let buildings = this.buildings
-			let exists=false
-			for(const [key,value] of Object.entries(buildings)){
-				for(let i=0;i<value.length;i++){
-					if(value[i].buildingName==buildingName){
-						exists=true
-					}
-				}
-			}
-			if(!exists){
-				this.newBuildings+=1
-				if(!buildings[this.buildingsList[buildingName].category]){
-					this.$set(this.buildings,this.buildingsList[buildingName].category,[])
-				}
-				buildings[this.buildingsList[buildingName].category].push({
-					displayText:this.resTable[buildingName].buildName,
-					buildingName
-				})
-				if(!Object.keys(this.categories).includes(this.buildingsList[buildingName].category)){
-					this.$set(this.categories,this.buildingsList[buildingName].category,true)
-				}
-			}
-			this.buildings=buildings
 		},
 		newLine: function() {
 			if (this.fileTextContents[this.fileViewed] === undefined || this.tab!='computer') return false;
@@ -438,7 +439,6 @@ let App = new Vue({
 				mark = new Market()
 				mark.setData(save.market)
 				save.market = mark
-				console.log(save.tradeHub)
 				tradeHub = new TradeHub()
 				tradeHub.setData(save.tradeHub)
 				save.tradeHub = tradeHub
@@ -925,7 +925,8 @@ let App = new Vue({
 				this.errorLog.push('Cannot configure resource '+resource+' as it is not in resTable')
 			}
 		},
-		incResSpace:function(res,amount){
+		incResSpace:function(res,amount, multiplier = 1){
+			amount = amount * multiplier
 			if(this.spaceResCounts[res].amount+amount<0){
 				let toReturn = this.spaceResCounts[res].amount
 				this.spaceResCounts[res].amount=0
@@ -1187,96 +1188,10 @@ let App = new Vue({
 				console.timeEnd('machineChecking')
 			}
 		},
-		buildingsAndScripts: function(){
+		jobsAndStuff: function(){
 			if(this.debug){
-				console.time('addingBuildings')
-			}
-			this.newBuildings=0
-			for (const [key, building] of Object.entries(this.buildingsList)) {
-				let available=true
-				for (const [key2, value2] of Object.entries(building['cost'])) {
-					if(!this.resTable[key2]){
-						console.log('Missing res: '+key2)
-					}else{
-						if(this.resTable[key2].amount<value2/2){
-							available=false
-						}
-					}
-				}
-				if(!this.resTable[key]&&this.buildingsList[key].type!='process'){
-					console.log('Missing res: '+key)
-				}else{
-					if(available&&this.buildingsList[key].type=='building'&&!this.resTable[key].locked){
-						this.addBuilding(key)
-					}
-					if(available&&this.buildingsList[key].type=='process'&&key!='hangbucket'){
-						this.addProcess(this.buildingsList[key].buildName,key)
-					}
-					let spaceAvailable=true
-					for (const [key2, value2] of Object.entries(building['cost'])) {
-						if(this.spaceResCounts[key2].amount<value2/2){
-							spaceAvailable=false
-						}
-					}
-					if(spaceAvailable&&this.buildingsList[key].type=='building'&&!this.resTable[key].spaceLocked){
-						this.addSpaceBuilding(key)
-					}
-					if(spaceAvailable&&this.buildingsList[key].type=='process'){
-						this.addSpaceProcess(this.buildingsList[key].buildName,key)
-					}
-				}
-			}
-			if(this.debug){
-				console.timeEnd('addingBuildings')
-			}
-			if(this.errorLog.length>0){
-				this.errorLog=[]
-			}
-			if(this.debug){
-				console.time('runningScripts')
-			}
-			for(const extension of this.unSaveable.extensions){
-				if(this.resTable[extension[2]].amount>0){
-					if(!this.scripts[extension[0]]){
-						this.scripts[extension[0]]={}
-					}
-					scripts = this.scripts[extension[0]]
-					if(!this.multipliers[extension[0]]){
-						this.multipliers[extension[0]]=1
-					}
-					allocated = this.allocateItemsPercent((!extension[4]?this.resTable[extension[2]].amount:this.spaceResCounts[extension[2]].amount)*this.multipliers[extension[0]],scripts)
-					entries = Object.entries(scripts)
-					if(this.debug){
-						console.time(extension[0])
-					}
-					for(let i=0;i<entries.length;i++){
-						if(this.debug){
-							console.time('loading: '+extension[0])
-						}
-						funcs = extension[3](this,allocated[i])
-						if(this.debug){
-							console.timeEnd('loading: '+extension[0])
-						}
-						if(allocated[i]>0){
-							try{
-								parseCode(this.fileTextContents[entries[i][1].fileID].slice(1),{},funcs)
-							}
-							catch(err){
-
-							}
-						}
-					}
-					if(this.debug){
-						console.timeEnd(extension[0])
-					}
-				}
-			}
-			if(this.debug){
-				console.timeEnd('runningScripts')
 				console.time('findingNewJobs')
 			}
-		},
-		jobsAndStuff: function(){
 			let newJobsFound=0
 			let newSpaceJobsFound=0
 			for (const [key, value] of Object.entries(this.jobs)) {
@@ -1337,6 +1252,46 @@ let App = new Vue({
 			}
 			if(this.debug){
 				console.timeEnd('jobAssignment')
+				console.time('addingBuildings')
+			}
+			this.newBuildings=0
+			this.newSpaceBuildings = 0
+			for (const [key, building] of Object.entries(this.buildingsList)) {
+				let available=true
+				for (const [key2, value2] of Object.entries(building['cost'])) {
+					if(!this.resTable[key2]){
+						console.log('Missing res: '+key2)
+					}else{
+						if(this.resTable[key2].amount<value2/2){
+							available=false
+						}
+					}
+				}
+				if(!this.resTable[key]&&this.buildingsList[key].type!='process'){
+					console.log('Missing res: '+key)
+				}else{
+					if(available&&this.buildingsList[key].type=='building'&&!this.resTable[key].locked){
+						this.addBuilding(key)
+					}
+					if(available&&this.buildingsList[key].type=='process'&&key!='hangbucket'){
+						this.addProcess(this.buildingsList[key].buildName,key)
+					}
+					let spaceAvailable=true
+					for (const [key2, value2] of Object.entries(building['cost'])) {
+						if(this.spaceResCounts[key2].amount<value2/2){
+							spaceAvailable=false
+						}
+					}
+					if(spaceAvailable&&this.buildingsList[key].type=='building'&&!this.resTable[key].spaceLocked){
+						this.addSpaceBuilding(key)
+					}
+					if(spaceAvailable&&this.buildingsList[key].type=='process'){
+						this.addSpaceProcess(this.buildingsList[key].buildName,key)
+					}
+				}
+			}
+			if(this.debug){
+				console.timeEnd('addingBuildings')
 				console.time('assortedBitsAndPieces')
 			}
 			let count = 0
@@ -1370,6 +1325,13 @@ let App = new Vue({
 				}
 				this.editTab('main', 'Main ('+this.newBuildings+')')
 			}
+			if(this.newSpaceBuildings!==0){
+				tabToEdit = this.getTab('space')
+				if(tabToEdit.displayText!='Space'){
+					this.newSpaceBuildings -= '-'+tabToEdit.displayText.slice(7,tabToEdit.displayText.length-1)
+				}
+				this.editTab('space', 'Space ('+this.newSpaceBuildings+')')
+			}
 			if(newJobsFound!==0){
 				tabToEdit = this.getTab('jobs')
 				if(tabToEdit.displayText!='Jobs'){
@@ -1386,6 +1348,53 @@ let App = new Vue({
 			}
 			if(this.debug){
 				console.timeEnd('assortedBitsAndPieces')
+			}
+		},
+		runScripts: function(){
+			if(this.errorLog.length>0){
+				this.errorLog=[]
+			}
+			if(this.debug){
+				console.time('runningScripts')
+			}
+			for(const extension of this.unSaveable.extensions){
+				if(this.resTable[extension[2]].amount>0){
+					if(!this.scripts[extension[0]]){
+						this.scripts[extension[0]]={}
+					}
+					scripts = this.scripts[extension[0]]
+					if(!this.multipliers[extension[0]]){
+						this.multipliers[extension[0]]=1
+					}
+					allocated = this.allocateItemsPercent((!extension[4]?this.resTable[extension[2]].amount:this.spaceResCounts[extension[2]].amount)*this.multipliers[extension[0]],scripts)
+					entries = Object.entries(scripts)
+					if(this.debug){
+						console.time(extension[0])
+					}
+					for(let i=0;i<entries.length;i++){
+						if(this.debug){
+							console.time('loading: '+extension[0])
+						}
+						funcs = extension[3](this,allocated[i])
+						if(this.debug){
+							console.timeEnd('loading: '+extension[0])
+						}
+						if(allocated[i]>0){
+							try{
+								parseCode(this.fileTextContents[entries[i][1].fileID].slice(1),{},funcs)
+							}
+							catch(err){
+
+							}
+						}
+					}
+					if(this.debug){
+						console.timeEnd(extension[0])
+					}
+				}
+			}
+			if(this.debug){
+				console.timeEnd('runningScripts')
 			}
 		},
 		filesAndCharts: function(){
@@ -1452,7 +1461,7 @@ let App = new Vue({
 			if(this.spaceResCounts['satellite'].amount>=1&&!this.filesIncludesID('marketreadme')){
 				this.editTab('computer','Computer (1)')
 				this.addTab('Market','market')
-				this.incrementResource('galacticCredits',1000)
+				this.incResSpace('galacticCredits',1000)
 				this.addCustomFile('marketreadme', 'market.doc', 'We have recieved your satellite communication.\
 	\nYour request to have access to our market has been accepted. We have given you a starting fund of one thousand galactic credits. \
 	\nYou will not be given more. We hope that this represents a desire to rejoin our society peacefully.\
@@ -1518,8 +1527,8 @@ let App = new Vue({
 		tick: function() {
 			this.generalTickUtil()
 			this.machinesEverywhere()
-			this.buildingsAndScripts()
 			this.jobsAndStuff()
+			this.runScripts()
 			this.filesAndCharts()
 		},
 		//jobs
@@ -1588,7 +1597,7 @@ let App = new Vue({
 				return false
 			}
 			this.resTable[rocket.name].amount-=number
-			for (const [key, value] of Object.entries(rocket['launchCost'])) {
+			for (const [key, value] of Object.entries(rocket.launchCost)) {
 				this.incrementResource(key,-value*number)
 			}
 			this.message = rocket['launchMessage']
@@ -1679,6 +1688,15 @@ let App = new Vue({
 				this.cargo[item]-=number
 			}
 		},
+		howManyLaunchable:function(rocket){
+			let number = this.resTable[rocket.name].amount
+			let buyable = true
+			let table = this.resTable
+			for (const [key, value] of Object.entries(rocket.launchCost)) {
+				number = Math.floor(Math.min(number, table[key].amount / value))
+			}
+			return number
+		},
 		//space
 		transport:function(res,number,inSpace){
 			let divider = 1
@@ -1728,8 +1746,8 @@ let App = new Vue({
 		},
 		//stocks
 		buyStock:function(amount,type,price){
-			if(amount*price<=this.resTable['galacticCredits'].amount&&amount===Math.round(amount)&&this.stocks[type]+amount>=0){
-				this.resTable['galacticCredits'].amount-=amount*price
+			if(amount*price<=this.spaceResCounts['galacticCredits'].amount&&amount===Math.round(amount)&&this.stocks[type]+amount>=0){
+				this.spaceResCounts['galacticCredits'].amount-=amount*price
 				this.stocks[type]+=amount
 			}
 		},
@@ -1790,8 +1808,8 @@ let App = new Vue({
 		},
 		//trading
 		acceptTrade: function(i){
-			tradeHub.acceptTrade(App,i)
-		}
+			this.tradeHub.acceptTrade(App,i)
+		},
 	},
   computed: {
     resourceProductionChartTemplateDetached: function() {

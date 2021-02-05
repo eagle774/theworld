@@ -48,5 +48,5 @@ universe = new MineV2(['stone','iron','copper','titanium','tungsten','gold'],{
   'copper':100000000000,
   'titanium':100000000000,
   'gold':0,
-  'tungsten':100000000,
+  'tungsten':10000000000,
 })

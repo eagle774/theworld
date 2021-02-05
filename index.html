@@ -28,7 +28,7 @@
         </div>
         <div class='display-left' v-else-if='tab.toLowerCase().includes("market")'>
           <div>
-            {{resTable['galacticCredits'].screenName}}: {{bigNumberHandler(resTable['galacticCredits'].amount,false)}}
+            {{resTable['galacticCredits'].screenName}}: {{bigNumberHandler(spaceResCounts['galacticCredits'].amount,false)}}
           </div>
           <div>
             Net Worth: {{bigNumberHandler(getNetWorth(),false)}}
@@ -86,7 +86,8 @@
               <div v-for='curBuilding in entry[1]' :key= 'curBuilding.displayText'>
                 <div class='outer'>
                   <button type='button' v-if='resTable[curBuilding.buildingName].unique && resTable[curBuilding.buildingName].amount>0' class='btn btn-dark' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
-                  <button type='button' v-else-if='isBuildingBuyable(curBuilding.buildingName)' class='btn btn-success' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) +{{bigNumberHandler(howManyPlease(curBuilding.buildingName,false),true)}} </button>
+                  <button type='button' v-else-if='!resTable[curBuilding.buildingName].unique && isBuildingBuyable(curBuilding.buildingName)' class='btn btn-success' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) +{{bigNumberHandler(howManyPlease(curBuilding.buildingName,false),true)}} </button>
+                  <button type='button' v-else-if='resTable[curBuilding.buildingName].unique && isBuildingBuyable(curBuilding.buildingName)' class='btn btn-success' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) +1 </button>
                   <button type='button' v-else class='btn btn-outline-success' v-on:click='handleBuyBuilding(curBuilding.buildingName)'>{{curBuilding.displayText}} ({{bigNumberHandler(jobCount(curBuilding.buildingName),true)}}) </button>
                   <span class='inner' >
                     Cost: <br />
@@ -154,7 +155,7 @@
             Progress: {{bigNumberHandler(universe.progress,true)}}/10.0M
             <span class='left-side-box'>
               Amount of resources left to gather:
-              <div v-for='(datum,resource) in universe.visible'>
+              <div v-for='(datum,resource) in universe.visible' v-if="unlockedSpaceResources.includes(resource)">
                 {{resTable[resource].screenName}} - {{bigNumberHandler(datum,true)}} left.
               </div>
             </span>
@@ -206,7 +207,7 @@
             </div>
           </span>
           <span v-else-if='tab == "cargoBay"'>
-            <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isCargo})'>
+            <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isCargo && unlockedResources.includes(res)})'>
               <span v-if='unlockedResources.includes(cargoData[0])'>
                 <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(resTable[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
                 <span>{{resTable[cargoData[0]].screenName}} on rocket: {{bigNumberHandler(cargo[cargoData[0]],true)}} </span><br />
@@ -218,8 +219,6 @@
                   <button v-on:click='addToCargo(cargoData[0],100)'>+100</button>
                   <button v-on:click='addToCargo(cargoData[0],1000)'>+1K</button>
                   <button v-on:click='addToCargo(cargoData[0],10000)'>+10K</button>
-                  <button v-on:click='addToCargo(cargoData[0],resTable[cargoData[0]].amount/2)'>+max/2</button>
-                  <button v-on:click='addToCargo(cargoData[0],resTable[cargoData[0]].amount)'>+max</button>
                 </span>
                 <br />
                 <span>Take a(n) {{resTable[cargoData[0]].screenName}} off a rocket
@@ -228,8 +227,6 @@
                   <button v-on:click='removeFromCargo(cargoData[0],100)'>-100</button>
                   <button v-on:click='removeFromCargo(cargoData[0],1000)'>-1K</button>
                   <button v-on:click='removeFromCargo(cargoData[0],10000)'>-10K</button>
-                  <button v-on:click='removeFromCargo(cargoData[0],cargo[cargoData[0]]/2)'>-max/2</button>
-                  <button v-on:click='removeFromCargo(cargoData[0],cargo[cargoData[0]])'>-max</button>
                 </span>
                 <br />
                 <br />
@@ -367,7 +364,9 @@
             </span>
             <span class='right-side-box' v-if='rocketsBought.length>0'>
               <span class='outer' v-for='(rocket,name) in rocketsData' v-if='rocketsBought.includes(name)'>
-                <br><button class='btn btn-outline-success' v-on:click='handleLaunchRocket(rocket)'>
+                <br><button v-if="howManyLaunchable(rocket)>0" class='btn btn-success' v-on:click='handleLaunchRocket(rocket)'>
+                  Launch a {{resTable[name].screenName}} (Max:{{bigNumberHandler(howManyLaunchable(rocket),true)}})
+                </button><button v-else class='btn btn-outline-success' v-on:click='handleLaunchRocket(rocket)'>
                   Launch a {{resTable[name].screenName}}
                 </button>
                 <span class='inner' >Cost: <br />
@@ -478,11 +477,11 @@
               <div style='width:40vw; position:absolute; left:10vw'>
                 <trend
                 v-if='curStock!="marketTotal"'
-                :data="fillToMax(market.stocks[curStock].past,400)"
+                :data="fillToMax(market.stocks[curStock].past)"
                 :gradient="['#6fa8dc', '#42b983', '#2c3e50']">
               </trend><trend
                 v-if='curStock=="marketTotal"'
-                :data="fillToMax(market.allPast,400)"
+                :data="fillToMax(market.allPast)"
                 :gradient="['#6fa8dc', '#42b983', '#2c3e50']">
               </trend></div>
               <div style='top:10vw; width:40vw; position:absolute; left:10vw' v-if='curStock!="marketTotal"'>
@@ -562,6 +561,9 @@
                     </th>
                     <th>
                       Company
+                    </th>
+                    <th>
+                      Accept trade
                     </th>
                   </tr>
                   <tr v-for="(trade,i) in tradeHub.trades">

@@ -202,6 +202,7 @@ let data = {
 	version:'0.5.6',
 	unlockedSpaceResources:["iron","copper","frostium","duranium","steel","compressedIron","tungsten","titanium"],
 	newBuildings:0,
+	newSpaceBuildings:0,
 	customToBuy:0,
 	unlockedSpaceFluids:[],
 	curRes:'wood',
@@ -743,7 +744,7 @@ const construct = () => {
 			.hasCSS({'color':'lightblue'})
 			.fluidFormHasAlloyerRecipe({
 				water:75,
-				'moltenSteel':5,
+				moltenSteel:5,
 				energy:50
 			},10)
 			.finalize()
@@ -771,19 +772,19 @@ const construct = () => {
 			.configure('storage', 10)
 			.isTransportable(10000)
 			.hasCSS({'color':'red'})
-			.setTradeable(1,1000,1000)
+			.setTradeable(1,100,1000)
 			.finalize()
 		new Res('aerome', 'Aerome')
 			.configure('storage', 10)
 			.isTransportable(10000)
-			.setTradeable(1,1000,1000)
 			.hasCSS({'color':'black','text-shadow':'#f0ff25 0px 0px 2px'})
+			.setTradeable(1,100,1000)
 			.finalize()
 		new Res('emerald', 'Emerald')
 			.configure('storage', 10)
 			.isTransportable(10000)
+			.setTradeable(1,100,1000)
 			.hasCSS({'color':'lime'})
-			.setTradeable(1,1000,1000)
 			.finalize()
 		new Res('pyrome', 'Pyrome')
 			.configure('storage', 10)
@@ -1331,7 +1332,7 @@ const construct = () => {
 			})
 			.configure('buildName','Make a Pressurizer')
 			.finalize()
-		new Res('spacePressurizer', 'Pressurizer')
+		new Res('spacePressurizer', 'Space Pressurizer')
 			.isBuildable()
 			.configure('locked',true)
 			.isSpaceLocked()
@@ -1341,7 +1342,7 @@ const construct = () => {
 				iron:10,
 				energy:30,
 			},{
-				steel:0.1,
+				steel:10,
 			})
 			.configure('buildName','Make an iron-carbon Pressurizer')
 			.finalize()
@@ -1507,6 +1508,7 @@ const construct = () => {
 			.configure('storage',0)
 			.finalize()
 	})()
+	//godmode go brr
 	if(godMode){
 		data.resTable['steam'].amount=199
 		data.resTable['giftGod'].amount=1

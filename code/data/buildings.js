@@ -121,7 +121,7 @@ let buildingsData = {
       {"funcName":"setCheck","args":['spitMade',true]}
     ],
 		"tooltip":"What's the bucket for?",
-    'category':'Utility'
+    'category':'Special'
   },
   "hangbucket": {
     "type":"process",
@@ -237,7 +237,7 @@ let buildingsData = {
       "steel":80000000,
       "tungsten":150000000,
       "duranium":1000000,
-      "frostiumCore":1000
+      "frostiumCore":100000
     },
     "effects":[
       {'funcName':'addTab','args':['Rocket Launching','rocketSilo',true]},
@@ -747,7 +747,7 @@ let buildingsData = {
       'duranium':10000,
       "steel":100000,
       "iron":10000,
-      "rubyLaserLens":100,
+      "rubyLaserLens":1,
     },
     'tooltip':'Powerful and deadly',
     'category':'Space Rocket Part',
@@ -758,8 +758,8 @@ let buildingsData = {
       'duranium':10000,
       "steel":100000,
       "iron":100000,
-      "rubyLaserLens":1000,
-      "emeraldLaserLens":1000,
+      "rubyLaserLens":10,
+      "emeraldLaserLens":10,
     },
     'tooltip':'Powerfuler and deadlyer',
     'category':'Space Rocket Part',
