@@ -1,18 +1,24 @@
-Make pyrome easier to get. - done?? Maybe??
-Show time remaining until maybe
-Show negative per tick.
-Pressurizer mismatch??? unclear
-Fix buy custom
-Fix tabs on files
-Disable extra enter for if statements done??
-Look into job page ordering - why
-Rejig pholtovaic cells pricing --------- for the hundredth time
-Buff every way of getting resources in space.
-Up iron and copper space resource amounts
-Dramatically reduce early stage 2 time spent
-Cargo bay infinite storage exploit fix
-
 Plans for stage 2 finishing
 Create some buildings costing galactic credits, because recycling systems are broken.
 Fix the market always getting way too high by the time it is unlocked
 Diplomacy/trade system
+
+double check rocket silo prices
+Dump excess cargo if storage full.
+matter transported can sometimes send non whole numbers - fix that
+fix auto re add trade in market (due to trades expiring not resetting counter)
+much larger bonuses for tiering up solar panels in space
+
+update the dumb code parsing system.
+
+
+pyrome needs to be less reliant on diomine
+
+
+Thoughts on things left to add for stage2:
+Possibly add robot making factories, requiring nanobots.
+  takes a huge drain on basic metals and a moderate drain on germanium, but when turned off the robots will produce very large amounts of resource.
+After buying enough combat ships unlock the wellspring and wellspring miners, an endless source of frostium
+Reasonably price carbon factories and nanobots
+Nuclear reactor - require germanium carbon nanotubes and metals. Consumes residual burning core to produce absurd amounts of energy (20B energy per burning core.)
+Shadow trawlers - spacecraft requiring high tier pieces and in exchange give very large amounts of shadow.

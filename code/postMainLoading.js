@@ -42,11 +42,13 @@ addKeyBinding((event) => {
 })
 addKeyBinding((event) => {
   if (event.key === 'Enter') {
-    //event.preventDefault()
+    if(App.tab=='computer'){
+      event.preventDefault()
+      return App.newLine()
+    }
     if(Math.random()<0.00002){
       alert('I\'m temmie')
     }
-    return App.newLine()
   }
   return false
 })
@@ -55,19 +57,20 @@ addKeyBinding((event) => {
   if (event.key === 'Backspace') return App.deletion(-1,event)
 })
 addKeyBinding((event) => {
-  if (event.key === 'ArrowRight' && App.tabPos<Math.ceil(App.tabs.length/6)-1){
+  if (event.key === 'ArrowRight' && App.tabPos<Math.ceil(App.tabs.length/6)-1&&!App.typing){
     App.tabPos+=1
     return true
   }
 })
 addKeyBinding((event) => {
-  if (event.key === 'ArrowLeft' && App.tabPos>=1){
+  if (event.key === 'ArrowLeft' && App.tabPos>=1&&!App.typing){
     App.tabPos-=1
     return true
   }
 })
 addKeyBinding((event)=>{
-  if(Number(event.key)&&event.key!=='0'){
+  if(Number(event.key)&&event.key!=='0'&&!App.typing){
+    console.log(App.typing)
     if(App.tabs[App.tabPos*6-1+Number(event.key)]){
       return App.setTab(App.tabs[App.tabPos*6-1+Number(event.key)].tab)
     }

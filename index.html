@@ -15,7 +15,7 @@
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id='app' tabindex='0'>
-      <span v-if="!naughty">
+      <span v-if="!naughty&&!stage1Complete">
         <button class='btn btn-outline-success' v-if='tabPos>0' v-on:click='tabPos-=1'>(--</button>
         <button class='btn btn-outline-danger' v-else-if='tabs.length>6'>(--</button>
         <span v-for='curTab in tabs.slice(tabPos*6,tabPos*6+6)' :key=curTab.tab v-on:click='setTab(curTab.tab)'><button class='btn btn-outline-danger' v-if='curTab.tab == tab'>{{curTab.displayText}}</button><button class='btn btn-outline-success' v-else>{{curTab.displayText}}</button></span>
@@ -46,14 +46,14 @@
         <span :style = 'messageCSS'>
           <div v-for='line in message.split("\n")' :key='line'>{{line}}</div>
         </span>
-        <div style="overflow:auto; height:88vh">
+        <div>
           <span v-if = "buyingTabs.includes(tab)">
             <span class='list-item top-part'>
               <span v-for='amountToBuy in buyList'>
                 <button v-on:click = 'toBuy = amountToBuy' v-if='toBuy!=amountToBuy' class='list-group-item list-group-item-action small-text'>Buy {{amountToBuy}}</button>
                 <button v-else class='list-group-item active list-group-item-action small-text'>Buy {{amountToBuy}}</button>
               </span>
-              <input style='width:84px' type='number' id="customBuyVal" v-model.number="customToBuy">
+              <input style='width:84px' type='number' id="customBuyVal" v-model.number="customToBuy" v-on:focus="typing = true" v-on:blur="typing = false">
             </span>
           </span>
           <span v-if='tab == "main"'>
@@ -152,7 +152,7 @@
           </span>
           <span v-else-if='tab == "spaceResources"'>
             <br>
-            Progress: {{bigNumberHandler(universe.progress,true)}}/10.0M
+            Progress: {{bigNumberHandler(universe.progress,true)}}/100K
             <span class='left-side-box'>
               Amount of resources left to gather:
               <div v-for='(datum,resource) in universe.visible' v-if="unlockedSpaceResources.includes(resource)">
@@ -207,7 +207,7 @@
             </div>
           </span>
           <span v-else-if='tab == "cargoBay"'>
-            <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isCargo && unlockedResources.includes(res)})'>
+            <div v-for='(cargoData) in resTableFilterBy((res)=>{return res.isCargo})'>
               <span v-if='unlockedResources.includes(cargoData[0])'>
                 <span>{{resTable[cargoData[0]].screenName}}: {{bigNumberHandler(resTable[cargoData[0]].amount,resTable[cargoData[0]].isBuildable)}} </span><br>
                 <span>{{resTable[cargoData[0]].screenName}} on rocket: {{bigNumberHandler(cargo[cargoData[0]],true)}} </span><br />
@@ -488,7 +488,7 @@
                 Current Price: {{bigNumberHandler(market.stocks[curStock].current,true)}} galactic credits
                 <button v-on:click='buyStock(stockBuyCount,market.stocks[curStock].name,market.stocks[curStock].current)'>Buy stock</button>
                 <button v-on:click='buyStock(-stockBuyCount,market.stocks[curStock].name,market.stocks[curStock].current)'>Sell stock</button>
-                <input type='number' v-model.number="stockBuyCount">
+                <input type='number' v-model.number="stockBuyCount"  v-on:focus="typing = true" v-on:blur="typing = false">
               </div>
               <div style='top:10vw; width:40vw; position:absolute; left:10vw' v-if='curStock=="marketTotal"'>
                 Market Total Price: {{bigNumberHandler(market.cur,true)}} galactic credits
@@ -536,6 +536,16 @@
               <br />
             </div>
           </span>
+          <span v-else-if='tab == "informants"'>
+            <div>Trade expertise: {{bigNumberHandler(tradeHub.tradeExpertise)}}</div>
+            <br />
+            <br />
+            <div v-for='(faction) in tradeHub.factions'>
+              <span>{{faction.screenName}} thoughts: {{bigNumberHandler(faction.thoughts)}} </span><br>
+              <br />
+              <br />
+            </div>
+          </span>
           <span v-else-if='tab == "oracle"'>
             <button v-on:click='speaketherSpeakether()'>Speak to the Oracle of Sigmoidia</button>
           </span>
@@ -543,6 +553,7 @@
             <div class = "tradeStatusBox">
               <div v-for="trade in pastTradeStatuses">{{trade}}</div>
             </div>
+            <button style="position:absolute;top:35vh;left:47vw" class = "btn btn-success"v-if="godMode" v-on:click="rerollTrades()">Reroll trades</button>
             <span class="tradeTableContainer">
               <table>
                 <tbody>
@@ -566,18 +577,18 @@
                       Accept trade
                     </th>
                   </tr>
-                  <tr v-for="(trade,i) in tradeHub.trades">
+                  <tr v-for="(trade,i) in tradeHub.trades" v-bind:style="trade.blackMarket?{'backgroundColor':'black',color:'white'}:{}">
                     <td v-bind:style='resTable[trade.buying].specialCSS'>
                       {{resTable[trade.buying].screenName}}
                     </td>
                     <td v-bind:style='resTable[trade.buying].specialCSS'>
-                      {{bigNumberHandler(trade.amountBuy,false)}}
+                      {{bigNumberHandler(trade.amountBuy,true)}}
                     </td>
                     <td v-bind:style='resTable[trade.selling].specialCSS'>
                       {{resTable[trade.selling].screenName}}
                     </td>
                     <td v-bind:style='resTable[trade.selling].specialCSS'>
-                      {{bigNumberHandler(trade.amountSell,false)}}
+                      {{bigNumberHandler(trade.amountSell,true)}}
                     </td>
                     <td>
                       {{trade.screenName}}
@@ -595,8 +606,12 @@
           </span>
         </div>
       </span>
-      <span v-else>
-        Stop hacking my game.
+      <span v-else-if="stage1Complete" class = "finishMessage">
+        Congratulations on beating the game.
+        Your time is {{Math.floor(finishTickCount/36000)}}h, {{Math.floor((finishTickCount%36000)/600)}}m, {{Math.floor((finishTickCount%600)/10)}}s.
+        More may be added later.
+        <div style="display: none;">In fact it already has been. Just collect gold in stage 1 and this message won't show up and you can continue.</div><br>
+        <button class='btn btn-outline-warning'  v-on:click='clearGame()'>Restart the game</button>
       </span>
 	  </div>
   <script src='code/data/buildings.js'></script>

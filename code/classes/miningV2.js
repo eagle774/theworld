@@ -17,9 +17,9 @@ class MineV2 extends Saveable{
   }
   incProgress(amount){
     this.progress+=amount
-    if(this.progress>1e6){
-      this.explore(Math.floor(this.progress/1e6))
-      this.progress%=1e6
+    if(this.progress>=1e5){
+      this.explore(Math.floor(this.progress/1e5))
+      this.progress%=1e5
     }
   }
   explore(size){

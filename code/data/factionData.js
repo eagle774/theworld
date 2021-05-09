@@ -31,4 +31,4 @@ const factionData = {
     screenName:"Solar Solutions",
   }
 }
-alignmentList = [-50,-40,-10,10,40,50]
+alignmentList = [-50,-40,-5,5,40,50]

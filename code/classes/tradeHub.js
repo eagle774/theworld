@@ -22,12 +22,39 @@ class TradeHub extends Saveable{
     if(app.spaceResCounts[trade.buying].amount>=trade.amountBuy){
       app.incResSpace(trade.buying,-trade.amountBuy)
       app.incResSpace(trade.selling,trade.amountSell)
+      app.addSpaceResource(trade.selling,true)
       this.trades.splice(tradePos,1)
-      app.pastTradeStatuses.push("Sucessfully accepted trade with "+factionData[trade.name].screenName+
-      ". You gained "+bigNumberHandler(trade.amountSell)+" "+app.resTable[trade.selling].screenName+" and lost "
-      +bigNumberHandler(trade.amountBuy)+" "+app.resTable[trade.buying].screenName+".")
+      app.pastTradeStatuses.push("Successfully accepted trade with "+factionData[trade.name].screenName+
+      ". You gained "+bigNumberHandler(trade.amountSell,true)+" "+app.resTable[trade.selling].screenName+" and lost "
+      +bigNumberHandler(trade.amountBuy,true)+" "+app.resTable[trade.buying].screenName+".")
       this.tradeExpertise+=0.01
-      this.factions[trade.pos].thoughts+=1
+      let alignment = this.factions[trade.pos].alignment
+      let sign = alignment>=0?'+':'-'
+      for(let i=0;i<this.factions.length;i++){
+        let other = this.factions[i]
+        if(Math.abs(alignment)<=10){
+          if(Math.abs(other.alignment)<=10){
+            //1.25 each
+            other.thoughts += Math.abs(other.alignment)*-1.5/10+2
+          }else{
+            //linear relation where 45 gives -0.625
+            other.thoughts -= 3/280*(Math.abs(other.alignment)-10)+0.25
+          }
+        }else{
+          if(Math.abs(other.alignment)<=10){
+            //0.625 each
+            other.thoughts -= Math.abs(other.alignment)*-1.5/20+1
+          }else if((sign=='-' && other.alignment<-10) || (sign=='+' && other.alignment>10)){
+            //linear relation where 45 gives 1.25
+            other.thoughts += (1/35*(Math.abs(other.alignment)-10)+0.25)
+            //correct sign
+          }else if((sign=='+' && other.alignment<-10) || (sign=='-' && other.alignment>10)){
+            //linear relation where 45 gives -0.625
+            other.thoughts -= (3/280*(Math.abs(other.alignment)-10)+0.25)
+            //correct sign
+          }
+        }
+      }
     }else{
       app.pastTradeStatuses.push("You do not have enough resources to complete that trade.")
       //because why not - go crazy

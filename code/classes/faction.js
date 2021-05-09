@@ -33,11 +33,10 @@ class Faction extends Saveable{
     }
     this.timeToNext-=1
     if(this.timeToNext<=0&&curTrades<4){
-      this.timeToNext = Math.random()*100+150
       tradeHub.trades.push(this.newTrade(app))
     }
   }
-  newTrade(app){
+  newTrade(app,manual = false){
     let options = reconstructDict(app.resTableFilterBy((resource)=>{
       return resource.tradeable
     }))
@@ -47,21 +46,18 @@ class Faction extends Saveable{
       //calculate resource to buy
       let totalweight = 0
       for(const [key,value] of Object.entries(options)){
-        if(!app.unlockedSpaceResources.includes(key)&&key!=="galacticCredits"){
-          continue
-        }
         if(!this.buys[key]){
           totalweight+=value.tradeWeight
         }else if(this.buys[key].thoughts == undefined || this.thoughts>this.buys[key].thoughts){
           totalweight+=this.buys[key].weight
         }
       }
+      if(manual){
+        console.log(totalweight)
+      }
       let random=Math.random()*totalweight
       let prevWeight=0
       for(const [key,value] of Object.entries(options)){
-        if(!app.unlockedSpaceResources.includes(key)&&key!=="galacticCredits"){
-          continue
-        }
         if(!this.buys[key]){
           prevWeight+=value.tradeWeight
         }else if(this.buys[key].thoughts == undefined || this.thoughts>this.buys[key].thoughts){
@@ -78,9 +74,6 @@ class Faction extends Saveable{
     //calculate resource to sell
     let totalweight = 0
     for(const [key,value] of Object.entries(options)){
-      if(!app.unlockedSpaceResources.includes(key)&&key!=="galacticCredits"){
-        continue
-      }
       if(chosenResourceBuy==key){
         continue
       }
@@ -93,9 +86,6 @@ class Faction extends Saveable{
     let random=Math.random()*totalweight
     let prevWeight=0
     for(const [key,value] of Object.entries(options)){
-      if(!app.unlockedSpaceResources.includes(key)&&key!=="galacticCredits"){
-        continue
-      }
       if(chosenResourceBuy==key){
         continue
       }
@@ -111,9 +101,23 @@ class Faction extends Saveable{
     }
     //calculate amounts of each
     let amountBuy = options[chosenResourceBuy].tradeDefaultAmount*(Math.random()*0.2+0.9)*app.tradeHub.tradeExpertise
+    amountBuy = Math.round(amountBuy)
     let timeToDisappear = 1000
-    let amountSell = amountBuy*options[chosenResourceBuy].tradeCost/options[chosenResourceSell].tradeCost*(Math.random()*0.2+0.9)*(1+this.thoughts/100)
-    return {pos:this.pos,time:0,screenName:this.screenName,name:this.name,buying:chosenResourceBuy,selling:chosenResourceSell,timeToDisappear,amountBuy,amountSell}
+    let amountSell
+    if(this.thoughts>0){
+      amountSell = amountBuy*options[chosenResourceBuy].tradeCost/options[chosenResourceSell].tradeCost*(Math.random()*0.2+0.9)*(1+(this.thoughts/100))
+    }else{
+      amountSell = amountBuy*options[chosenResourceBuy].tradeCost/options[chosenResourceSell].tradeCost*(Math.random()*0.2+0.9)*(0.99**Math.abs(this.thoughts))
+    }
+    amountSell = Math.ceil(amountSell)
+    let blackMarket = false
+    if(app.resTable[chosenResourceBuy].blackMarketOnly || app.resTable[chosenResourceSell].blackMarketOnly || Math.random()<0.01){
+      blackMarket = true
+      amountBuy*=10
+      amountSell*=10
+    }
+    this.timeToNext = Math.random()*100+150
+    return {blackMarket,pos:this.pos,time:0,screenName:blackMarket?'':this.screenName,name:this.name,buying:chosenResourceBuy,selling:chosenResourceSell,timeToDisappear,amountBuy,amountSell}
   }
 }
 

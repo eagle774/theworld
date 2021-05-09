@@ -382,13 +382,24 @@ let App = new Vue({
 					save[key]=value
 				}
 			}
+			save = JSON.parse(JSON.stringify(save))
+			for(const [key,value] of Object.entries(save.resTable)){
+				if(value.storage==null){
+					value.storage=-1
+				}
+			}
 			for(const [key,value] of Object.entries(save.resTable)){
 				if(value.storage==Infinity){
 					value.storage=-1
 				}
+				value.pastPerTick = [0]
+				value.pastAmount = [0]
+				value.tempPastAmount = [0]
+				value.tempPastPerTick = [0]
+				save.spaceResCounts[key].pastPerTick = [0]
+				save.spaceResCounts[key].tempPastPerTick = [0]
 			}
 			localStorage['gameSave']=JSON.stringify(save)
-			this.loadGame()
 			return true
 		},
 		loadGame: function(playerMade){
@@ -645,6 +656,9 @@ let App = new Vue({
 			if(tab=='spaceJobs'){
 				this.editTab('spaceJobs','Space Jobs')
 			}
+			if(tab=='space'){
+				this.editTab('space','Space')
+			}
 		},
 		setCheck: function(check,value){
 			this.checks[check]=value
@@ -701,7 +715,7 @@ let App = new Vue({
 				this.addVisibleResource('computerDisk')
 				this.addVisibleResource('computer')
 				this.incrementResource('computerDisk', 1)
-				this.configureResource('barns', 'locked', false)
+				this.configureResource('barn', 'locked', false)
 				this.configureResource('incendinaryPile', 'locked', false)
 				this.configureButton(1, 'displayText', 'Explore (Locked)')
 				this.configureButton(1, 'ready', false)
@@ -1205,8 +1219,6 @@ let App = new Vue({
 						}
 					}
 				}
-			}
-			for (const [key, value] of Object.entries(this.jobs)) {
 				if(this.unlockedSpaceResources.includes(key)){
 					for(newJob of value){
 						if((!this.machineStates[newJob.job] ||
@@ -1224,31 +1236,27 @@ let App = new Vue({
 			}
 			for(const [name,jobsList] of Object.entries(this.jobs)){
 				let jobsFound=this.resTableFilterBy((res)=>{return res.isJobOf==name})
+				let spaceJobsFound=this.resTableFilterBy((res)=>{return res.isJobOf==name})
 				let relevantJobsFound={}
+				let spaceRelevantJobsFound={}
 				for(let i=0;i<jobsFound.length;i++){
 					relevantJobsFound[i]=jobsFound[i][1]
 				}
+				for(let i=0;i<spaceJobsFound.length;i++){
+					spaceRelevantJobsFound[i]=this.spaceResCounts[jobsFound[i][0]]
+				}
 				let total = this.jobCount(name)
-				let allocated = this.allocateItemsPercent(this.jobCount(name),relevantJobsFound)
+				let spaceTotal = this.spaceJobCount(name)
+				let allocated = this.allocateItemsPercent(total,relevantJobsFound)
+				let spaceAllocated = this.allocateItemsPercent(spaceTotal,spaceRelevantJobsFound)
 				for(let i=0;i<jobsFound.length;i++){
 					this.resTable[jobsFound[i][0]].amount=allocated[i]
 					total-=allocated[i]
+					this.spaceResCounts[jobsFound[i][0]].amount=spaceAllocated[i]
+					spaceTotal-=spaceAllocated[i]
 				}
 				this.resTable[name].amount=total
-			}
-			for(const [name,jobsList] of Object.entries(this.jobs)){
-				let jobsFound=this.resTableFilterBy((res)=>{return res.isJobOf==name})
-				let relevantJobsFound={}
-				for(let i=0;i<jobsFound.length;i++){
-					relevantJobsFound[i]=this.spaceResCounts[jobsFound[i][0]]
-				}
-				let total = this.spaceJobCount(name)
-				let allocated = this.allocateItemsPercent(total,relevantJobsFound)
-				for(let i=0;i<jobsFound.length;i++){
-					this.spaceResCounts[jobsFound[i][0]].amount=allocated[i]
-					total-=allocated[i]
-				}
-				this.spaceResCounts[name].amount=total
+				this.spaceResCounts[name].amount=spaceTotal
 			}
 			if(this.debug){
 				console.timeEnd('jobAssignment')
@@ -1311,35 +1319,35 @@ let App = new Vue({
 					}
 				}
 			}
-			if(count!==0){
+			if(count!==0&&app.tab!='adaptation'){
 				tabToEdit = this.getTab('adaptation')
 				if(tabToEdit.displayText!='Adaptations'){
 					count -= '-'+tabToEdit.displayText.slice(13,tabToEdit.displayText.length-1)
 				}
 				this.editTab('adaptation', 'Adaptations ('+count+')')
 			}
-			if(this.newBuildings!==0){
+			if(this.newBuildings!==0&&app.tab!='main'){
 				tabToEdit = this.getTab('main')
 				if(tabToEdit.displayText!='Main'){
 					this.newBuildings -= '-'+tabToEdit.displayText.slice(6,tabToEdit.displayText.length-1)
 				}
 				this.editTab('main', 'Main ('+this.newBuildings+')')
 			}
-			if(this.newSpaceBuildings!==0){
+			if(this.newSpaceBuildings!==0&&app.tab!='space'){
 				tabToEdit = this.getTab('space')
 				if(tabToEdit.displayText!='Space'){
 					this.newSpaceBuildings -= '-'+tabToEdit.displayText.slice(7,tabToEdit.displayText.length-1)
 				}
 				this.editTab('space', 'Space ('+this.newSpaceBuildings+')')
 			}
-			if(newJobsFound!==0){
+			if(newJobsFound!==0&&app.tab!='jobs'){
 				tabToEdit = this.getTab('jobs')
 				if(tabToEdit.displayText!='Jobs'){
 					newJobsFound -= '-'+tabToEdit.displayText.slice(6,tabToEdit.displayText.length-1)
 				}
 				this.editTab('jobs', 'Jobs ('+newJobsFound+')')
 			}
-			if(newSpaceJobsFound!==0){
+			if(newSpaceJobsFound!==0&&app.tab!='spaceJobs'){
 				tabToEdit = this.getTab('spaceJobs')
 				if(tabToEdit.displayText!='Space Jobs'){
 					newSpaceJobsFound -= '-'+tabToEdit.displayText.slice(12,tabToEdit.displayText.length-1)
@@ -1432,22 +1440,20 @@ let App = new Vue({
 			if(this.resTable['assembler'].amount>=1&&!this.filesIncludesID('assemblerreadme')){
 				this.editTab('computer','Computer (1)')
 				this.incrementResource('galacticCredits',1000)
-				this.addCustomFile('assemblerreadme', 'assembler.doc', ' The assembler\'s file extension is .asmblr, and it has two main commands.\n \
-	The first command is assembler.constructBuilding, which takes in the name of the building(all lowercase and hyphenated), and how many to build per tick.\n \
-	The second is isBuildingBuyable, and takes in two arguments, name and how many per tick.\n \
-	if(assembler.isBuildingBuyable(\'barn\',11)){\n \
-	assembler.constructBuilding(\'barn\',1)\n \
-	\n \
-	} purchases one barn a tick, but always leaves you with at least three hundred wood.\n \
-	To check multiple conditions, use && to mean and. For example:\n \
-	if(assembler.isBuildingBuyable(\'barn\',11)&&assembler.isBuildingBuyable(\'stoneFurnace\',11)){\n \
-	assembler.constructBuilding(\'barn\',1)\n \
-	assembler.constructBuilding(\'stoneFurnace\',1)\n \
-	\n \
-	} \n \
-	This example buys one barn and one furnace only if oyu can buy both simultaneously. \n \
-	The script will require two assemblers to run, because two buildings are being built.\n \
-	In general scripts require assemblers equal to the maximum amount of buildings being bought to run.', 'doc')
+				this.addCustomFile('assemblerreadme', 'assembler.doc', ' The assembler\'s file extension is .asmblr, and it has two main commands.\
+\nThe first command is assembler.constructBuilding, which takes in the name of the building(in camelCase), and how many to build per tick.\
+\nThe second is isBuildingBuyable, and takes in two arguments, name and how many per tick.\
+\nif(assembler.isBuildingBuyable(\'barn\',11)){\
+\nassembler.constructBuilding(\'barn\',1)\
+\n} purchases one barn a tick, but always leaves you with at least three hundred wood.\
+\nTo check multiple conditions, use && to mean and. For example:\
+\nif(assembler.isBuildingBuyable(\'barn\',11)&&assembler.isBuildingBuyable(\'stoneFurnace\',11)){\
+\nassembler.constructBuilding(\'barn\',1)\
+\nassembler.constructBuilding(\'stoneFurnace\',1)\
+\n}\
+\nThis example buys one barn and one furnace only if oyu can buy both simultaneously.\
+\nThe script will require two assemblers to run, because two buildings are being built.\
+\nIn general scripts require assemblers equal to the maximum amount of buildings being bought to run.', 'doc')
 			}
 			if(this.unlockedResources.includes('leoIII')&&!this.filesIncludesID('cargoreadme')){
 				this.editTab('computer','Computer (1)')
@@ -1461,10 +1467,13 @@ let App = new Vue({
 			if(this.spaceResCounts['satellite'].amount>=1&&!this.filesIncludesID('marketreadme')){
 				this.editTab('computer','Computer (1)')
 				this.addTab('Market','market')
+				this.addTab('Trading','tradeSpace')
 				this.incResSpace('galacticCredits',1000)
 				this.addCustomFile('marketreadme', 'market.doc', 'We have recieved your satellite communication.\
-	\nYour request to have access to our market has been accepted. We have given you a starting fund of one thousand galactic credits. \
+	\nYour request to have access to our stock market has been accepted. We have given you a starting fund of one thousand galactic credits. \
 	\nYou will not be given more. We hope that this represents a desire to rejoin our society peacefully.\
+	\nIn addition you have also been given access to our trading systems to trade with a few select companies.\
+	\nPlease try to please them, though if they refuse to trade with you in the end that is not our problem.\
 	\nYour race\'s fate hangs on your head, and if you do not conform, we will not hesitate to exterminate you.\
 	\n-The Galactic Council', 'doc')
 			}
@@ -1605,6 +1614,9 @@ let App = new Vue({
 				this.launchedRockets.push(rocket.name)
 			}
 			for(const [key,value] of Object.entries(this.cargo)){
+				if(value==0){
+					continue
+				}
 				this.cargo[key] -= value
 				this.incResSpace(key,value)
 				this.addToCargo(key,value)
@@ -1613,6 +1625,8 @@ let App = new Vue({
 				}
 			}
 			if(rocket.height>=2000000&&!this.getTab('space')){
+				this.stage1Complete = true
+				this.finishTickCount= this.tickCount
 				this.addTab('Space','space')
 				this.addTab('Space Jobs','spaceJobs')
 			}
@@ -1675,8 +1689,13 @@ let App = new Vue({
 			}
 		},
 		addToCargo:function(item,number){
+			let totalWeight = 0
+			for(const[key,value] of Object.entries(this.cargo)){
+				totalWeight+=this.resTable[key].cargoStuff.weight*value
+			}
 			number = Math.round(number)
 			number = Math.min(number,this.resTable[item].amount)
+			number = Math.min(number,(100000-totalWeight)/this.resTable[item].cargoStuff.weight)
 			if(this.incrementResourceByHand(item,-number)){
 				this.cargo[item]+=number
 			}
@@ -1684,9 +1703,8 @@ let App = new Vue({
 		removeFromCargo:function(item,number){
 			number = Math.round(number)
 			number = Math.min(number,this.cargo[item])
-			if(this.incrementResourceByHand(item,number)){
-				this.cargo[item]-=number
-			}
+			this.incrementResourceByHand(item,number)
+			this.cargo[item]-=number
 		},
 		howManyLaunchable:function(rocket){
 			let number = this.resTable[rocket.name].amount
@@ -1720,6 +1738,7 @@ let App = new Vue({
 					number = Math.min(number,this.resTable[res].storage-this.resTable[res].amount)
 				}
 				number/=divider
+				number = Math.floor(number)
 				if (number!=0) {
 					for (const [key, value] of Object.entries(cost)) {
 						table[key].amount -= number * value
@@ -1752,7 +1771,7 @@ let App = new Vue({
 			}
 		},
 		getNetWorth:function(){
-			let netWorth = this.resTable['galacticCredits'].amount
+			let netWorth = this.spaceResCounts['galacticCredits'].amount
 			for(let i=0;i<this.market.stocks.length;i++){
 				netWorth+=this.market.stocks[i].current*this.stocks[this.market.stocks[i].name]
 			}
@@ -1809,6 +1828,11 @@ let App = new Vue({
 		//trading
 		acceptTrade: function(i){
 			this.tradeHub.acceptTrade(App,i)
+		},
+		rerollTrades: function(){
+			for(let i=0;i<this.tradeHub.trades.length;i++){
+				this.tradeHub.trades[i].timeToDisappear = -1
+			}
 		},
 	},
   computed: {

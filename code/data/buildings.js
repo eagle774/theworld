@@ -31,7 +31,7 @@ let buildingsData = {
 		"tooltip":"Full of holes.",
     'category':'Utility'
   },
-  "barns": {
+  "barn": {
     "type":"building",
     "cost": {
       "wood":30
@@ -48,6 +48,7 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['stone','storage',100]},
       {"funcName":"incrementResourceSpecial","args":['steel','storage',5]},
       {"funcName":"incrementResourceSpecial","args":['coal','storage',200]},
+      {"funcName":"incrementResourceSpecial","args":['germanium','storage',1]},
       {"funcName":"incrementResourceSpecial","args":['ironOre','storage',100]},
       {"funcName":"incrementResourceSpecial","args":['goldOre','storage',1]},
       {"funcName":"incrementResourceSpecial","args":['tungstenOre','storage',5]},
@@ -237,7 +238,7 @@ let buildingsData = {
       "steel":80000000,
       "tungsten":150000000,
       "duranium":1000000,
-      "frostiumCore":100000
+      "frostiumCore":50000
     },
     "effects":[
       {'funcName':'addTab','args':['Rocket Launching','rocketSilo',true]},
@@ -281,6 +282,7 @@ let buildingsData = {
         {'funcName':'incResSpace','args':['fluidStorage',10000]},
       ]]},
       {'funcName':'updateFluids','args':[false]},
+      {'funcName':'addBuilding','args':['fluidStorageTank']},
     ],
     'category':'Fluid Handling',
   },
@@ -302,6 +304,7 @@ let buildingsData = {
         {'funcName':'incResSpace','args':['fluidStorage',10000]},
       ]]},
       {'funcName':'updateFluids','args':[false]},
+      {'funcName':'addBuilding','args':['fluidStorageTank']},
     ],
     'category':'Fluid Handling',
   },
@@ -326,6 +329,22 @@ let buildingsData = {
       {'funcName':'onlyRunInSpace','args':[[
         {'funcName':'addTab','args':['Space Fluids','fluidSpace',true]},
         {'funcName':'incResSpace','args':['fluidStorage',10000]},
+      ]]},
+      {'funcName':'updateFluids','args':[false]},
+    ],
+    'category':'Fluid Handling',
+  },
+  "fluidStorageTank": {
+    "type":"building",
+    "cost": {
+      "compressedIron":10000,
+    },
+    "effects":[
+      {'funcName':'onlyRunOutOfSpace','args':[[
+        {'funcName':'incrementResourceSpecial','args':['fluidStorage','storage',40000]},
+      ]]},
+      {'funcName':'onlyRunInSpace','args':[[
+        {'funcName':'incResSpace','args':['fluidStorage',40000]},
       ]]},
       {'funcName':'updateFluids','args':[false]},
     ],
@@ -364,6 +383,19 @@ let buildingsData = {
       {"funcName":"setMessageCSSIfCheck","args":[{'color':'lightblue','text-shadow':'0px 0px 2px blue'},'notFrostiumCoreMade']},
       {"funcName":"setCheck","args":['notFrostiumCoreMade',false]},
       {"funcName":"addBuilding","args":['planetGrinder']},
+    ],
+  },
+  "burningCore":{
+    "type":"building",
+    "cost": {
+      "temperedPyrome":1000,
+      "shadows":2000,
+      "stardust":100000,
+    },
+    'tooltip':'A mix of pyrome and shadows that disintegrates over time.',
+    'category':'Advanced Metal Working',
+    "effects": [
+      {"funcName":"addSpaceBuilding","args":['pyromeMaterializer']},
     ],
   },
   "wirelessEnergyTransferer":{
@@ -410,7 +442,7 @@ let buildingsData = {
   "pyromeMaterializer":{
     "type":"building",
     "cost": {
-      "temperedPyrome":10000
+      "burningCore":5
     },
     'tooltip':'100% guaranteed to work or your money back.',
     'category':'Advanced Metal Working',
@@ -421,8 +453,8 @@ let buildingsData = {
   "pyromeInfuser":{
     "type":"building",
     "cost": {
-      "temperedPyrome":100000,
-      "aeromineGlass":100000,
+      "temperedPyrome":1000,
+      "aeromineGlass":1000,
     },
     'tooltip':'Infuse depleted pyrome with way too much energy',
     'category':'Advanced Metal Working',
@@ -430,8 +462,8 @@ let buildingsData = {
   "carbonFactory":{
     "type":"building",
     "cost": {
-      "steel":10000000000,
-      "assembler":1000000,
+      "steel":1000000,
+      "assembler":10000,
     },
     'tooltip':'A way to make carbon nanotubes.',
     'category':'Advanced Metal Working'
@@ -439,11 +471,31 @@ let buildingsData = {
   "nanobotFactory":{
     "type":"building",
     "cost": {
-      "steel":10000000000,
-      "assembler":10000000,
-      "carbonNanotubes":10000000,
+      "steel":1000000,
+      "assembler":1000,
+      "carbonNanotubes":500000,
     },
     'tooltip':'Nanobots can build big things.',
+    'category':'Advanced Metal Working'
+  },
+  "asteroidMinerFactory":{
+    "type":"building",
+    "cost": {
+      "steel":10000000,
+      "temperedPyrome":67890,
+      "assembler":10000,
+      "nanobots":5000000,
+    },
+    'tooltip':'Nanobots can build big things.',
+    'category':'Advanced Metal Working'
+  },
+  "diomineManufacturer":{
+    "type":"building",
+    "cost": {
+      "steel":1000000,
+      "frostium":1000000,
+    },
+    'tooltip':'Batteries not included',
     'category':'Advanced Metal Working'
   },
   "solarPanelSatellite":{
@@ -622,6 +674,21 @@ let buildingsData = {
     },
     'tooltip':'An important step to freedom',
     'category':'Space Rocket Base',
+  },
+  "shadowTrawler": {
+    "type":"spaceRocket",
+    "cost": {
+      "matterTransporter":1,
+      "advancedThruster":1,
+      "strongHull":1,
+      "detailedRadar":1,
+      "wirelessEnergyTransferer":1,
+    },
+		"tooltip":"It sucks in the light. (Requires frostium energy)",
+    'category':'Shadows',
+    'effects':[
+      {'funcName':'addBuilding','args':['wirelessEnergyTransferer']}
+    ]
   },
   "basicHull":{
     "type":"rocketPart",
@@ -865,6 +932,8 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['steel','storage',500]},
       {"funcName":"incrementResourceSpecial","args":['duranium','storage',10]},
       {"funcName":"incrementResourceSpecial","args":['frostium','storage',5]},
+      {"funcName":"incrementResourceSpecial","args":['germanium','storage',100]},
+      {"funcName":"incrementResourceSpecial","args":['stardust','storage',1]},
     ],
   },
   "shadowStorageFacility": {
@@ -920,6 +989,8 @@ let buildingsData = {
       {"funcName":"incrementResourceSpecial","args":['tungstenOre','storage',500000000]},
       {"funcName":"incrementResourceSpecial","args":['titaniumOre','storage',2500000000]},
       {"funcName":"incrementResourceSpecial","args":['copperOre','storage',1000000000]},
+      {"funcName":"incrementResourceSpecial","args":['germanium','storage',100000000]},
+      {"funcName":"incrementResourceSpecial","args":['stardust','storage',1000]},
     ],
   },
   "industrialSmelter": {
@@ -1021,5 +1092,17 @@ let buildingsData = {
     },
     'category':'Space',
     "tooltip":"There is literally no point in having more than one of these."
+  },
+  'nuclearReactor': {
+    "type":"building",
+    "cost": {
+      "germanium":500000,
+      "carbonNanotubes":10000000,
+      "steel":10000000,
+      "iron":1000000000,
+      "copper":1000000000,
+    },
+    'category':'Energy',
+    "tooltip":"Build a nuclear reactor to consume residual burning core."
   },
 }
